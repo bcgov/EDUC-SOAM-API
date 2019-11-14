@@ -29,6 +29,7 @@ public class SoamController {
         this.service = soam;
     }
 
+    @PreAuthorize("#oauth2.hasScope('POST_SOAM')")
     @PostMapping()
     public StudentEntity soamLogin(@Validated @RequestBody DigitalIDEntity digitalID) throws Exception{
         DigitalIDEntity response = service.getDigitalID(digitalID.getDigitalID());

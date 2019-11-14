@@ -1,0 +1,25 @@
+---
+apiVersion: v1
+kind: Template
+labels:
+  template: 'educ-pren-request-template'
+metadata:
+  name: 'educ-pen-request-template'
+objects:
+  - apiVersion: v1
+    kind: BuildConfig
+    metadata:
+      labels:
+        build: educ-pen-request-pipeline
+      name: educ-pen-request-pipeline
+      namespace: c2mvws-tools
+    spec:
+      source:
+        contextDir: api
+        git:
+          ref: master
+          uri: 'https://github.com/bcgov/EDUC-PEN-REQUEST-API'
+        type: Git
+      strategy:
+        jenkinsPipelineStrategy:
+          jenkinsfilePath: Jenkinsfile

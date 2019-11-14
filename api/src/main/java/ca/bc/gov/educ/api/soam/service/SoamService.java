@@ -19,7 +19,7 @@ public class SoamService {
      */
     private RestTemplate restTemplate = new RestTemplate();
 
-    public DigitalIDEntity getDigitalID(Integer id) {
+    public DigitalIDEntity getDigitalID(String id) {
         String url = "${digitalID.api}/" + id;
         return restTemplate.getForObject(url, DigitalIDEntity.class);
     }

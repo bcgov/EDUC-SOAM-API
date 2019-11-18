@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("soam")
 @EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableResourceServer
 public class SoamController {
 
     @Autowired

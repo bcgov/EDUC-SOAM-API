@@ -47,9 +47,11 @@ public class DigitalIDEntity {
     @Column(name = "last_access_channel_code")
     String lastAccessChannelCode;
 
+    @NotNull(message= "createUser cannot be null")
     @Column(name = "create_user", updatable = false)
     String createUser;
 
+    @NotNull(message="createDate cannot be null")
     @PastOrPresent
     @Column(name = "create_date", updatable = false)
     Date createDate;

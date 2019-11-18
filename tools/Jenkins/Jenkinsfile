@@ -24,7 +24,7 @@ pipeline{
       TEST_HOST_ROUTE = "${APP_NAME}-${TEST}.${APP_DOMAIN}"
       PROD_HOST_ROUTE = "${APP_NAME}-${PROD}.${APP_DOMAIN}"
   }
-
+  stages{
       stage('Build PEN Request API'){
         steps{
           script{
@@ -88,3 +88,4 @@ pipeline{
         }
       }
     }
+  }

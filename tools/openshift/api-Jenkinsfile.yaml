@@ -14,7 +14,7 @@ objects:
       source:
         git:
           ref: master
-          uri: "https://github.com/ndenny1/EDUC-SOAM-API"
+          uri: "https://github.com/bcgov/EDUC-SOAM-API"
       strategy:
         jenkinsPipelineStrategy:
           jenkinsfilePath: tools/Jenkins/Jenkinsfile

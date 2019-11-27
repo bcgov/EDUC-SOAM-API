@@ -58,32 +58,35 @@ pipeline{
         }
       }
       stage('Promote to DEV') {
-        steps{
-            deployStage('Dev', DEV, DEV_HOST_ROUTE)
-        }
-        post{
-            success{
-                echo 'Deployment to Dev was successful'
+       steps {
+          script {
+            openshift.withCluster() {
+              openshift.withProject(DEV) {
+                echo "Tagging image"
+                openshift.tag("${TOOLS}/${REPO_NAME}-${JOB_NAME}:latest", "${REPO_NAME}-${JOB_NAME}:${TAG}")
+                def dcTemplate = openshift.process('-f',
+                  'tools/openshift/api.dc.yaml',
+                  "REPO_NAME=${REPO_NAME}",
+                  "JOB_NAME=${JOB_NAME}",
+                  "NAMESPACE=${DEV}",
+                  "APP_NAME=${APP_NAME}",
+                  "HOST_ROUTE=${DEV_HOST_ROUTE}",
+                  "TAG=${TAG}"
+                )
+
+                echo "Applying Deployment ${REPO_NAME}"
+                def dc = openshift.apply(dcTemplate).narrow('dc')
+
+                echo "Waiting for deployment to roll out"
+                // Wait for deployments to roll out
+                timeout(10) {
+                  dc.rollout().status('--watch=true')
+                }
+              }
             }
-            failure{
-                echo 'Deployment to Dev failed'
-            }
-        }
+          }
       }
   
-    stage('Promote to TEST') {
-        steps{
-            deployStage('Test', TEST, TEST_HOST_ROUTE)
-        }
-        post{
-            success{
-                echo 'Deployment to Test was successful'
-            }
-            failure{
-                echo 'Deployment to Test failed'
-            }
-        }
-    }
   }
 }
 

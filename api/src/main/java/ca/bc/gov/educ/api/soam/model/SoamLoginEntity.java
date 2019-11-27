@@ -1,27 +1,15 @@
 package ca.bc.gov.educ.api.soam.model;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-import lombok.Data;
-import lombok.Getter;
-
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.GenerationType;
-import javax.persistence.Table;
+import java.util.Date;
 
 import javax.persistence.Column;
-
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PastOrPresent;
 
-import java.util.Date;
-
-@Entity
-@Data
-@Getter
-@Table(name = "digital_identity")
-public class DigitalIDEntity {
+public class SoamLoginEntity {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Column(name = "digital_identity_id")

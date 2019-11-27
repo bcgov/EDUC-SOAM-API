@@ -70,7 +70,7 @@ pipeline{
             }
         }
       }
-    }
+  
     stage('Promote to TEST') {
         steps{
             deployStage('Test', TEST, TEST_HOST_ROUTE)

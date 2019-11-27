@@ -52,7 +52,7 @@ public class SoamController {
 
     }*/
 
-    @PreAuthorize("#oauth2.hasScope('GET_PEN')")
+    @PreAuthorize("#oauth2.hasScope('READ_STUDENT')")
     @GetMapping("/pen")
     public String penTest(){
         return service.getRandomPen();

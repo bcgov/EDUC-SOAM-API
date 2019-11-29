@@ -1,6 +1,5 @@
 package ca.bc.gov.educ.api.soam.codetable;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 

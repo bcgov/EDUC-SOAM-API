@@ -17,7 +17,6 @@ import org.springframework.web.client.RestTemplate;
 import ca.bc.gov.educ.api.digitalID.model.DigitalIDEntity;
 import ca.bc.gov.educ.api.soam.codetable.CodeTableUtils;
 import ca.bc.gov.educ.api.soam.exception.InvalidParameterException;
-import ca.bc.gov.educ.api.soam.model.SoamFirstLoginEntity;
 import ca.bc.gov.educ.api.soam.model.SoamLoginEntity;
 import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
 import ca.bc.gov.educ.api.soam.rest.RestUtils;

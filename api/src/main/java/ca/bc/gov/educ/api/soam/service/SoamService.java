@@ -17,7 +17,9 @@ import org.springframework.web.client.RestTemplate;
 import ca.bc.gov.educ.api.digitalID.model.DigitalIDEntity;
 import ca.bc.gov.educ.api.soam.codetable.CodeTableUtils;
 import ca.bc.gov.educ.api.soam.exception.InvalidParameterException;
+import ca.bc.gov.educ.api.soam.model.SoamDigitalIdentity;
 import ca.bc.gov.educ.api.soam.model.SoamLoginEntity;
+import ca.bc.gov.educ.api.soam.model.SoamStudent;
 import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
 import ca.bc.gov.educ.api.soam.rest.RestUtils;
 import ca.bc.gov.educ.api.student.model.StudentEntity;
@@ -44,12 +46,20 @@ public class SoamService {
 		try {
 			//This is the initial call to determine if we have this digital identity
 			response = restTemplate.exchange(props.getDigitalIdentifierApiURL() + "/" + identifierType + "/" + identifierValue, HttpMethod.GET, new HttpEntity<>("parameters", headers), DigitalIDEntity.class);
-			//If we've reached here we do have a digital identity for this user, if they have a student ID in the digital ID record then we fetch the student
-			if(response.getBody().getStudentID() != null) {
-				ResponseEntity<StudentEntity> studentResponse;
-				studentResponse = restTemplate.exchange(props.getStudentApiURL() + "/" + response.getBody().getStudentID(), HttpMethod.GET, new HttpEntity<>("parameters", headers), StudentEntity.class);
-				return createSoamLoginEntity(studentResponse.getBody());
-			}
+			
+			//Update the last used date
+			DigitalIDEntity digitalIDEntity = response.getBody();
+			digitalIDEntity.setLastAccessDate(new Date());
+			digitalIDEntity.setCreateDate(null);
+			digitalIDEntity.setUpdateDate(null);
+			restTemplate.put(props.getDigitalIdentifierApiURL(), digitalIDEntity, new HttpEntity<>("parameters", headers), DigitalIDEntity.class);
+			
+//			//If we've reached here we do have a digital identity for this user, if they have a student ID in the digital ID record then we fetch the student
+//			if(digitalIDEntity.getStudentID() != null) {
+//				ResponseEntity<StudentEntity> studentResponse;
+//				studentResponse = restTemplate.exchange(props.getStudentApiURL() + "/" + response.getBody().getStudentID(), HttpMethod.GET, new HttpEntity<>("parameters", headers), StudentEntity.class);
+//				return createSoamLoginEntity(studentResponse.getBody(),digitalIDEntity.getDigitalID());
+//			}
 		} catch (final HttpClientErrorException e) {
 		    if(e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
 		    	DigitalIDEntity entity = createDigitalIdentity(identifierType, identifierValue, userID);
@@ -62,9 +72,36 @@ public class SoamService {
         return null;
     }
     
-    private SoamLoginEntity createSoamLoginEntity(StudentEntity student) {
+    private SoamLoginEntity createSoamLoginEntity(StudentEntity student, Long digitalIdentifierID) {
     	SoamLoginEntity entity = new SoamLoginEntity();
-    	entity.setStudent(student);
+    	SoamStudent soamStudent = new SoamStudent();
+    	
+    	soamStudent.setCreateDate(student.getCreateDate());
+    	soamStudent.setCreateUser(student.getCreateUser());
+    	soamStudent.setDataSourceCode(student.getDataSourceCode());
+    	soamStudent.setDeceasedDate(student.getDeceasedDate());
+    	soamStudent.setDob(student.getDob());
+    	soamStudent.setEmail(student.getEmail());
+    	soamStudent.setGenderCode(student.getGenderCode());
+    	soamStudent.setLegalFirstName(student.getLegalFirstName());
+    	soamStudent.setLegalLastName(student.getLegalLastName());
+    	soamStudent.setLegalMiddleNames(student.getLegalMiddleNames());
+    	soamStudent.setPen(student.getPen());
+    	soamStudent.setSexCode(student.getSexCode());
+    	soamStudent.setStudentID(student.getStudentID());
+    	soamStudent.setUpdateDate(student.getUpdateDate());
+    	soamStudent.setUpdateUser(student.getUpdateUser());
+    	soamStudent.setUsualFirstName(student.getUsualFirstName());
+    	soamStudent.setUsualLastName(student.getUsualLastName());
+    	soamStudent.setUsualMiddleNames(student.getUsualMiddleNames());
+    	
+    	entity.setStudent(soamStudent);
+    	
+    	SoamDigitalIdentity digitalIdentity = new SoamDigitalIdentity();
+    	digitalIdentity.setDigitalIdentityID(digitalIdentifierID);
+    	
+    	entity.setSoamDigitalIdentity(digitalIdentity);
+    	
     	return entity;
     }
     

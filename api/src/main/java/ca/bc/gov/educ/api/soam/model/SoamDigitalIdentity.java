@@ -1,7 +1,8 @@
 package ca.bc.gov.educ.api.soam.model;
 
-public class SoamFirstLoginEntity {
+public class SoamDigitalIdentity {
 
+	private Long digitalIdentityID;
 	private String firstName;
 	private String lastName;
 	private String middleNames;
@@ -37,6 +38,14 @@ public class SoamFirstLoginEntity {
 
 	public void setEmailAddress(String emailAddress) {
 		this.emailAddress = emailAddress;
+	}
+
+	public Long getDigitalIdentityID() {
+		return digitalIdentityID;
+	}
+
+	public void setDigitalIdentityID(Long digitalIdentityID) {
+		this.digitalIdentityID = digitalIdentityID;
 	}
 
 }

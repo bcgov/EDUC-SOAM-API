@@ -1,5 +1,7 @@
 pipeline{
-  agent any
+  agent {
+      label 'maven35'
+  }
 
     environment{
       TOOLS = 'c2mvws-tools'
@@ -11,7 +13,7 @@ pipeline{
       OWNER = 'bcgov'
       JOB_NAME = 'master'
       TAG = 'dev'
-
+      
       APP_NAME = 'soam-api'
       APP_DOMAIN = 'pathfinder.gov.bc.ca'
 
@@ -24,119 +26,92 @@ pipeline{
       TEST_HOST_ROUTE = "${APP_NAME}-${TEST}.${APP_DOMAIN}"
       PROD_HOST_ROUTE = "${APP_NAME}-${PROD}.${APP_DOMAIN}"
   }
+
   stages{
-      stage('Build PEN Request API'){
-        steps{
-          script{
-            openshift.withCluster(){
-              openshift.withProject(){
-                def bcApi = openshift.process('-f', 'tools/openshift/api.bc.yaml')
-                openshift.apply(bcApi).narrow('bc').startBuild('-w').logs('-f')
-              }
-            }
+    stage('Build App') {
+      steps {
+        sh "mvn -f ./api/pom.xml -Dmaven.test.skip=true package"
+      }
+    }
+	stage('Add client jar to m2 repo') {
+		steps {	
+	        sh "mvn install:install-file -Dfile=./api/target/soam-api-0.0.1.SNAPSHOT-client.jar -DgroupId=ca.bc.gov.educ.api.soam -DartifactId=soam-api-client -Dversion=0.0.1 -Dpackaging=jar"
+        }
+    }
+    stage('Create Image Builder') {
+      when {
+        expression {
+          openshift.withCluster() {
+            return !openshift.selector("bc", "educ-soam-api-master").exists();
           }
         }
-        post {
-          success {
-              echo 'Cleanup BuildConfigs'
-              script {
-                  openshift.withCluster() {
-                    openshift.withProject(TOOLS) {
-                      def bcApi = openshift.selector('bc', "${REPO_NAME}-${JOB_NAME}")
+      }
+      steps {
+        script {
+          openshift.withCluster() {
+            openshift.newBuild("--name=educ-soam-api-master", "--image-stream=redhat-openjdk18-openshift:1.1", "--binary")
+          }
+        }
+      }
+    }
+    stage('Build Image') {
+      steps {
+        script {
+          openshift.withCluster() {
+            openshift.selector("bc", "educ-soam-api-master").startBuild("--from-file=./api/target/soam-api-0.0.1.SNAPSHOT.jar", "--wait")
+          }
+        }
+      }
+      post {
+        success {
+          echo 'Cleanup BuildConfigs'
+          script {
+              openshift.withCluster() {
+                openshift.withProject(TOOLS) {
+                  def bcApi = openshift.selector('bc', "${REPO_NAME}-${JOB_NAME}")
 
-                      if(bcApi.exists()) {
-                          echo "Removing BuildConfig ${REPO_NAME}-${JOB_NAME}"
-                          bcApi.delete()
-                      }
-                    }
+                  if(bcApi.exists()) {
+                      echo "Removing BuildConfig ${REPO_NAME}-${JOB_NAME}"
+                      bcApi.delete()
                   }
+                }
               }
-          }
-          failure {
-              echo 'Build stage failed'
-          }
-        }
-      }
-      stage('Promote to DEV') {
-        steps{
-            deployStage('Dev', DEV, DEV_HOST_ROUTE)
-        }
-        post{
-            success{
-                echo 'Deployment to Dev was successful'
             }
-            failure{
-                echo 'Deployment to Dev failed'
-            }
+        }
+        failure {
+          echo 'Build stage failed'
         }
       }
     }
-    stage('Promote to TEST') {
-        steps{
-            deployStage('Test', TEST, TEST_HOST_ROUTE)
-        }
-        post{
-            success{
-                echo 'Deployment to Test was successful'
-            }
-            failure{
-                echo 'Deployment to Test failed'
-            }
-        }
-    }
-  }
+    stage('Promote to DEV') {
+      steps {
+        script {
+          openshift.withCluster() {
+            openshift.withProject(DEV) {
+              echo "Tagging image"
+              openshift.tag("${TOOLS}/${REPO_NAME}-${JOB_NAME}:latest", "${REPO_NAME}-${JOB_NAME}:${TAG}")
+              def dcTemplate = openshift.process('-f',
+                'tools/openshift/api.dc.yaml',
+                "REPO_NAME=${REPO_NAME}",
+                "JOB_NAME=${JOB_NAME}",
+                "NAMESPACE=${DEV}",
+                "APP_NAME=${APP_NAME}",
+                "HOST_ROUTE=${DEV_HOST_ROUTE}",
+                "TAG=${TAG}"
+              )
 
-  def deployStage(String stageEnv, String projectEnv, String hostRouteEnv) {
-    if (!stageEnv.equalsIgnoreCase('Dev')) {
-      input("Deploy to ${projectEnv}?")
-    }
+              echo "Applying Deployment ${REPO_NAME}"
+              def dc = openshift.apply(dcTemplate).narrow('dc')
 
-    openshift.withCluster() {
-      openshift.withProject(projectEnv) {
-        if(DEBUG_OUTPUT.equalsIgnoreCase('true')) {
-          echo "DEBUG - Using project: ${openshift.project()}"
-        }
-        echo "Tagging Image ${REPO_NAME}-backend:${JOB_NAME}..."
-        openshift.tag("${TOOLS}/${REPO_NAME}-backend:${JOB_NAME}", "${REPO_NAME}-backend:${JOB_NAME}")
-
-        echo "Tagging Image ${REPO_NAME}-frontend-static:${JOB_NAME}..."
-        openshift.tag("${TOOLS}/${REPO_NAME}-frontend-static:${JOB_NAME}", "${REPO_NAME}-frontend-static:${JOB_NAME}")
-        echo "Processing DeploymentConfig ${REPO_NAME}-backend..."
-        def dcBackendTemplate = openshift.process('-f',
-          'tools/openshift/backend.dc.yaml',
-          "REPO_NAME=${REPO_NAME}",
-          "JOB_NAME=${JOB_NAME}",
-          "NAMESPACE=${projectEnv}",
-          "APP_NAME=${APP_NAME}",
-          "HOST_ROUTE=${hostRouteEnv}"
-        )
-
-        def dcBackend = openshift.apply(dcBackendTemplate).narrow('dc')
-
-        echo "Processing DeploymentConfig ${REPO_NAME}-frontend-static..."
-        def dcFrontendStaticTemplate = openshift.process('-f',
-          'tools/openshift/frontend-static.dc.yaml',
-          "REPO_NAME=${REPO_NAME}",
-          "JOB_NAME=${JOB_NAME}",
-          "NAMESPACE=${projectEnv}",
-          "APP_NAME=${APP_NAME}",
-          "HOST_ROUTE=${hostRouteEnv}"
-        )
-
-        echo "Applying Deployment ${REPO_NAME}-frontend-static..."
-        def dcFrontendStatic = openshift.apply(dcFrontendStaticTemplate).narrow('dc')
-
-        // Wait for deployments to roll out
-        timeout(10) {
-          parallel(
-              Backend: {
-                  dcBackend.rollout().status('--watch=true')
-              },
-              Frontend: {
-                  dcFrontendStatic.rollout().status('--watch=true')
+              echo "Waiting for deployment to roll out"
+              // Wait for deployments to roll out
+              timeout(10) {
+                dc.rollout().status('--watch=true')
               }
-          )
+            }
+          }
         }
       }
     }
   }
+}

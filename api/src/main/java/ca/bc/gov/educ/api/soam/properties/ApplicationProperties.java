@@ -1,6 +1,7 @@
 package ca.bc.gov.educ.api.soam.properties;
 
-import org.jboss.logging.Logger;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 /**
  * Class holds all application properties
@@ -8,25 +9,32 @@ import org.jboss.logging.Logger;
  * @author Marco Villeneuve
  *
  */
+@Component
 public class ApplicationProperties {
 
-	private static Logger logger = Logger.getLogger(ApplicationProperties.class);
-
-	private String soamURL;
-	private String digitalIdentifierApiURL;
-	private String studentApiURL;
-	private String tokenURL;
+	@Value("${client.id}")
 	private String clientID;
+	@Value("${client.secret}")
 	private String clientSecret;
+	@Value("${token.url}")
+	private String tokenURL;
+	@Value("${digitalid.api.url}")
+	private String digitalIdentifierApiURL;
+	@Value("${student.api.url}")
+	private String studentApiURL;
+	@Value("${codetable.api.url}")
+	private String codetableApiURL;
 
-	public ApplicationProperties() {
-		logger.info("SOAM: Building application properties");
-		soamURL = System.getenv().getOrDefault("soamURL", "MissingSoamURL");
-		digitalIdentifierApiURL = System.getenv().getOrDefault("digitalIdentifierApiURL", "MissingSoamDigitalIDURL");
-		studentApiURL = System.getenv().getOrDefault("studentApiURL", "MissingSoamStudentURL");
-		tokenURL = System.getenv().getOrDefault("tokenURL", "MissingSoamTokenURL");
-		clientID = System.getenv().getOrDefault("clientID", "MissingSoamClientID");
-		clientSecret = System.getenv().getOrDefault("clientSecret", "MissingSoamClientSecret");
+	public String getClientID() {
+		return clientID;
+	}
+
+	public String getClientSecret() {
+		return clientSecret;
+	}
+
+	public String getTokenURL() {
+		return tokenURL;
 	}
 
 	public String getDigitalIdentifierApiURL() {
@@ -37,20 +45,8 @@ public class ApplicationProperties {
 		return studentApiURL;
 	}
 
-	public String getSoamURL() {
-		return soamURL;
-	}
-
-	public String getTokenURL() {
-		return tokenURL;
-	}
-
-	public String getClientID() {
-		return clientID;
-	}
-
-	public String getClientSecret() {
-		return clientSecret;
+	public String getCodetableApiURL() {
+		return codetableApiURL;
 	}
 
 }

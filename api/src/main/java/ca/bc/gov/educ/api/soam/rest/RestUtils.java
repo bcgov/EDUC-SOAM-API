@@ -1,16 +1,14 @@
 package ca.bc.gov.educ.api.soam.rest;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.util.List;
 
-import org.apache.oltu.oauth2.client.OAuthClient;
-import org.apache.oltu.oauth2.client.URLConnectionClient;
-import org.apache.oltu.oauth2.client.request.OAuthClientRequest;
-import org.apache.oltu.oauth2.client.response.OAuthJSONAccessTokenResponse;
-import org.apache.oltu.oauth2.common.OAuth;
-import org.apache.oltu.oauth2.common.message.types.GrantType;
+import org.jboss.logging.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.oauth2.client.DefaultOAuth2ClientContext;
+import org.springframework.security.oauth2.client.OAuth2RestTemplate;
+import org.springframework.security.oauth2.client.token.grant.client.ClientCredentialsResourceDetails;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
 
@@ -20,67 +18,28 @@ import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
  * @author Marco Villeneuve
  *
  */
+@Component
 public class RestUtils {
-	
-	private static RestUtils restUtilsInstance;
-	
-	private static ApplicationProperties props;
 
-	private RestUtils() {
-		props = new ApplicationProperties();
-	}
+	private static Logger logger = Logger.getLogger(RestUtils.class);
+
+	@Autowired
+	private ApplicationProperties props;
 	
-	public static RestUtils getInstance() {
-		if(restUtilsInstance == null) {
-			restUtilsInstance = new RestUtils();
-		}
-		return restUtilsInstance;
+	public RestTemplate getRestTemplate() {
+		return getRestTemplate(null);
 	}
 
-	private String getToken(String scope) {
-		try {
-			OAuthClient client = new OAuthClient(new URLConnectionClient());
-
-			OAuthClientRequest request = OAuthClientRequest.tokenLocation(props.getTokenURL())
-					.setGrantType(GrantType.CLIENT_CREDENTIALS).setClientId(props.getClientID())
-					.setScope(scope).setClientSecret(props.getClientSecret()).buildBodyMessage();
-
-			return client.accessToken(request, OAuth.HttpMethod.POST, OAuthJSONAccessTokenResponse.class)
-					.getAccessToken();
-		} catch (Exception exn) {
-			throw new RuntimeException("Could not get token: " + exn);
+	public RestTemplate getRestTemplate(List<String> scopes) {
+		logger.debug("Calling get token method");
+		ClientCredentialsResourceDetails resourceDetails = new ClientCredentialsResourceDetails();
+		resourceDetails.setClientId(props.getClientID());
+		resourceDetails.setClientSecret(props.getClientSecret());
+		resourceDetails.setAccessTokenUri(props.getTokenURL());
+		if(scopes != null) {
+			resourceDetails.setScope(scopes);
 		}
+		return new OAuth2RestTemplate(resourceDetails, new DefaultOAuth2ClientContext());
 	}
-
-	/**
-	 * Modify/add new methods like this one for your REST call 
-	 * 
-	 * @return
-	 */
-	public String getPEN() {
-		try {
-			// Sending get request
-			URL url = new URL(props.getSoamURL());
-			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
-			conn.setRequestProperty("Authorization", "Bearer " + getToken("READ_PEN_REQUEST"));
-			conn.setRequestProperty("Content-Type", "application/json");
-			conn.setRequestMethod("GET");
-
-			BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-			String output;
-
-			StringBuffer response = new StringBuffer();
-			while ((output = in.readLine()) != null) {
-				response.append(output);
-			}
-
-			in.close();
-			return response.toString();
-		} catch (Exception e) {
-			throw new RuntimeException("Could not call SOAM API: " + e);
-		}
-
-	} 
 
 }

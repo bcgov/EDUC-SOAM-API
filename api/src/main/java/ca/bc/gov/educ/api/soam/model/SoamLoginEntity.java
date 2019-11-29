@@ -1,53 +1,26 @@
 package ca.bc.gov.educ.api.soam.model;
 
-import java.util.Date;
-
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.PastOrPresent;
+import ca.bc.gov.educ.api.student.model.StudentEntity;
 
 public class SoamLoginEntity {
-    @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    @Column(name = "digital_identity_id")
-    String digitalID;
 
-    @Column(name = "student_id")
-    Integer studentID;
+	private StudentEntity student;
+	private SoamFirstLoginEntity firstLoginEntity;
 
-    @NotNull(message="identityTypeCode cannot be null")
-    @Column(name = "identity_type_code")
-    String identityTypeCode;
+	public StudentEntity getStudent() {
+		return student;
+	}
 
-    @NotNull(message="identityValue cannot be null")
-    @Column(name = "identity_value")
-    String identityValue;
+	public void setStudent(StudentEntity student) {
+		this.student = student;
+	}
 
-    @PastOrPresent
-    @NotNull(message="lastAccessTime cannot be null")
-    @Column(name = "last_access_time")
-    Date lastAccessDate;
+	public SoamFirstLoginEntity getFirstLoginEntity() {
+		return firstLoginEntity;
+	}
 
-    @NotNull(message="lastAccessChannelCode cannot be null")
-    @Column(name = "last_access_channel_code")
-    String lastAccessChannelCode;
+	public void setFirstLoginEntity(SoamFirstLoginEntity firstLoginEntity) {
+		this.firstLoginEntity = firstLoginEntity;
+	}
 
-    @NotNull(message= "createUser cannot be null")
-    @Column(name = "create_user", updatable = false)
-    String createUser;
-
-    @NotNull(message="createDate cannot be null")
-    @PastOrPresent
-    @Column(name = "create_date", updatable = false)
-    Date createDate;
-
-    @Column(name = "update_user", updatable = false)
-    String updateUser;
-
-    @PastOrPresent
-    @Column(name = "update_date", updatable = false)
-    Date updateDate;
 }

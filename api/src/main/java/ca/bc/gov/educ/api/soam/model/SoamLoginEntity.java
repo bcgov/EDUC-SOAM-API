@@ -1,26 +1,24 @@
 package ca.bc.gov.educ.api.soam.model;
 
-import ca.bc.gov.educ.api.student.model.StudentEntity;
-
 public class SoamLoginEntity {
 
-	private StudentEntity student;
-	private SoamFirstLoginEntity firstLoginEntity;
+	private SoamStudent student;
+	private Long digitalIdentityID;
 
-	public StudentEntity getStudent() {
+	public SoamStudent getStudent() {
 		return student;
 	}
 
-	public void setStudent(StudentEntity student) {
+	public void setStudent(SoamStudent student) {
 		this.student = student;
 	}
 
-	public SoamFirstLoginEntity getFirstLoginEntity() {
-		return firstLoginEntity;
+	public Long getDigitalIdentityID() {
+		return digitalIdentityID;
 	}
 
-	public void setFirstLoginEntity(SoamFirstLoginEntity firstLoginEntity) {
-		this.firstLoginEntity = firstLoginEntity;
+	public void setDigitalIdentityID(Long digitalIdentityID) {
+		this.digitalIdentityID = digitalIdentityID;
 	}
 
 }

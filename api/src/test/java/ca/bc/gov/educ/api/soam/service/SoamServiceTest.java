@@ -19,7 +19,14 @@ public class SoamServiceTest {
 
     @Test
     public void createValidDigitalIdTest(){
-		assertNotNull(service.performLogin("BASIC","12345","TESTMARCO"));
+		service.performLogin("BASIC","12345","TESTMARCO");
+    }
+    
+    @Test
+    public void loginAndGetSoamEntity(){
+		service.performLogin("BASIC","123456","TESTMARCO");
+		
+		assertNotNull(service.getSoamLoginEntity("BASIC","123456"));
     }
     
     @Test

@@ -3,7 +3,7 @@ package ca.bc.gov.educ.api.soam.model;
 public class SoamLoginEntity {
 
 	private SoamStudent student;
-	private SoamDigitalIdentity soamDigitalIdentity;
+	private Long digitalIdentityID;
 
 	public SoamStudent getStudent() {
 		return student;
@@ -13,12 +13,12 @@ public class SoamLoginEntity {
 		this.student = student;
 	}
 
-	public SoamDigitalIdentity getSoamDigitalIdentity() {
-		return soamDigitalIdentity;
+	public Long getDigitalIdentityID() {
+		return digitalIdentityID;
 	}
 
-	public void setSoamDigitalIdentity(SoamDigitalIdentity soamDigitalIdentity) {
-		this.soamDigitalIdentity = soamDigitalIdentity;
+	public void setDigitalIdentityID(Long digitalIdentityID) {
+		this.digitalIdentityID = digitalIdentityID;
 	}
 
 }

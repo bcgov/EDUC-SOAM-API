@@ -6,6 +6,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -38,8 +40,14 @@ public class SoamController {
     		method=RequestMethod.POST, 
     		consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     @PreAuthorize("#oauth2.hasScope('SOAM_LOGIN')")
-    public SoamLoginEntity performLogin(@RequestBody MultiValueMap<String, String> formData){
-        return service.performLogin(formData.get("identityType").get(0),formData.get("identifierValue").get(0),formData.get("userID").get(0));
+    public void performLogin(@RequestBody MultiValueMap<String, String> formData){
+        service.performLogin(formData.get("identityType").get(0),formData.get("identifierValue").get(0),formData.get("userID").get(0));
+    }
+    
+    @GetMapping("/{typeCode}/{typeValue}")
+    @PreAuthorize("#oauth2.hasScope('SOAM_LOGIN')")
+    public SoamLoginEntity getSoamLoginEntity(@PathVariable String typeCode, @PathVariable String typeValue){
+        return service.getSoamLoginEntity(typeCode, typeValue);
     }
 
 }

@@ -152,9 +152,6 @@ public class SoamService {
     }
     
     private void validateExtendedSearchParameters(String identifierType, String identifierValue, String userID) throws InvalidParameterException {
-    	logger.info("Attempting call: " + identifierType);
-    	logger.info("Value is: " + codeTableUtils.getAllIdentifierTypeCodes().containsKey(identifierType));
-    	
         if(identifierType==null || !codeTableUtils.getAllIdentifierTypeCodes().containsKey(identifierType)) {
             throw new InvalidParameterException("identifierType");
         }else  if(identifierValue==null || identifierValue.length()<1) {

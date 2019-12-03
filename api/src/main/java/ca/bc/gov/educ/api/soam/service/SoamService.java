@@ -3,6 +3,7 @@ package ca.bc.gov.educ.api.soam.service;
 import java.util.Collections;
 import java.util.Date;
 
+import org.jboss.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -25,6 +26,8 @@ import ca.bc.gov.educ.api.student.model.StudentEntity;
 
 @Service
 public class SoamService {
+	
+	private static Logger logger = Logger.getLogger(SoamService.class);
 	
 	@Autowired
 	private CodeTableUtils codeTableUtils;
@@ -149,6 +152,9 @@ public class SoamService {
     }
     
     private void validateExtendedSearchParameters(String identifierType, String identifierValue, String userID) throws InvalidParameterException {
+    	logger.info("Attempting call: " + identifierType);
+    	logger.info("Value is: " + codeTableUtils.getAllIdentifierTypeCodes().containsKey(identifierType));
+    	
         if(identifierType==null || !codeTableUtils.getAllIdentifierTypeCodes().containsKey(identifierType)) {
             throw new InvalidParameterException("identifierType");
         }else  if(identifierValue==null || identifierValue.length()<1) {

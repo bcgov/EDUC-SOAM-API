@@ -46,11 +46,15 @@ public class SoamController {
     		consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     @PreAuthorize("#oauth2.hasScope('SOAM_LOGIN')")
     public void performLogin(@RequestBody MultiValueMap<String, String> formData){
-    	 Set<String> methodNamesSet = formData.keySet();
+    	Set<String> methodNamesSet = formData.keySet();
 
-         for(String str: methodNamesSet) {
-        	 logger.info(formData.get(str));
-         }
+        for(String str: methodNamesSet) {
+        	logger.info(formData.get(str));
+        }
+         
+        logger.info("Type: " + formData.getFirst("identityType"));
+        logger.info("Val: " + formData.getFirst("identifierValue"));
+        logger.info("UserID: " + formData.getFirst("userID"));
         service.performLogin(formData.getFirst("identityType"),formData.getFirst("identifierValue"),formData.getFirst("userID"));
     }
     

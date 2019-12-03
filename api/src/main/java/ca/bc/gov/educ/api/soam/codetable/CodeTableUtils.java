@@ -5,7 +5,6 @@ import java.util.HashMap;
 
 import org.jboss.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -30,7 +29,7 @@ public class CodeTableUtils {
 	@Autowired
 	private ApplicationProperties props;
 
-	@Cacheable("accessChannelCodes")
+	//@Cacheable("accessChannelCodes")
 	public HashMap<String, AccessChannelCodeEntity> getAllAccessChannelCodes() {
 		logger.info("Fetching all access channel codes");
 		RestTemplate restTemplate = restUtils.getRestTemplate();
@@ -52,9 +51,9 @@ public class CodeTableUtils {
 		return map;
 	}
 	
-	@Cacheable("identityTypeCodes")
+	//@Cacheable("identityTypeCodes")
 	public HashMap<String, IdentityTypeCodeEntity> getAllIdentifierTypeCodes() {
-		logger.info("Fetching all access channel codes");
+		logger.info("Fetching all identity type codes");
 		RestTemplate restTemplate = restUtils.getRestTemplate();
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));

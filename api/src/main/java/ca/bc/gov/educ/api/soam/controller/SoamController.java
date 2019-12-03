@@ -1,5 +1,8 @@
 package ca.bc.gov.educ.api.soam.controller;
 
+import java.util.Set;
+
+import org.jboss.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,6 +30,8 @@ import ca.bc.gov.educ.api.soam.service.SoamService;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @EnableResourceServer
 public class SoamController {
+	
+	private static Logger logger = Logger.getLogger(SoamController.class);
 
     @Autowired
     private final SoamService service;
@@ -41,7 +46,12 @@ public class SoamController {
     		consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     @PreAuthorize("#oauth2.hasScope('SOAM_LOGIN')")
     public void performLogin(@RequestBody MultiValueMap<String, String> formData){
-        service.performLogin(formData.get("identityType").get(0),formData.get("identifierValue").get(0),formData.get("userID").get(0));
+    	 Set<String> methodNamesSet = formData.keySet();
+
+         for(String str: methodNamesSet) {
+        	 logger.info(formData.get(str));
+         }
+        service.performLogin(formData.getFirst("identityType"),formData.getFirst("identifierValue"),formData.getFirst("userID"));
     }
     
     @GetMapping("/{typeCode}/{typeValue}")

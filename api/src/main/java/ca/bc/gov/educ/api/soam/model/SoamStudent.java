@@ -1,9 +1,10 @@
 package ca.bc.gov.educ.api.soam.model;
 
 import java.util.Date;
+import java.util.UUID;
 
 public class SoamStudent {
-	private Long studentID;
+	private UUID studentID;
 	private String pen;
 	private String legalFirstName;
 	private String legalMiddleNames;
@@ -22,11 +23,11 @@ public class SoamStudent {
 	private String updateUser;
 	private Date updateDate;
 
-	public Long getStudentID() {
+	public UUID getStudentID() {
 		return studentID;
 	}
 
-	public void setStudentID(Long studentID) {
+	public void setStudentID(UUID studentID) {
 		this.studentID = studentID;
 	}
 

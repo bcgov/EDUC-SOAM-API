@@ -1,9 +1,11 @@
 package ca.bc.gov.educ.api.soam.model;
 
+import java.util.UUID;
+
 public class SoamLoginEntity {
 
 	private SoamStudent student;
-	private Long digitalIdentityID;
+	private UUID digitalIdentityID;
 
 	public SoamStudent getStudent() {
 		return student;
@@ -13,11 +15,11 @@ public class SoamLoginEntity {
 		this.student = student;
 	}
 
-	public Long getDigitalIdentityID() {
+	public UUID getDigitalIdentityID() {
 		return digitalIdentityID;
 	}
 
-	public void setDigitalIdentityID(Long digitalIdentityID) {
+	public void setDigitalIdentityID(UUID digitalIdentityID) {
 		this.digitalIdentityID = digitalIdentityID;
 	}
 

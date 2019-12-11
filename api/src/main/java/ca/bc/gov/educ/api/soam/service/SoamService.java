@@ -2,6 +2,7 @@ package ca.bc.gov.educ.api.soam.service;
 
 import java.util.Collections;
 import java.util.Date;
+import java.util.UUID;
 
 import org.jboss.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,14 +102,14 @@ public class SoamService {
 			}
 		} catch (final HttpClientErrorException e) {
 		    if(e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
-		    	throw new RuntimeException("Digital identity was not found. IdentifierType: " + identifierType + " IdentifierValue: " + identifierValue);
+		    	throw new RuntimeException("Student was not found. URL was: " + props.getStudentApiURL() + "/" + response.getBody().getStudentID());
 		    }else {
 		    	throw new RuntimeException("Unexpected HTTP return code: " + e.getStatusCode() + " error message: " + e.getResponseBodyAsString());
 		    }
 		}
     }
     
-    private SoamLoginEntity createSoamLoginEntity(StudentEntity student, Long digitalIdentifierID) {
+    private SoamLoginEntity createSoamLoginEntity(StudentEntity student, UUID digitalIdentifierID) {
     	SoamLoginEntity entity = new SoamLoginEntity();
     	
     	if(student != null) {

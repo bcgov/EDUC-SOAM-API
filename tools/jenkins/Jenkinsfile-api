@@ -30,12 +30,16 @@ pipeline{
   stages{
     stage('Build App') {
       steps {
+        script {
+          def pom = readMavenPom file: 'api/pom.xml'
+          VERSION = pom.version
+        }
         sh "mvn -f ./api/pom.xml -Dmaven.test.skip=true package"
       }
     }
 	stage('Add client jar to m2 repo') {
 		steps {	
-	        sh "mvn install:install-file -Dfile=./api/target/soam-api-0.0.1.SNAPSHOT-client.jar -DgroupId=ca.bc.gov.educ.api.soam -DartifactId=soam-api-client -Dversion=0.0.1 -Dpackaging=jar"
+	        sh "mvn install:install-file -Dfile=./api/target/soam-api-${VERSION}-client.jar -DgroupId=ca.bc.gov.educ.api.soam -DartifactId=soam-api-client -Dversion=${VERSION} -Dpackaging=jar"
         }
     }
     stage('Create Image Builder') {
@@ -58,7 +62,7 @@ pipeline{
       steps {
         script {
           openshift.withCluster() {
-            openshift.selector("bc", "educ-soam-api-master").startBuild("--from-file=./api/target/soam-api-0.0.1.SNAPSHOT.jar", "--wait")
+            openshift.selector("bc", "educ-soam-api-master").startBuild("--from-file=./api/target/soam-api-${VERSION}.jar", "--wait")
           }
         }
       }

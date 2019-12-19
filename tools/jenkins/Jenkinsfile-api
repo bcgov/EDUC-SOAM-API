@@ -43,7 +43,29 @@ pipeline{
       """
     }
   }
+    environment{
+      TOOLS = 'c2mvws-tools'
+      DEV = 'c2mvws-dev'
+      TEST = 'c2mvws-test'
+      PROD = 'c2mvws-prod'
 
+      REPO_NAME = 'educ-soam-api'
+      OWNER = 'bcgov'
+      JOB_NAME = 'master'
+      TAG = 'dev'
+      
+      APP_NAME = 'soam-api'
+      APP_DOMAIN = 'pathfinder.gov.bc.ca'
+
+      SOURCE_REPO_RAW = 'https://github.com/${OWNER}/${REPO_NAME}/master'
+      SOURCE_REPO_REF = 'master'
+      SOURCE_REPO_URL = 'https://github.com/${OWNER}/${REPO_NAME}.git'
+
+      TOOLS_HOST_ROUTE = "${APP_NAME}-${TOOLS}.${APP_DOMAIN}"
+      DEV_HOST_ROUTE = "${APP_NAME}-${DEV}.${APP_DOMAIN}"
+      TEST_HOST_ROUTE = "${APP_NAME}-${TEST}.${APP_DOMAIN}"
+      PROD_HOST_ROUTE = "${APP_NAME}-${PROD}.${APP_DOMAIN}"
+  }
   stages{
 /*    stage('Unit Tests') {
       steps {

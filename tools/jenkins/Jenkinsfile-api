@@ -1,33 +1,60 @@
 pipeline{
   agent {
-      label 'maven35'
-  }
-
-    environment{
-      TOOLS = 'c2mvws-tools'
-      DEV = 'c2mvws-dev'
-      TEST = 'c2mvws-test'
-      PROD = 'c2mvws-prod'
-
-      REPO_NAME = 'educ-soam-api'
-      OWNER = 'bcgov'
-      JOB_NAME = 'master'
-      TAG = 'dev'
-      
-      APP_NAME = 'soam-api'
-      APP_DOMAIN = 'pathfinder.gov.bc.ca'
-
-      SOURCE_REPO_RAW = 'https://github.com/${OWNER}/${REPO_NAME}/master'
-      SOURCE_REPO_REF = 'master'
-      SOURCE_REPO_URL = 'https://github.com/${OWNER}/${REPO_NAME}.git'
-
-      TOOLS_HOST_ROUTE = "${APP_NAME}-${TOOLS}.${APP_DOMAIN}"
-      DEV_HOST_ROUTE = "${APP_NAME}-${DEV}.${APP_DOMAIN}"
-      TEST_HOST_ROUTE = "${APP_NAME}-${TEST}.${APP_DOMAIN}"
-      PROD_HOST_ROUTE = "${APP_NAME}-${PROD}.${APP_DOMAIN}"
+    kubernetes {
+      label 'mavenPod'
+      cloud 'openshift'
+      defaultContainer 'jnlp'
+      serviceAccount 'jenkins'
+      yaml """
+        kind: Pod
+        metadata:
+          name: jenkins-slave
+        spec:
+          containers:
+          - name: jnlp
+            image: registry.access.redhat.com/openshift3/jenkins-agent-maven-35-rhel7
+            privileged: false
+            alwaysPullImage: false
+            workingDir: /tmp
+            ttyEnabled: false
+            resourceRequestCpu: 3
+            resourceRequestMemory: 2Gi
+            resourceLimitCpu: 3
+            resourceLimitMemory: 2Gi
+            env:
+            - name: SONARQUBE_HOSTNAME
+              valueFrom:
+                secretKeyRef:
+                  name: 'student-api-secrets'
+                  key: sonarqube-host
+            - name: SONARQUBE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: 'soam-api-secrets'
+                  key: sonarqube-token
+            volumeMounts:
+            - mountPath: '/home/jenkins/.m2'
+              name: pvc
+          volumes:
+          - name: pvc
+            persistentVolumeClaim:
+              claimName: 'maven-slave-pvc'
+              
+      """
+    }
   }
 
   stages{
+    stage('Unit Tests') {
+      steps {
+        script {
+          def pom = readMavenPom file: 'api/pom.xml'
+          VERSION = pom.version
+
+          sh "mvn -f ./api/pom.xml test"
+        }
+      }
+    }
     stage('Build App') {
       steps {
         script {
@@ -46,14 +73,14 @@ pipeline{
       when {
         expression {
           openshift.withCluster() {
-            return !openshift.selector("bc", "educ-soam-api-master").exists();
+            return !openshift.selector("bc", "${REPO_NAME}-${JOB_NAME}").exists();
           }
         }
       }
       steps {
         script {
           openshift.withCluster() {
-            openshift.newBuild("--name=educ-soam-api-master", "--image-stream=redhat-openjdk18-openshift:1.1", "--binary")
+            openshift.newBuild("--name=${REPO_NAME}-${JOB_NAME}", "--image-stream=redhat-openjdk18-openshift:1.1", "--binary")
           }
         }
       }
@@ -62,7 +89,7 @@ pipeline{
       steps {
         script {
           openshift.withCluster() {
-            openshift.selector("bc", "educ-soam-api-master").startBuild("--from-file=./api/target/soam-api-${VERSION}.jar", "--wait")
+            openshift.selector("bc", "${REPO_NAME}-${JOB_NAME}").startBuild("--from-file=./api/target/soam-api-${VERSION}.jar", "--wait")
           }
         }
       }
@@ -87,34 +114,71 @@ pipeline{
         }
       }
     }
-    stage('Promote to DEV') {
-      steps {
-        script {
-          openshift.withCluster() {
-            openshift.withProject(DEV) {
-              echo "Tagging image"
-              openshift.tag("${TOOLS}/${REPO_NAME}-${JOB_NAME}:latest", "${REPO_NAME}-${JOB_NAME}:${TAG}")
-              def dcTemplate = openshift.process('-f',
-                'tools/openshift/api.dc.yaml',
-                "REPO_NAME=${REPO_NAME}",
-                "JOB_NAME=${JOB_NAME}",
-                "NAMESPACE=${DEV}",
-                "APP_NAME=${APP_NAME}",
-                "HOST_ROUTE=${DEV_HOST_ROUTE}",
-                "TAG=${TAG}"
-              )
-
-              echo "Applying Deployment ${REPO_NAME}"
-              def dc = openshift.apply(dcTemplate).narrow('dc')
-
-              echo "Waiting for deployment to roll out"
-              // Wait for deployments to roll out
-              timeout(10) {
-                dc.rollout().status('--watch=true')
-              }
-            }
-          }
+	stage('Promote to DEV') {
+      steps{
+        deployStage('Dev', DEV, DEV_HOST_ROUTE)
+      }
+      post{
+        success{
+          echo 'Deployment to Dev was successful'
         }
+        failure{
+          echo 'Deployment to Dev failed'
+        }
+      }
+    }
+    stage('Report to SonarQube') {
+        steps {
+            script{
+                dir('api'){
+                    sh '/bin/bash -c "mvn sonar:sonar -Dsonar.host.url=${SONARQUBE_HOSTNAME} -Dsonar.login=${SONARQUBE_TOKEN}"'
+                }
+            }
+        }
+    }
+    stage('Deploy to Test'){
+      steps{
+          deployStage('Test', TEST, TEST_HOST_ROUTE)
+      } 
+      post {
+        success{
+          echo 'Deployment to Test was successful'
+        }
+        failure{
+          echo 'Deployment to Test failed'
+        }
+      }
+    }
+  }
+}
+
+def deployStage(String stageEnv, String projectEnv, String hostRouteEnv) {
+
+  if (!stageEnv.equalsIgnoreCase('Dev')) {
+    input("Deploy to ${projectEnv}?")
+  }
+
+  openshift.withCluster() {
+    openshift.withProject(projectEnv) {
+      echo "Tagging image"
+      openshift.tag("${TOOLS}/${REPO_NAME}-${JOB_NAME}:latest", "${REPO_NAME}-${JOB_NAME}:${TAG}")
+      def dcTemplate = openshift.process('-f',
+        'tools/openshift/api.dc.yaml',
+        "REPO_NAME=${REPO_NAME}",
+        "JOB_NAME=${JOB_NAME}",
+        "NAMESPACE=${projectEnv}",
+        "APP_NAME=${APP_NAME}",
+        "HOST_ROUTE=${hostRouteEnv}",
+        "TAG=${TAG}"
+      )
+
+      echo "Applying Deployment ${REPO_NAME}"
+      def dc = openshift.apply(dcTemplate).narrow('dc')
+
+      echo "Waiting for deployment to roll out"
+      // Wait for deployments to roll out
+      timeout(10) {
+        dc.rollout().status('--watch=true')
       }
     }
   }

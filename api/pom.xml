@@ -129,6 +129,11 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 			<plugin>
+				<groupId>org.sonarsource.scanner.maven</groupId>
+				<artifactId>sonar-maven-plugin</artifactId>
+				<version>3.7.0.1746</version>
+			</plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
@@ -136,6 +141,31 @@
 					<reuseForks>true</reuseForks>
 					<useSystemClassLoader>false</useSystemClassLoader>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.4</version>
+				<executions>
+				    <execution>
+					<id>default-prepare-agent</id>
+					<goals>
+					    <goal>prepare-agent</goal>
+					</goals>
+					<configuration>
+					    <destFile>${project.build.directory}/coverage-reports/jacoco.exec</destFile>
+					</configuration>
+				    </execution>
+				    <execution>
+					<id>default-report</id>
+					<goals>
+					    <goal>report</goal>
+					</goals>
+					<configuration>
+					    <destFile>${project.build.directory}/coverage-reports/jacoco-it.exec</destFile>
+					</configuration>
+				    </execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

@@ -11,7 +11,7 @@ An API for the Student Online Access Module for the Ministry of Education
 
 ## Documentation
 
-* [Online Student API Spec](https://soamapi.docs.apiary.io/#)
+* [SOAM API Spec](https://soamapi.docs.apiary.io/#)
 * [Openshift Readme](tools/README.md)
 * [PEN Registry Wiki](https://github.com/bcgov/EDUC-INFRA-COMMON/wiki)
 

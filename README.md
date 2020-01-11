@@ -1,5 +1,5 @@
 # EDUC-SOAM-API
-An API for the Student Online Access Module for the Ministry of Education
+An API for the Student Online Access Module for the Ministry of Education.
 
 ## Directory Structure
 

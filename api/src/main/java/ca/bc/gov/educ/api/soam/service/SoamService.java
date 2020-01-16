@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.UUID;
 
-import org.jboss.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -28,8 +27,8 @@ import ca.bc.gov.educ.api.student.model.StudentEntity;
 
 @Service
 public class SoamService {
-	
-	private static Logger logger = Logger.getLogger(SoamService.class);
+
+	private static final String PARAMETERS_ATTRIBUTE = "parameters"; 
 	
 	@Autowired
 	private CodeTableUtils codeTableUtils;
@@ -49,15 +48,15 @@ public class SoamService {
 		ResponseEntity<DigitalIDEntity> response;
 		try {
 			//This is the initial call to determine if we have this digital identity
-			response = restTemplate.exchange(props.getDigitalIdentifierApiURL() + "/" + identifierType + "/" + identifierValue, HttpMethod.GET, new HttpEntity<>("parameters", headers), DigitalIDEntity.class);
+			response = restTemplate.exchange(props.getDigitalIdentifierApiURL() + "/" + identifierType + "/" + identifierValue, HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
 		} catch (final HttpClientErrorException e) {
 		    if(e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
 		    	//Digital Identity does not exist, let's create it
 		    	DigitalIDEntity entity = createDigitalIdentity(identifierType, identifierValue, userID);
-				response = restTemplate.postForEntity(props.getDigitalIdentifierApiURL(), entity, DigitalIDEntity.class);
+				restTemplate.postForEntity(props.getDigitalIdentifierApiURL(), entity, DigitalIDEntity.class);
 				return;
 		    }else {
-		    	throw new SoamRuntimeException("Unexpected HTTP return code: " + e.getStatusCode() + " error message: " + e.getResponseBodyAsString());
+		    	throw new SoamRuntimeException(getErrorMessageString(e.getStatusCode(), e.getResponseBodyAsString()));
 		    }
 		}
 		try {
@@ -66,9 +65,9 @@ public class SoamService {
 			digitalIDEntity.setLastAccessDate(new Date());
 			digitalIDEntity.setCreateDate(null);
 			digitalIDEntity.setUpdateDate(null);
-			restTemplate.put(props.getDigitalIdentifierApiURL(), digitalIDEntity, new HttpEntity<>("parameters", headers), DigitalIDEntity.class);
+			restTemplate.put(props.getDigitalIdentifierApiURL(), digitalIDEntity, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
 		} catch (final HttpClientErrorException e) {
-	    	throw new SoamRuntimeException("Unexpected HTTP return code updating digital identity: " + e.getStatusCode() + " error message: " + e.getResponseBodyAsString());
+			throw new SoamRuntimeException(getErrorMessageString(e.getStatusCode(), e.getResponseBodyAsString()));
 		}
     }
     
@@ -82,7 +81,7 @@ public class SoamService {
 		DigitalIDEntity digitalIDEntity = null;
 		try {
 			//This is the initial call to determine if we have this digital identity
-			response = restTemplate.exchange(props.getDigitalIdentifierApiURL() + "/" + identifierType + "/" + identifierValue, HttpMethod.GET, new HttpEntity<>("parameters", headers), DigitalIDEntity.class);
+			response = restTemplate.exchange(props.getDigitalIdentifierApiURL() + "/" + identifierType + "/" + identifierValue, HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
 			digitalIDEntity = response.getBody();
 			if(digitalIDEntity == null) {
 				throw new SoamRuntimeException("Digital ID was null - unexpected error");
@@ -92,14 +91,14 @@ public class SoamService {
 		    	//This should not occur
 		    	throw new SoamRuntimeException("Digital identity was not found. IdentifierType: " + identifierType + " IdentifierValue: " + identifierValue);
 		    }else {
-		    	throw new SoamRuntimeException("Unexpected HTTP return code: " + e.getStatusCode() + " error message: " + e.getResponseBodyAsString());
+		    	throw new SoamRuntimeException(getErrorMessageString(e.getStatusCode(), e.getResponseBodyAsString()));
 		    }
 		}
 		try {
 			//If we've reached here we do have a digital identity for this user, if they have a student ID in the digital ID record then we fetch the student
 			if(digitalIDEntity.getStudentID() != null) {
 				ResponseEntity<StudentEntity> studentResponse;
-				studentResponse = restTemplate.exchange(props.getStudentApiURL() + "/" + response.getBody().getStudentID(), HttpMethod.GET, new HttpEntity<>("parameters", headers), StudentEntity.class);
+				studentResponse = restTemplate.exchange(props.getStudentApiURL() + "/" + response.getBody().getStudentID(), HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), StudentEntity.class);
 				return createSoamLoginEntity(studentResponse.getBody(),digitalIDEntity.getDigitalID());
 			}else {
 				return createSoamLoginEntity(null,digitalIDEntity.getDigitalID());
@@ -108,9 +107,13 @@ public class SoamService {
 		    if(e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
 		    	throw new SoamRuntimeException("Student was not found. URL was: " + props.getStudentApiURL() + "/" + response.getBody().getStudentID());
 		    }else {
-		    	throw new SoamRuntimeException("Unexpected HTTP return code: " + e.getStatusCode() + " error message: " + e.getResponseBodyAsString());
+		    	throw new SoamRuntimeException(getErrorMessageString(e.getStatusCode(), e.getResponseBodyAsString()));
 		    }
 		}
+    }
+    
+    private String getErrorMessageString(HttpStatus status, String body) {
+    	return "Unexpected HTTP return code: " + status + " error message: " + body;
     }
     
     private SoamLoginEntity createSoamLoginEntity(StudentEntity student, UUID digitalIdentifierID) {
@@ -156,7 +159,7 @@ public class SoamService {
     	return entity;
     }
     
-    private void validateExtendedSearchParameters(String identifierType, String identifierValue, String userID) throws InvalidParameterException {
+    private void validateExtendedSearchParameters(String identifierType, String identifierValue, String userID) {
         if(identifierType==null || !codeTableUtils.getAllIdentifierTypeCodes().containsKey(identifierType)) {
             throw new InvalidParameterException("identifierType");
         }else  if(identifierValue==null || identifierValue.length()<1) {
@@ -166,7 +169,7 @@ public class SoamService {
         }  
     }
     
-    private void validateSearchParameters(String identifierType, String identifierValue) throws InvalidParameterException {
+    private void validateSearchParameters(String identifierType, String identifierValue) {
         if(identifierType==null || !codeTableUtils.getAllIdentifierTypeCodes().containsKey(identifierType)) {
             throw new InvalidParameterException("identifierType");
         }else  if(identifierValue==null || identifierValue.length()<1) {

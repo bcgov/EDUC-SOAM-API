@@ -9,16 +9,20 @@ package ca.bc.gov.educ.api.soam.exception;
 
 public class InvalidParameterException extends RuntimeException {
 
-    public InvalidParameterException(String... searchParamsMap) {
+	private static final long serialVersionUID = 6804324217909049970L;
+
+	public InvalidParameterException(String... searchParamsMap) {
         super(InvalidParameterException.generateMessage(searchParamsMap));
     }
 
     private static String generateMessage(String... searchParams) {
-        String message = "Unexpected request parameters provided: ";
+        StringBuilder message = new StringBuilder("Unexpected request parameters provided: ");
+        String prefix = "";
         for (String parameter:searchParams) {
-            message += parameter + ", ";
+            message.append(prefix);
+            prefix = ",";
+            message.append(parameter);
         }
-        message = message.substring(0, message.length()-2);
-        return message;
+        return message.toString();
     }
 }

@@ -25,7 +25,7 @@ pipeline{
             - name: SONARQUBE_HOSTNAME
               valueFrom:
                 secretKeyRef:
-                  name: 'student-api-secrets'
+                  name: 'soam-api-secrets'
                   key: sonarqube-host
             - name: SONARQUBE_TOKEN
               valueFrom:

@@ -19,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 import ca.bc.gov.educ.api.digitalID.model.DigitalIDEntity;
 import ca.bc.gov.educ.api.soam.codetable.CodeTableUtils;
 import ca.bc.gov.educ.api.soam.exception.InvalidParameterException;
+import ca.bc.gov.educ.api.soam.exception.SoamRuntimeException;
 import ca.bc.gov.educ.api.soam.model.SoamLoginEntity;
 import ca.bc.gov.educ.api.soam.model.SoamStudent;
 import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
@@ -56,7 +57,7 @@ public class SoamService {
 				response = restTemplate.postForEntity(props.getDigitalIdentifierApiURL(), entity, DigitalIDEntity.class);
 				return;
 		    }else {
-		    	throw new RuntimeException("Unexpected HTTP return code: " + e.getStatusCode() + " error message: " + e.getResponseBodyAsString());
+		    	throw new SoamRuntimeException("Unexpected HTTP return code: " + e.getStatusCode() + " error message: " + e.getResponseBodyAsString());
 		    }
 		}
 		try {
@@ -67,7 +68,7 @@ public class SoamService {
 			digitalIDEntity.setUpdateDate(null);
 			restTemplate.put(props.getDigitalIdentifierApiURL(), digitalIDEntity, new HttpEntity<>("parameters", headers), DigitalIDEntity.class);
 		} catch (final HttpClientErrorException e) {
-	    	throw new RuntimeException("Unexpected HTTP return code updating digital identity: " + e.getStatusCode() + " error message: " + e.getResponseBodyAsString());
+	    	throw new SoamRuntimeException("Unexpected HTTP return code updating digital identity: " + e.getStatusCode() + " error message: " + e.getResponseBodyAsString());
 		}
     }
     
@@ -83,17 +84,20 @@ public class SoamService {
 			//This is the initial call to determine if we have this digital identity
 			response = restTemplate.exchange(props.getDigitalIdentifierApiURL() + "/" + identifierType + "/" + identifierValue, HttpMethod.GET, new HttpEntity<>("parameters", headers), DigitalIDEntity.class);
 			digitalIDEntity = response.getBody();
+			if(digitalIDEntity == null) {
+				throw new SoamRuntimeException("Digital ID was null - unexpected error");
+			}
 		} catch (final HttpClientErrorException e) {
 		    if(e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
 		    	//This should not occur
-		    	throw new RuntimeException("Digital identity was not found. IdentifierType: " + identifierType + " IdentifierValue: " + identifierValue);
+		    	throw new SoamRuntimeException("Digital identity was not found. IdentifierType: " + identifierType + " IdentifierValue: " + identifierValue);
 		    }else {
-		    	throw new RuntimeException("Unexpected HTTP return code: " + e.getStatusCode() + " error message: " + e.getResponseBodyAsString());
+		    	throw new SoamRuntimeException("Unexpected HTTP return code: " + e.getStatusCode() + " error message: " + e.getResponseBodyAsString());
 		    }
 		}
 		try {
 			//If we've reached here we do have a digital identity for this user, if they have a student ID in the digital ID record then we fetch the student
-			if(digitalIDEntity != null && digitalIDEntity.getStudentID() != null) {
+			if(digitalIDEntity.getStudentID() != null) {
 				ResponseEntity<StudentEntity> studentResponse;
 				studentResponse = restTemplate.exchange(props.getStudentApiURL() + "/" + response.getBody().getStudentID(), HttpMethod.GET, new HttpEntity<>("parameters", headers), StudentEntity.class);
 				return createSoamLoginEntity(studentResponse.getBody(),digitalIDEntity.getDigitalID());
@@ -102,9 +106,9 @@ public class SoamService {
 			}
 		} catch (final HttpClientErrorException e) {
 		    if(e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
-		    	throw new RuntimeException("Student was not found. URL was: " + props.getStudentApiURL() + "/" + response.getBody().getStudentID());
+		    	throw new SoamRuntimeException("Student was not found. URL was: " + props.getStudentApiURL() + "/" + response.getBody().getStudentID());
 		    }else {
-		    	throw new RuntimeException("Unexpected HTTP return code: " + e.getStatusCode() + " error message: " + e.getResponseBodyAsString());
+		    	throw new SoamRuntimeException("Unexpected HTTP return code: " + e.getStatusCode() + " error message: " + e.getResponseBodyAsString());
 		    }
 		}
     }

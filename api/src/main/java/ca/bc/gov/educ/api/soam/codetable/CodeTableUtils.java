@@ -2,6 +2,7 @@ package ca.bc.gov.educ.api.soam.codetable;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.jboss.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,7 @@ public class CodeTableUtils {
 	private ApplicationProperties props;
 
 	@Cacheable("accessChannelCodes")
-	public HashMap<String, AccessChannelCodeEntity> getAllAccessChannelCodes() {
+	public Map<String, AccessChannelCodeEntity> getAllAccessChannelCodes() {
 		logger.info("Fetching all access channel codes");
 		RestTemplate restTemplate = restUtils.getRestTemplate();
 		HttpHeaders headers = new HttpHeaders();
@@ -42,7 +43,7 @@ public class CodeTableUtils {
 				props.getCodetableApiURL() + "/accessChannel", HttpMethod.GET,
 				new HttpEntity<>("parameters", headers), AccessChannelCodeEntity[].class);
 		
-		HashMap<String, AccessChannelCodeEntity> map = new HashMap<String, AccessChannelCodeEntity>();
+		Map<String, AccessChannelCodeEntity> map = new HashMap<>();
 		if(response != null && response.getBody() != null) {
 			for(AccessChannelCodeEntity entity: response.getBody()) {
 				map.put(entity.getAccessChannelCode(), entity);
@@ -53,7 +54,7 @@ public class CodeTableUtils {
 	}
 	
 	@Cacheable("identityTypeCodes")
-	public HashMap<String, IdentityTypeCodeEntity> getAllIdentifierTypeCodes() {
+	public Map<String, IdentityTypeCodeEntity> getAllIdentifierTypeCodes() {
 		logger.info("Fetching all identity type codes");
 		RestTemplate restTemplate = restUtils.getRestTemplate();
 		HttpHeaders headers = new HttpHeaders();
@@ -64,7 +65,7 @@ public class CodeTableUtils {
 				props.getCodetableApiURL() + "/identityType", HttpMethod.GET,
 				new HttpEntity<>("parameters", headers), IdentityTypeCodeEntity[].class);
 		
-		HashMap<String, IdentityTypeCodeEntity> map = new HashMap<String, IdentityTypeCodeEntity>();
+		Map<String, IdentityTypeCodeEntity> map = new HashMap<>();
 		if(response != null && response.getBody() != null) {
 			for(IdentityTypeCodeEntity entity: response.getBody()) {
 				map.put(entity.getIdentityTypeCode(), entity);

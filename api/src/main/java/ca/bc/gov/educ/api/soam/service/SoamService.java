@@ -48,7 +48,7 @@ public class SoamService {
 		ResponseEntity<DigitalIDEntity> response;
 		try {
 			//This is the initial call to determine if we have this digital identity
-			response = restTemplate.exchange(props.getDigitalIdentifierApiURL() + "/" + identifierType + "/" + identifierValue, HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
+			response = restTemplate.exchange(props.getDigitalIdentifierApiURL() + "?identitytype=" + identifierType + "&identifiervalue=" + identifierValue, HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
 		} catch (final HttpClientErrorException e) {
 		    if(e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
 		    	//Digital Identity does not exist, let's create it
@@ -81,7 +81,7 @@ public class SoamService {
 		DigitalIDEntity digitalIDEntity = null;
 		try {
 			//This is the initial call to determine if we have this digital identity
-			response = restTemplate.exchange(props.getDigitalIdentifierApiURL() + "/" + identifierType + "/" + identifierValue, HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
+			response = restTemplate.exchange(props.getDigitalIdentifierApiURL() + "?identitytype=" + identifierType + "&identifiervalue=" + identifierValue, HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
 			digitalIDEntity = response.getBody();
 			if(digitalIDEntity == null) {
 				throw new SoamRuntimeException("Digital ID was null - unexpected error");

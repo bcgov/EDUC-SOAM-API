@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import ca.bc.gov.educ.api.soam.endpoint.SoamEndpoint;
 import ca.bc.gov.educ.api.soam.model.SoamLoginEntity;
 import ca.bc.gov.educ.api.soam.service.SoamService;
 
@@ -23,31 +24,20 @@ import ca.bc.gov.educ.api.soam.service.SoamService;
  */
 
 @RestController
-@RequestMapping("/")
-@EnableGlobalMethodSecurity(prePostEnabled = true)
-@EnableResourceServer
-public class SoamController {
-	
-    @Autowired
+public class SoamController implements SoamEndpoint {
+
     private final SoamService service;
 
-    SoamController(SoamService soam){
-        this.service = soam;
+    SoamController(@Autowired final SoamService soamService) {
+        this.service = soamService;
     }
 
-    @RequestMapping(
-    		value="/login", 
-    		method=RequestMethod.POST, 
-    		consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    @PreAuthorize("#oauth2.hasScope('SOAM_LOGIN')")
-    public void performLogin(@RequestBody MultiValueMap<String, String> formData){
+	public void performLogin(@RequestBody MultiValueMap<String, String> formData){
         service.performLogin(formData.getFirst("identifierType"),formData.getFirst("identifierValue"),formData.getFirst("userID"));
     }
     
-    @GetMapping("/{typeCode}/{typeValue}")
-    @PreAuthorize("#oauth2.hasScope('SOAM_LOGIN')")
     public SoamLoginEntity getSoamLoginEntity(@PathVariable String typeCode, @PathVariable String typeValue){
         return service.getSoamLoginEntity(typeCode, typeValue);
     }
-
+    
 }

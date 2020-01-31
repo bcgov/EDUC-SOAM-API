@@ -1,29 +1,23 @@
 package ca.bc.gov.educ.api.soam.service;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.UUID;
-
+import ca.bc.gov.educ.api.soam.codetable.CodeTableUtils;
+import ca.bc.gov.educ.api.soam.exception.InvalidParameterException;
+import ca.bc.gov.educ.api.soam.exception.SoamRuntimeException;
+import ca.bc.gov.educ.api.soam.model.DigitalIDEntity;
+import ca.bc.gov.educ.api.soam.model.SoamLoginEntity;
+import ca.bc.gov.educ.api.soam.model.SoamStudent;
+import ca.bc.gov.educ.api.soam.model.StudentEntity;
+import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
+import ca.bc.gov.educ.api.soam.rest.RestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import ca.bc.gov.educ.api.digitalID.model.DigitalIDEntity;
-import ca.bc.gov.educ.api.soam.codetable.CodeTableUtils;
-import ca.bc.gov.educ.api.soam.exception.InvalidParameterException;
-import ca.bc.gov.educ.api.soam.exception.SoamRuntimeException;
-import ca.bc.gov.educ.api.soam.model.SoamLoginEntity;
-import ca.bc.gov.educ.api.soam.model.SoamStudent;
-import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
-import ca.bc.gov.educ.api.soam.rest.RestUtils;
-import ca.bc.gov.educ.api.student.model.StudentEntity;
+import java.util.Collections;
+import java.util.Date;
+import java.util.UUID;
 
 @Service
 public class SoamService {
@@ -65,10 +59,12 @@ public class SoamService {
     try {
       //Update the last used date
       DigitalIDEntity digitalIDEntity = response.getBody();
-      digitalIDEntity.setLastAccessDate(new Date());
-      digitalIDEntity.setCreateDate(null);
-      digitalIDEntity.setUpdateDate(null);
-      restTemplate.put(props.getDigitalIdentifierApiURL(), digitalIDEntity, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
+      if (digitalIDEntity != null) {
+        digitalIDEntity.setLastAccessDate(new Date());
+        digitalIDEntity.setCreateDate(null);
+        digitalIDEntity.setUpdateDate(null);
+        restTemplate.put(props.getDigitalIdentifierApiURL(), digitalIDEntity, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
+      }
     } catch (final HttpClientErrorException e) {
       throw new SoamRuntimeException(getErrorMessageString(e.getStatusCode(), e.getResponseBodyAsString()));
     }
@@ -81,7 +77,7 @@ public class SoamService {
     headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
     ResponseEntity<DigitalIDEntity> response;
-    DigitalIDEntity digitalIDEntity = null;
+    DigitalIDEntity digitalIDEntity;
     try {
       //This is the initial call to determine if we have this digital identity
       response = restTemplate.exchange(props.getDigitalIdentifierApiURL() + "?identitytype=" + identifierType + "&identityvalue=" + identifierValue, HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);

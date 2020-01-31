@@ -19,21 +19,22 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 @RequestMapping("/")
-@EnableGlobalMethodSecurity(prePostEnabled = true)
-@EnableResourceServer
 @OpenAPIDefinition(info = @Info(title = "API for SOAM.", description = "The SOAM API is used to support login functionality for the SOAM Keycloak Instance.", version = "1"), security = {@SecurityRequirement(name = "OAUTH2", scopes = {"SOAM_LOGIN"})})
 public interface SoamEndpoint {
 
-    @RequestMapping(
-    		value="/login", 
-    		method=RequestMethod.POST, 
-    		consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    @PreAuthorize("#oauth2.hasScope('SOAM_LOGIN')")
-    void performLogin(@RequestBody MultiValueMap<String, String> formData);
+  @RequestMapping(
+          value = "/login",
+          method = RequestMethod.POST,
+          consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+  @PreAuthorize("#oauth2.hasScope('SOAM_LOGIN')")
+  void performLogin(@RequestBody MultiValueMap<String, String> formData);
 
-    @GetMapping("/{typeCode}/{typeValue}")
-    @PreAuthorize("#oauth2.hasScope('SOAM_LOGIN')")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK"), @ApiResponse(responseCode = "404", description = "NOT FOUND.")})
-    SoamLoginEntity getSoamLoginEntity(@PathVariable String typeCode, @PathVariable String typeValue);
-    
+  @GetMapping("/{typeCode}/{typeValue}")
+  @PreAuthorize("#oauth2.hasScope('SOAM_LOGIN')")
+  @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK"), @ApiResponse(responseCode = "404", description = "NOT FOUND.")})
+  SoamLoginEntity getSoamLoginEntity(@PathVariable String typeCode, @PathVariable String typeValue);
+
+  @GetMapping("/health")
+  @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK")})
+  String health();
 }

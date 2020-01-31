@@ -2,18 +2,30 @@ package ca.bc.gov.educ.api.soam;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 
 @SpringBootApplication
-@EntityScan("ca.bc.gov.educ.api.soam")
-@ComponentScan("ca.bc.gov.educ.api.soam")
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 @EnableCaching
 public class SoamApiResourceApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(SoamApiResourceApplication.class, args);
-    }
+  public static void main(String[] args) {
+    SpringApplication.run(SoamApiResourceApplication.class, args);
+  }
 
+  @Configuration
+  static
+  class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
+
+    @Override
+    public void configure(WebSecurity web) {
+      web.ignoring().antMatchers("/v3/api-docs/**",
+              "/actuator/**", "/metrics",
+              "/swagger-ui/**", "/health");
+    }
+  }
 }

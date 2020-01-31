@@ -1,5 +1,6 @@
 package ca.bc.gov.educ.api.soam.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,6 +25,7 @@ import ca.bc.gov.educ.api.soam.service.SoamService;
  */
 
 @RestController
+@EnableResourceServer
 public class SoamController implements SoamEndpoint {
 
     private final SoamService service;
@@ -39,5 +41,10 @@ public class SoamController implements SoamEndpoint {
     public SoamLoginEntity getSoamLoginEntity(@PathVariable String typeCode, @PathVariable String typeValue){
         return service.getSoamLoginEntity(typeCode, typeValue);
     }
-    
+
+    @Override
+    public String health() {
+        return "OK";
+    }
+
 }

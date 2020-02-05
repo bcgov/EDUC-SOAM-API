@@ -19,12 +19,12 @@ public class SoamServiceTest {
 
     @Test
     public void createValidDigitalIdTest(){
-		service.performLogin("BASIC","12345","TESTMARCO");
+		service.performLogin("BASIC","12345","TESTMARCO", null);
     }
     
     @Test
     public void loginAndGetSoamEntity(){
-		service.performLogin("BASIC","123456","TESTMARCO");
+		service.performLogin("BASIC","123456","TESTMARCO", null);
 		
 		assertNotNull(service.getSoamLoginEntity("BASIC","123456"));
     }
@@ -32,5 +32,10 @@ public class SoamServiceTest {
     @Test
     public void testCodeTableGet(){
         assertNotNull(codeTableUtils.getAllAccessChannelCodes());
+    }
+    
+    @Test
+    public void testCodeTableGetIdentifierTypes(){
+        assertNotNull(codeTableUtils.getAllIdentifierTypeCodes());
     }
 }

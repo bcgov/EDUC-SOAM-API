@@ -22,8 +22,8 @@ public class ApplicationProperties {
 	private String digitalIdentifierApiURL;
 	@Value("${student.api.url}")
 	private String studentApiURL;
-	@Value("${codetable.api.url}")
-	private String codetableApiURL;
+	@Value("${servicescard.api.url}")
+	private String servicesCardApiURL;
 
 	public String getClientID() {
 		return clientID;
@@ -45,8 +45,8 @@ public class ApplicationProperties {
 		return studentApiURL;
 	}
 
-	public String getCodetableApiURL() {
-		return codetableApiURL;
+	public String getServicesCardApiURL() {
+		return servicesCardApiURL;
 	}
 
 }

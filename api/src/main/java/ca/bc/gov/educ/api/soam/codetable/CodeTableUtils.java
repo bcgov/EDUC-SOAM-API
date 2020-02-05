@@ -15,8 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import ca.bc.gov.educ.api.codetable.model.AccessChannelCodeEntity;
-import ca.bc.gov.educ.api.codetable.model.IdentityTypeCodeEntity;
+import ca.bc.gov.educ.api.soam.model.entity.AccessChannelCodeEntity;
+import ca.bc.gov.educ.api.soam.model.entity.IdentityTypeCodeEntity;
 import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
 import ca.bc.gov.educ.api.soam.rest.RestUtils;
 
@@ -40,7 +40,7 @@ public class CodeTableUtils {
 
 		ResponseEntity<AccessChannelCodeEntity[]> response;
 		response = restTemplate.exchange(
-				props.getCodetableApiURL() + "/accessChannel", HttpMethod.GET,
+				props.getDigitalIdentifierApiURL() + "/accessChannelCodes", HttpMethod.GET,
 				new HttpEntity<>("parameters", headers), AccessChannelCodeEntity[].class);
 		
 		Map<String, AccessChannelCodeEntity> map = new HashMap<>();
@@ -62,7 +62,7 @@ public class CodeTableUtils {
 
 		ResponseEntity<IdentityTypeCodeEntity[]> response;
 		response = restTemplate.exchange(
-				props.getCodetableApiURL() + "/identityType", HttpMethod.GET,
+				props.getDigitalIdentifierApiURL() + "/identityTypeCodes", HttpMethod.GET,
 				new HttpEntity<>("parameters", headers), IdentityTypeCodeEntity[].class);
 		
 		Map<String, IdentityTypeCodeEntity> map = new HashMap<>();

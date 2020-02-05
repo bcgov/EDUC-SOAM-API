@@ -1,10 +1,16 @@
 package ca.bc.gov.educ.api.soam.model.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.Date;
 
-import lombok.Data;
-
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class AccessChannelCodeEntity {
   String accessChannelCode;
   String label;
@@ -12,8 +18,4 @@ public class AccessChannelCodeEntity {
   Integer displayOrder;
   Date effectiveDate;
   Date expiryDate;
-  String createUser;
-  Date createDate;
-  String updateUser;
-  Date updateDate;
 }

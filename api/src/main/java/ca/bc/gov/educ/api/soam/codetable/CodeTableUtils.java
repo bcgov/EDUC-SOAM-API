@@ -1,19 +1,24 @@
 package ca.bc.gov.educ.api.soam.codetable;
 
-import ca.bc.gov.educ.api.soam.model.AccessChannelCodeEntity;
-import ca.bc.gov.educ.api.soam.model.IdentityTypeCodeEntity;
-import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
-import ca.bc.gov.educ.api.soam.rest.RestUtils;
-import org.jboss.logging.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.http.*;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.jboss.logging.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import ca.bc.gov.educ.api.soam.model.entity.AccessChannelCodeEntity;
+import ca.bc.gov.educ.api.soam.model.entity.IdentityTypeCodeEntity;
+import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
+import ca.bc.gov.educ.api.soam.rest.RestUtils;
 
 @Service
 public class CodeTableUtils {

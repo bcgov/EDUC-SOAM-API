@@ -1,26 +1,26 @@
 package ca.bc.gov.educ.api.soam.model.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.Date;
 import java.util.UUID;
 
-import lombok.Data;
-
-/**
- * Digital Identity Entity
- *
- * @author John Cox
- */
-
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class DigitalIDEntity {
-    UUID digitalID;
-    UUID studentID;
-    String identityTypeCode;
-    String identityValue;
-    Date lastAccessDate;
-    String lastAccessChannelCode;
-    String createUser;
-    Date createDate;
-    String updateUser;
-    Date updateDate;
+  private UUID digitalID;
+  private String studentID;
+  private String identityTypeCode;
+  private String identityValue;
+  private Date lastAccessDate;
+  private String lastAccessChannelCode;
+  private String createUser;
+  private Date createDate;
+  private String updateUser;
+  private Date updateDate;
 }

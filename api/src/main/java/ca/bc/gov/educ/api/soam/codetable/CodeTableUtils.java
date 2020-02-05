@@ -43,7 +43,7 @@ public class CodeTableUtils {
 
     ResponseEntity<AccessChannelCodeEntity[]> response;
     response = restTemplate.exchange(
-            props.getDigitalIdentifierApiURL() + "/accessChannel", HttpMethod.GET,
+            props.getDigitalIdentifierApiURL() + "/accessChannelCodes", HttpMethod.GET,
             new HttpEntity<>("parameters", headers), AccessChannelCodeEntity[].class);
 
     Map<String, AccessChannelCodeEntity> map = new HashMap<>();
@@ -65,7 +65,7 @@ public class CodeTableUtils {
 
     ResponseEntity<IdentityTypeCodeEntity[]> response;
     response = restTemplate.exchange(
-            props.getDigitalIdentifierApiURL() + "/identityType", HttpMethod.GET,
+            props.getDigitalIdentifierApiURL() + "/identityTypeCodes", HttpMethod.GET,
             new HttpEntity<>("parameters", headers), IdentityTypeCodeEntity[].class);
 
     Map<String, IdentityTypeCodeEntity> map = new HashMap<>();

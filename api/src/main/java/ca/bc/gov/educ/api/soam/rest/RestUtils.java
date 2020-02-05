@@ -14,32 +14,35 @@ import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
 
 /**
  * This class is used for REST calls
- * 
- * @author Marco Villeneuve
  *
+ * @author Marco Villeneuve
  */
 @Component
 public class RestUtils {
 
-	private static Logger logger = Logger.getLogger(RestUtils.class);
 
-	@Autowired
-	private ApplicationProperties props;
-	
-	public RestTemplate getRestTemplate() {
-		return getRestTemplate(null);
-	}
+  private static Logger logger = Logger.getLogger(RestUtils.class);
 
-	public RestTemplate getRestTemplate(List<String> scopes) {
-		logger.debug("Calling get token method");
-		ClientCredentialsResourceDetails resourceDetails = new ClientCredentialsResourceDetails();
-		resourceDetails.setClientId(props.getClientID());
-		resourceDetails.setClientSecret(props.getClientSecret());
-		resourceDetails.setAccessTokenUri(props.getTokenURL());
-		if(scopes != null) {
-			resourceDetails.setScope(scopes);
-		}
-		return new OAuth2RestTemplate(resourceDetails, new DefaultOAuth2ClientContext());
-	}
+  private final ApplicationProperties props;
+
+  public RestUtils(@Autowired final ApplicationProperties props) {
+    this.props = props;
+  }
+
+  public RestTemplate getRestTemplate() {
+    return getRestTemplate(null);
+  }
+
+  public RestTemplate getRestTemplate(List<String> scopes) {
+    logger.debug("Calling get token method");
+    ClientCredentialsResourceDetails resourceDetails = new ClientCredentialsResourceDetails();
+    resourceDetails.setClientId(props.getClientID());
+    resourceDetails.setClientSecret(props.getClientSecret());
+    resourceDetails.setAccessTokenUri(props.getTokenURL());
+    if (scopes != null) {
+      resourceDetails.setScope(scopes);
+    }
+    return new OAuth2RestTemplate(resourceDetails, new DefaultOAuth2ClientContext());
+  }
 
 }

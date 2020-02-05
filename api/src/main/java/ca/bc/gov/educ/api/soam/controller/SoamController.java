@@ -22,8 +22,7 @@ public class SoamController implements SoamEndpoint {
 
     private final SoamService service;
 
-    @Autowired
-    SoamController(final SoamService soamService) {
+    SoamController(@Autowired final SoamService soamService) {
         this.service = soamService;
     }
 
@@ -52,4 +51,8 @@ public class SoamController implements SoamEndpoint {
         return service.getSoamLoginEntity(typeCode, typeValue);
     }
     
+    @Override
+    public String health() {
+        return "OK";
+    }
 }

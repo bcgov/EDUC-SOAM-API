@@ -3,13 +3,17 @@ package ca.bc.gov.educ.api.soam.properties;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * Class holds all application properties
- * 
- * @author Marco Villeneuve
  *
+ * @author Marco Villeneuve
  */
 @Component
+@Getter
+@Setter
 public class ApplicationProperties {
 
 	@Value("${client.id}")
@@ -24,29 +28,4 @@ public class ApplicationProperties {
 	private String studentApiURL;
 	@Value("${servicescard.api.url}")
 	private String servicesCardApiURL;
-
-	public String getClientID() {
-		return clientID;
-	}
-
-	public String getClientSecret() {
-		return clientSecret;
-	}
-
-	public String getTokenURL() {
-		return tokenURL;
-	}
-
-	public String getDigitalIdentifierApiURL() {
-		return digitalIdentifierApiURL;
-	}
-
-	public String getStudentApiURL() {
-		return studentApiURL;
-	}
-
-	public String getServicesCardApiURL() {
-		return servicesCardApiURL;
-	}
-
 }

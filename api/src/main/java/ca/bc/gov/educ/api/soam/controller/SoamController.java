@@ -29,7 +29,7 @@ public class SoamController implements SoamEndpoint {
   }
 
   @Override
-  public void performLogin(@RequestBody MultiValueMap<String, String> formData) {
+  public String performLogin(@RequestBody MultiValueMap<String, String> formData) {
     ServicesCardEntity serviceCard = null;
     if (formData.getFirst("did") != null) {
       serviceCard = new ServicesCardEntity();
@@ -48,6 +48,7 @@ public class SoamController implements SoamEndpoint {
       serviceCard.setUserDisplayName(formData.getFirst("userDisplayName"));
     }
     service.performLogin(formData.getFirst("identifierType"), formData.getFirst("identifierValue"), formData.getFirst("userID"), serviceCard);
+    return "success";
   }
 
   @Override

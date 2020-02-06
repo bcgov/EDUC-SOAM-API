@@ -19,7 +19,7 @@ public interface SoamEndpoint {
           value = "/login",
           consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
   @PreAuthorize("#oauth2.hasScope('SOAM_LOGIN')")
-  void performLogin(@RequestBody MultiValueMap<String, String> formData);
+  String performLogin(@RequestBody MultiValueMap<String, String> formData);
 
   @GetMapping("/{typeCode}/{typeValue}")
   @PreAuthorize("#oauth2.hasScope('SOAM_LOGIN')")

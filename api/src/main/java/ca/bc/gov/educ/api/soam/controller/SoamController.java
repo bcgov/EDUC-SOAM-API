@@ -15,11 +15,9 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
-import static org.springframework.http.HttpStatus.NO_CONTENT;
-
 /**
  * Soam API controller
- *
+ * <b> DO NOT IMPLEMENT AN INTERFACE </b>
  * @author Marco Villeneuve
  */
 
@@ -38,7 +36,6 @@ public class SoamController {
 
   @PostMapping(value = "/login", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
   @PreAuthorize("#oauth2.hasScope('SOAM_LOGIN')")
-  @ResponseStatus(NO_CONTENT)
   public void performLogin(@RequestBody MultiValueMap<String, String> formData) {
     ServicesCardEntity serviceCard = null;
     if (formData.getFirst("did") != null) {

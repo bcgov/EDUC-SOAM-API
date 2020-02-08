@@ -1,31 +1,27 @@
 package ca.bc.gov.educ.api.soam.controller;
 
+import ca.bc.gov.educ.api.soam.endpoint.SoamEndpoint;
 import ca.bc.gov.educ.api.soam.model.entity.ServicesCardEntity;
 import ca.bc.gov.educ.api.soam.model.entity.SoamLoginEntity;
 import ca.bc.gov.educ.api.soam.service.SoamService;
-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
-import io.swagger.v3.oas.annotations.info.Info;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Soam API controller
  * <b> DO NOT IMPLEMENT AN INTERFACE </b>
+ *
  * @author Marco Villeneuve
  */
 
 @RestController
 @EnableResourceServer
-@RequestMapping("/")
-@OpenAPIDefinition(info = @Info(title = "API for SOAM.", description = "The SOAM API is used to support login functionality for the SOAM Keycloak Instance.", version = "1"), security = {@SecurityRequirement(name = "OAUTH2", scopes = {"SOAM_LOGIN"})})
-public class SoamController {
+public class SoamController implements SoamEndpoint {
 
   private final SoamService service;
 
@@ -34,9 +30,7 @@ public class SoamController {
     this.service = soamService;
   }
 
-  @PostMapping(value = "/login", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-  @PreAuthorize("#oauth2.hasScope('SOAM_LOGIN')")
-  public void performLogin(@RequestBody MultiValueMap<String, String> formData) {
+  public ResponseEntity<Void> performLogin(@RequestBody MultiValueMap<String, String> formData) {
     ServicesCardEntity serviceCard = null;
     if (formData.getFirst("did") != null) {
       serviceCard = new ServicesCardEntity();
@@ -55,18 +49,14 @@ public class SoamController {
       serviceCard.setUserDisplayName(formData.getFirst("userDisplayName"));
     }
     service.performLogin(formData.getFirst("identifierType"), formData.getFirst("identifierValue"), formData.getFirst("userID"), serviceCard);
+    return ResponseEntity.noContent().build();
   }
 
-  @GetMapping("/{typeCode}/{typeValue}")
-  @PreAuthorize("#oauth2.hasScope('SOAM_LOGIN')")
-  @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK"), @ApiResponse(responseCode = "404", description = "NOT FOUND.")})
-  public SoamLoginEntity getSoamLoginEntity(@PathVariable String typeCode, @PathVariable String typeValue) {
-    return service.getSoamLoginEntity(typeCode, typeValue);
+  public ResponseEntity<SoamLoginEntity> getSoamLoginEntity(@PathVariable String typeCode, @PathVariable String typeValue) {
+    return ResponseEntity.ok(service.getSoamLoginEntity(typeCode, typeValue));
   }
 
-  @GetMapping("/health")
-  @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK")})
-  public String health() {
-    return "OK";
+  public ResponseEntity<String> health() {
+    return ResponseEntity.ok("OK");
   }
 }

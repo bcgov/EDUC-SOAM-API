@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Soam API controller
- * <b> DO NOT IMPLEMENT AN INTERFACE </b>
  *
  * @author Marco Villeneuve
  */

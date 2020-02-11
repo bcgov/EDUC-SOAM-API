@@ -20,7 +20,8 @@ public class SoamServicesCard {
   String streetAddress;
   String city;
   String province;  
-  String country; 
+  String country;
+  String identityAssuranceLevel; 
   String postalCode;   
   String createUser;
   Date createDate;

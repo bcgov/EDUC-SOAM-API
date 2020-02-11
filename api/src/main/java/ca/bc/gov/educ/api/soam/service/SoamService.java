@@ -205,6 +205,7 @@ public class SoamService {
         	serviceCard.setGivenName(serviceCardEntity.getGivenName());
         	serviceCard.setGivenNames(serviceCardEntity.getGivenNames());
         	serviceCard.setPostalCode(serviceCardEntity.getPostalCode());
+        	serviceCard.setIdentityAssuranceLevel(serviceCardEntity.getIdentityAssuranceLevel());
         	serviceCard.setProvince(serviceCardEntity.getProvince());
         	serviceCard.setStreetAddress(serviceCardEntity.getStreetAddress());
         	serviceCard.setSurname(serviceCardEntity.getSurname());

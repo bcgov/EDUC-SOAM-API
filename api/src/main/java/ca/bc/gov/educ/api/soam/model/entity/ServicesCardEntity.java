@@ -18,6 +18,7 @@ public class ServicesCardEntity {
   String gender;
   String email;
   String streetAddress;
+  String identityAssuranceLevel;
   String city;
   String province;  
   String country; 

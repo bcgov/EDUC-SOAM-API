@@ -196,6 +196,7 @@ public class SoamService {
     	if(serviceCardEntity != null) {
     		SoamServicesCard serviceCard = new SoamServicesCard();
     		serviceCard.setServicesCardInfoID(serviceCardEntity.getServicesCardInfoID());
+    		serviceCard.setDigitalIdentityID(digitalIdentifierID);
         	serviceCard.setBirthDate(serviceCardEntity.getBirthDate());
         	serviceCard.setCity(serviceCardEntity.getCity());
         	serviceCard.setCountry(serviceCardEntity.getCountry());

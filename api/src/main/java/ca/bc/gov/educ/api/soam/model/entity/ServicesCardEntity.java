@@ -9,6 +9,7 @@ import lombok.Data;
 @Data
 public class ServicesCardEntity {
   UUID servicesCardInfoID;
+  UUID digitalIdentityID;
   String did;
   String userDisplayName;
   String givenName;

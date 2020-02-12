@@ -57,7 +57,7 @@ public class SoamService {
 		    	DigitalIDEntity entity = createDigitalIdentity(identifierType, identifierValue, userID);
 				restTemplate.postForEntity(props.getDigitalIdentifierApiURL(), entity, DigitalIDEntity.class);
 				if(servicesCard != null) {
-					saveOrUpdateBCSC(servicesCard, restTemplate);
+					saveOrUpdateBCSC(servicesCard, restTemplate, entity.getDigitalID());
 				}
 				return;
 		    }else {
@@ -72,18 +72,21 @@ public class SoamService {
 			digitalIDEntity.setUpdateDate(null);
 			restTemplate.put(props.getDigitalIdentifierApiURL(), digitalIDEntity, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
 			if(servicesCard != null) {
-				saveOrUpdateBCSC(servicesCard, restTemplate);
+				saveOrUpdateBCSC(servicesCard, restTemplate, digitalIDEntity.getDigitalID());
 			}
 		} catch (final HttpClientErrorException e) {
 			throw new SoamRuntimeException(getErrorMessageString(e.getStatusCode(), e.getResponseBodyAsString()));
 		}
     }
     
-    public void saveOrUpdateBCSC(ServicesCardEntity servicesCard, RestTemplate restTemplate) {
+    public void saveOrUpdateBCSC(ServicesCardEntity servicesCard, RestTemplate restTemplate, UUID digitalIdentityID) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
 		ResponseEntity<ServicesCardEntity> response;
+		
+		servicesCard.setDigitalIdentityID(digitalIdentityID);
+		
 		try {
 			//This is the initial call to determine if we have this digital identity
 			response = restTemplate.exchange(props.getServicesCardApiURL() + "?did=" + servicesCard.getDid().toUpperCase(), HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), ServicesCardEntity.class);
@@ -137,7 +140,7 @@ public class SoamService {
 			if(identifierType.equals("BCSC")) {
 				ResponseEntity<ServicesCardEntity> servicesCardResponse;
 				try {
-					//This is the initial call to determine if we have this digital identity
+					//This is the initial call to determine if we have this service card
 					servicesCardResponse = restTemplate.exchange(props.getServicesCardApiURL() + "?did=" + identifierValue.toUpperCase(), HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), ServicesCardEntity.class);
 					serviceCardEntity = servicesCardResponse.getBody();
 				} catch (final HttpClientErrorException e) {

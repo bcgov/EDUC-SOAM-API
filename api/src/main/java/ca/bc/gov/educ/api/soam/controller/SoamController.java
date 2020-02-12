@@ -39,6 +39,7 @@ public class SoamController implements SoamEndpoint {
       serviceCard.setDid(formData.getFirst("did"));
       serviceCard.setEmail(formData.getFirst("email"));
       serviceCard.setGender(formData.getFirst("gender"));
+      serviceCard.setIdentityAssuranceLevel(formData.getFirst("identityAssuranceLevel"));
       serviceCard.setGivenName(formData.getFirst("givenName"));
       serviceCard.setGivenNames(formData.getFirst("givenNames"));
       serviceCard.setPostalCode(formData.getFirst("postalCode"));

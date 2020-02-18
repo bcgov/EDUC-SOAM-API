@@ -55,9 +55,9 @@ public class SoamService {
 		    if(e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
 		    	//Digital Identity does not exist, let's create it
 		    	DigitalIDEntity entity = createDigitalIdentity(identifierType, identifierValue, userID);
-				restTemplate.postForEntity(props.getDigitalIdentifierApiURL(), entity, DigitalIDEntity.class);
+		    	ResponseEntity<DigitalIDEntity> responseEntity = restTemplate.postForEntity(props.getDigitalIdentifierApiURL(), entity, DigitalIDEntity.class);
 				if(servicesCard != null) {
-					saveOrUpdateBCSC(servicesCard, restTemplate, entity.getDigitalID());
+					saveOrUpdateBCSC(servicesCard, restTemplate, responseEntity.getBody().getDigitalID());
 				}
 				return;
 		    }else {

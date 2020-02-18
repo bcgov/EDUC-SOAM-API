@@ -50,11 +50,11 @@ public class SoamService {
 		ResponseEntity<DigitalIDEntity> response;
 		try {
 			//This is the initial call to determine if we have this digital identity
-			response = restTemplate.exchange(props.getDigitalIdentifierApiURL() + "?identitytype=" + identifierType + "&identityvalue=" + identifierValue, HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
+			response = restTemplate.exchange(props.getDigitalIdentifierApiURL() + "?identitytype=" + identifierType + "&identityvalue=" + identifierValue.toUpperCase(), HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
 		} catch (final HttpClientErrorException e) {
 		    if(e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
 		    	//Digital Identity does not exist, let's create it
-		    	DigitalIDEntity entity = createDigitalIdentity(identifierType, identifierValue, userID);
+		    	DigitalIDEntity entity = createDigitalIdentity(identifierType, identifierValue.toUpperCase(), userID);
 		    	ResponseEntity<DigitalIDEntity> responseEntity = restTemplate.postForEntity(props.getDigitalIdentifierApiURL(), entity, DigitalIDEntity.class);
 				if(servicesCard != null) {
 					saveOrUpdateBCSC(servicesCard, restTemplate, responseEntity.getBody().getDigitalID());
@@ -121,7 +121,7 @@ public class SoamService {
 		DigitalIDEntity digitalIDEntity = null;
 		try {
 			//This is the initial call to determine if we have this digital identity
-			response = restTemplate.exchange(props.getDigitalIdentifierApiURL() + "?identitytype=" + identifierType + "&identityvalue=" + identifierValue, HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
+			response = restTemplate.exchange(props.getDigitalIdentifierApiURL() + "?identitytype=" + identifierType + "&identityvalue=" + identifierValue.toUpperCase(), HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
 			digitalIDEntity = response.getBody();
 			if(digitalIDEntity == null) {
 				throw new SoamRuntimeException("Digital ID was null - unexpected error");
@@ -129,7 +129,7 @@ public class SoamService {
 		} catch (final HttpClientErrorException e) {
 		    if(e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
 		    	//This should not occur
-		    	throw new SoamRuntimeException("Digital identity was not found. IdentifierType: " + identifierType + " IdentifierValue: " + identifierValue);
+		    	throw new SoamRuntimeException("Digital identity was not found. IdentifierType: " + identifierType + " IdentifierValue: " + identifierValue.toUpperCase());
 		    }else {
 		    	throw new SoamRuntimeException(getErrorMessageString(e.getStatusCode(), e.getResponseBodyAsString()));
 		    }

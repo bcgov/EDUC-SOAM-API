@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
 import java.util.UUID;
 
 @Data
@@ -17,10 +16,10 @@ public class DigitalIDEntity {
   private String studentID;
   private String identityTypeCode;
   private String identityValue;
-  private Date lastAccessDate;
+  private String lastAccessDate;
   private String lastAccessChannelCode;
   private String createUser;
-  private Date createDate;
+  private String createDate;
   private String updateUser;
-  private Date updateDate;
+  private String updateDate;
 }

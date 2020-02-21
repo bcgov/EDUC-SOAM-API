@@ -16,7 +16,8 @@ import lombok.Setter;
 @Setter
 public class ApplicationProperties {
 
-	@Value("${client.id}")
+  public static final String BCSC = "BCSC";
+  @Value("${client.id}")
 	private String clientID;
 	@Value("${client.secret}")
 	private String clientSecret;

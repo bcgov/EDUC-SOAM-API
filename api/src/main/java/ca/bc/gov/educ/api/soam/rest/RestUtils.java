@@ -1,8 +1,7 @@
 package ca.bc.gov.educ.api.soam.rest;
 
-import java.util.List;
-
-import org.jboss.logging.Logger;
+import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.client.DefaultOAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
@@ -10,7 +9,7 @@ import org.springframework.security.oauth2.client.token.grant.client.ClientCrede
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
+import java.util.List;
 
 /**
  * This class is used for REST calls
@@ -18,10 +17,8 @@ import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
  * @author Marco Villeneuve
  */
 @Component
+@Slf4j
 public class RestUtils {
-
-
-  private static Logger logger = Logger.getLogger(RestUtils.class);
 
   private final ApplicationProperties props;
 
@@ -34,7 +31,7 @@ public class RestUtils {
   }
 
   public RestTemplate getRestTemplate(List<String> scopes) {
-    logger.debug("Calling get token method");
+    log.debug("Calling get token method");
     ClientCredentialsResourceDetails resourceDetails = new ClientCredentialsResourceDetails();
     resourceDetails.setClientId(props.getClientID());
     resourceDetails.setClientSecret(props.getClientSecret());

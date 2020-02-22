@@ -1,42 +1,37 @@
 package ca.bc.gov.educ.api.soam.codetable;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.jboss.logging.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
 import ca.bc.gov.educ.api.soam.model.entity.AccessChannelCodeEntity;
 import ca.bc.gov.educ.api.soam.model.entity.IdentityTypeCodeEntity;
 import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
 import ca.bc.gov.educ.api.soam.rest.RestUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.*;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
+@Slf4j
 public class CodeTableUtils {
-
-  private static Logger logger = Logger.getLogger(CodeTableUtils.class);
 
   private final RestUtils restUtils;
 
   private final ApplicationProperties props;
 
-  public CodeTableUtils(@Autowired final RestUtils restUtils, @Autowired final ApplicationProperties props) {
+  @Autowired
+  public CodeTableUtils(final RestUtils restUtils, final ApplicationProperties props) {
     this.restUtils = restUtils;
     this.props = props;
   }
 
   @Cacheable("accessChannelCodes")
   public Map<String, AccessChannelCodeEntity> getAllAccessChannelCodes() {
-    logger.info("Fetching all access channel codes");
+    log.info("Fetching all access channel codes");
     RestTemplate restTemplate = restUtils.getRestTemplate();
     HttpHeaders headers = new HttpHeaders();
     headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -58,7 +53,7 @@ public class CodeTableUtils {
 
   @Cacheable("identityTypeCodes")
   public Map<String, IdentityTypeCodeEntity> getAllIdentifierTypeCodes() {
-    logger.info("Fetching all identity type codes");
+    log.info("Fetching all identity type codes");
     RestTemplate restTemplate = restUtils.getRestTemplate();
     HttpHeaders headers = new HttpHeaders();
     headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));

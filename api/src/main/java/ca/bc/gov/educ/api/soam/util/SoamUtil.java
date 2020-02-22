@@ -36,31 +36,16 @@ public class SoamUtil {
   public SoamLoginEntity createSoamLoginEntity(StudentEntity student, UUID digitalIdentifierID, ServicesCardEntity serviceCardEntity) {
     SoamLoginEntity entity = new SoamLoginEntity();
 
-    if (student != null) {
-      SoamStudent soamStudent = new SoamStudent();
+    setStudentEntity(student, entity);
 
-      soamStudent.setCreateDate(student.getCreateDate());
-      soamStudent.setCreateUser(student.getCreateUser());
-      soamStudent.setDataSourceCode(student.getDataSourceCode());
-      soamStudent.setDeceasedDate(student.getDeceasedDate());
-      soamStudent.setDob(student.getDob());
-      soamStudent.setEmail(student.getEmail());
-      soamStudent.setGenderCode(student.getGenderCode());
-      soamStudent.setLegalFirstName(student.getLegalFirstName());
-      soamStudent.setLegalLastName(student.getLegalLastName());
-      soamStudent.setLegalMiddleNames(student.getLegalMiddleNames());
-      soamStudent.setPen(student.getPen());
-      soamStudent.setSexCode(student.getSexCode());
-      soamStudent.setStudentID(student.getStudentID());
-      soamStudent.setUpdateDate(student.getUpdateDate());
-      soamStudent.setUpdateUser(student.getUpdateUser());
-      soamStudent.setUsualFirstName(student.getUsualFirstName());
-      soamStudent.setUsualLastName(student.getUsualLastName());
-      soamStudent.setUsualMiddleNames(student.getUsualMiddleNames());
+    setServicesCard(digitalIdentifierID, serviceCardEntity, entity);
 
-      entity.setStudent(soamStudent);
-    }
+    entity.setDigitalIdentityID(digitalIdentifierID);
 
+    return entity;
+  }
+
+  private void setServicesCard(UUID digitalIdentifierID, ServicesCardEntity serviceCardEntity, SoamLoginEntity entity) {
     if (serviceCardEntity != null) {
       SoamServicesCard serviceCard = new SoamServicesCard();
       serviceCard.setServicesCardInfoID(serviceCardEntity.getServicesCardInfoID());
@@ -86,9 +71,32 @@ public class SoamUtil {
 
       entity.setServiceCard(serviceCard);
     }
+  }
 
-    entity.setDigitalIdentityID(digitalIdentifierID);
+  private void setStudentEntity(StudentEntity student, SoamLoginEntity entity) {
+    if (student != null) {
+      SoamStudent soamStudent = new SoamStudent();
 
-    return entity;
+      soamStudent.setCreateDate(student.getCreateDate());
+      soamStudent.setCreateUser(student.getCreateUser());
+      soamStudent.setDataSourceCode(student.getDataSourceCode());
+      soamStudent.setDeceasedDate(student.getDeceasedDate());
+      soamStudent.setDob(student.getDob());
+      soamStudent.setEmail(student.getEmail());
+      soamStudent.setGenderCode(student.getGenderCode());
+      soamStudent.setLegalFirstName(student.getLegalFirstName());
+      soamStudent.setLegalLastName(student.getLegalLastName());
+      soamStudent.setLegalMiddleNames(student.getLegalMiddleNames());
+      soamStudent.setPen(student.getPen());
+      soamStudent.setSexCode(student.getSexCode());
+      soamStudent.setStudentID(student.getStudentID());
+      soamStudent.setUpdateDate(student.getUpdateDate());
+      soamStudent.setUpdateUser(student.getUpdateUser());
+      soamStudent.setUsualFirstName(student.getUsualFirstName());
+      soamStudent.setUsualLastName(student.getUsualLastName());
+      soamStudent.setUsualMiddleNames(student.getUsualMiddleNames());
+
+      entity.setStudent(soamStudent);
+    }
   }
 }

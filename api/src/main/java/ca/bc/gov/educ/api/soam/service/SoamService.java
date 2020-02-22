@@ -3,8 +3,6 @@ package ca.bc.gov.educ.api.soam.service;
 import ca.bc.gov.educ.api.soam.codetable.CodeTableUtils;
 import ca.bc.gov.educ.api.soam.exception.InvalidParameterException;
 import ca.bc.gov.educ.api.soam.exception.SoamRuntimeException;
-import ca.bc.gov.educ.api.soam.model.SoamServicesCard;
-import ca.bc.gov.educ.api.soam.model.SoamStudent;
 import ca.bc.gov.educ.api.soam.model.entity.DigitalIDEntity;
 import ca.bc.gov.educ.api.soam.model.entity.ServicesCardEntity;
 import ca.bc.gov.educ.api.soam.model.entity.SoamLoginEntity;
@@ -133,9 +131,9 @@ public class SoamService {
       if (digitalIDEntity.getStudentID() != null) {
         ResponseEntity<StudentEntity> studentResponse;
         studentResponse = restTemplate.exchange(props.getStudentApiURL() + "/" + digitalIDEntity.getStudentID(), HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), StudentEntity.class);
-        return createSoamLoginEntity(studentResponse.getBody(), digitalIDEntity.getDigitalID(), serviceCardEntity);
+        return soamUtil.createSoamLoginEntity(studentResponse.getBody(), digitalIDEntity.getDigitalID(), serviceCardEntity);
       } else {
-        return createSoamLoginEntity(null, digitalIDEntity.getDigitalID(), serviceCardEntity);
+        return soamUtil.createSoamLoginEntity(null, digitalIDEntity.getDigitalID(), serviceCardEntity);
       }
     } catch (final HttpClientErrorException e) {
       if (e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
@@ -184,72 +182,9 @@ public class SoamService {
     return "Unexpected HTTP return code: " + status + " error message: " + body;
   }
 
-  private SoamLoginEntity createSoamLoginEntity(StudentEntity student, UUID digitalIdentifierID, ServicesCardEntity serviceCardEntity) {
-    SoamLoginEntity entity = new SoamLoginEntity();
-
-    if (student != null) {
-      SoamStudent soamStudent = new SoamStudent();
-
-      soamStudent.setCreateDate(student.getCreateDate());
-      soamStudent.setCreateUser(student.getCreateUser());
-      soamStudent.setDataSourceCode(student.getDataSourceCode());
-      soamStudent.setDeceasedDate(student.getDeceasedDate());
-      soamStudent.setDob(student.getDob());
-      soamStudent.setEmail(student.getEmail());
-      soamStudent.setGenderCode(student.getGenderCode());
-      soamStudent.setLegalFirstName(student.getLegalFirstName());
-      soamStudent.setLegalLastName(student.getLegalLastName());
-      soamStudent.setLegalMiddleNames(student.getLegalMiddleNames());
-      soamStudent.setPen(student.getPen());
-      soamStudent.setSexCode(student.getSexCode());
-      soamStudent.setStudentID(student.getStudentID());
-      soamStudent.setUpdateDate(student.getUpdateDate());
-      soamStudent.setUpdateUser(student.getUpdateUser());
-      soamStudent.setUsualFirstName(student.getUsualFirstName());
-      soamStudent.setUsualLastName(student.getUsualLastName());
-      soamStudent.setUsualMiddleNames(student.getUsualMiddleNames());
-
-      entity.setStudent(soamStudent);
-    }
-
-    if (serviceCardEntity != null) {
-      SoamServicesCard serviceCard = new SoamServicesCard();
-      serviceCard.setServicesCardInfoID(serviceCardEntity.getServicesCardInfoID());
-      serviceCard.setDigitalIdentityID(digitalIdentifierID);
-      serviceCard.setBirthDate(serviceCardEntity.getBirthDate());
-      serviceCard.setCity(serviceCardEntity.getCity());
-      serviceCard.setCountry(serviceCardEntity.getCountry());
-      serviceCard.setDid(serviceCardEntity.getDid());
-      serviceCard.setEmail(serviceCardEntity.getEmail());
-      serviceCard.setGender(serviceCardEntity.getGender());
-      serviceCard.setGivenName(serviceCardEntity.getGivenName());
-      serviceCard.setGivenNames(serviceCardEntity.getGivenNames());
-      serviceCard.setPostalCode(serviceCardEntity.getPostalCode());
-      serviceCard.setIdentityAssuranceLevel(serviceCardEntity.getIdentityAssuranceLevel());
-      serviceCard.setProvince(serviceCardEntity.getProvince());
-      serviceCard.setStreetAddress(serviceCardEntity.getStreetAddress());
-      serviceCard.setSurname(serviceCardEntity.getSurname());
-      serviceCard.setUserDisplayName(serviceCardEntity.getUserDisplayName());
-      serviceCard.setUpdateDate(serviceCardEntity.getUpdateDate());
-      serviceCard.setUpdateUser(serviceCardEntity.getUpdateUser());
-      serviceCard.setCreateDate(serviceCardEntity.getCreateDate());
-      serviceCard.setCreateUser(serviceCardEntity.getCreateUser());
-
-      entity.setServiceCard(serviceCard);
-    }
-
-    entity.setDigitalIdentityID(digitalIdentifierID);
-
-    return entity;
-  }
-
-
   private void validateExtendedSearchParameters(String identifierType, String identifierValue, String userID) {
-    if (identifierType == null || !codeTableUtils.getAllIdentifierTypeCodes().containsKey(identifierType)) {
-      throw new InvalidParameterException("identifierType");
-    } else if (identifierValue == null || identifierValue.length() < 1) {
-      throw new InvalidParameterException("identifierValue");
-    } else if (userID == null || userID.length() < 1) {
+    validateSearchParameters(identifierType, identifierValue);
+    if (userID == null || userID.length() < 1) {
       throw new InvalidParameterException("userID");
     }
   }

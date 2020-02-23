@@ -112,7 +112,7 @@ public class SoamServiceTest {
     when(codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(createDummyIdentityTypeMap());
     when(restUtils.getRestTemplate()).thenReturn(restTemplate);
     when(restTemplate.exchange(props.getDigitalIdentifierApiURL() + "?identitytype=BCeId&identityvalue=12345", HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class))
-            .thenThrow(createHttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"));
+            .thenThrow(createHttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
     when(restTemplate.postForEntity(props.getDigitalIdentifierApiURL(), entity
             , DigitalIDEntity.class)).thenReturn(ResponseEntity.ok(entity));
     assertThrows(SoamRuntimeException.class, () -> service.performLogin("BCeId", "12345", "TESTMARCO", null));
@@ -129,9 +129,9 @@ public class SoamServiceTest {
     when(codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(createDummyIdentityTypeMap());
     when(restUtils.getRestTemplate()).thenReturn(restTemplate);
     when(restTemplate.exchange(props.getDigitalIdentifierApiURL() + "?identitytype=BCeId&identityvalue=12345", HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class))
-            .thenThrow(createHttpClientErrorException(HttpStatus.NOT_FOUND, "Not Found."));
+            .thenThrow(createHttpClientErrorException(HttpStatus.NOT_FOUND));
     when(restTemplate.postForEntity(props.getDigitalIdentifierApiURL(), entity
-            , DigitalIDEntity.class)).thenThrow(createHttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server error."));
+            , DigitalIDEntity.class)).thenThrow(createHttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
     assertThrows(HttpClientErrorException.class, () -> service.performLogin("BCeId", "12345", "TESTMARCO", null));
     verify(restTemplate, atLeastOnce()).exchange(props.getDigitalIdentifierApiURL() + "?identitytype=BCeId&identityvalue=12345", HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
     verify(restTemplate, atLeastOnce()).postForEntity(props.getDigitalIdentifierApiURL(), entity
@@ -152,8 +152,9 @@ public class SoamServiceTest {
             thenReturn(responseEntity);
     doNothing().when(restTemplate).put(props.getDigitalIdentifierApiURL(), updatedEntity, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
     when(restTemplate.exchange(props.getServicesCardApiURL() + "?did=" + servicesCardEntity.getDid().toUpperCase(), HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), ServicesCardEntity.class))
-            .thenThrow(createHttpClientErrorException(HttpStatus.NOT_FOUND, "Not Found."));
-    when(restTemplate.postForEntity(props.getServicesCardApiURL(), servicesCardEntity, ServicesCardEntity.class)).thenThrow(createHttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"));
+            .thenThrow(createHttpClientErrorException(HttpStatus.NOT_FOUND));
+    when(restTemplate.postForEntity(props.getServicesCardApiURL(), servicesCardEntity, ServicesCardEntity.class))
+            .thenThrow(createHttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
     assertThrows(SoamRuntimeException.class, () -> service.performLogin("BCeId", "12345", "TESTMARCO", servicesCardEntity));
     //lets verify the get method was called to  get digital id.
     verify(restTemplate, atLeastOnce()).exchange(props.getDigitalIdentifierApiURL() + "?identitytype=BCeId&identityvalue=12345", HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
@@ -183,7 +184,7 @@ public class SoamServiceTest {
     when(codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(createDummyIdentityTypeMap());
     when(restUtils.getRestTemplate()).thenReturn(restTemplate);
     when(restTemplate.exchange(props.getDigitalIdentifierApiURL() + "?identitytype=BCeId&identityvalue=12345", HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class))
-            .thenThrow(createHttpClientErrorException(HttpStatus.NOT_FOUND, "Not Found."));
+            .thenThrow(createHttpClientErrorException(HttpStatus.NOT_FOUND));
     when(restTemplate.postForEntity(props.getDigitalIdentifierApiURL(), entity
             , DigitalIDEntity.class)).thenReturn(ResponseEntity.ok(entity));
     service.performLogin("BCeId", "12345", "TESTMARCO", null);
@@ -243,7 +244,7 @@ public class SoamServiceTest {
             thenReturn(responseEntity);
     doNothing().when(restTemplate).put(props.getDigitalIdentifierApiURL(), updatedEntity, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
     when(restTemplate.exchange(props.getServicesCardApiURL() + "?did=" + servicesCardEntity.getDid().toUpperCase(), HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), ServicesCardEntity.class))
-            .thenThrow(createHttpClientErrorException(HttpStatus.NOT_FOUND, "Not Found."));
+            .thenThrow(createHttpClientErrorException(HttpStatus.NOT_FOUND));
     when(restTemplate.postForEntity(props.getServicesCardApiURL(), servicesCardEntity, ServicesCardEntity.class)).thenReturn(ResponseEntity.ok().build());
     service.performLogin("BCeId", "12345", "TESTMARCO", servicesCardEntity);
 
@@ -317,7 +318,7 @@ public class SoamServiceTest {
             thenReturn(responseEntity);
     doNothing().when(restTemplate).put(props.getDigitalIdentifierApiURL(), updatedEntity, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
     when(restTemplate.exchange(props.getServicesCardApiURL() + "?did=" + servicesCardEntity.getDid().toUpperCase(), HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), ServicesCardEntity.class))
-            .thenThrow(createHttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error."));
+            .thenThrow(createHttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
     assertThrows(SoamRuntimeException.class, () -> service.performLogin("BCeId", "12345", "TESTMARCO", servicesCardEntity));
 
     //lets verify the get method was called to  get digital id.
@@ -354,8 +355,8 @@ public class SoamServiceTest {
             thenReturn(responseEntity);
     doNothing().when(restTemplate).put(props.getDigitalIdentifierApiURL(), updatedEntity, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
     when(restTemplate.exchange(props.getServicesCardApiURL() + "?did=" + servicesCardEntity.getDid().toUpperCase(), HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), ServicesCardEntity.class))
-            .thenThrow(createHttpClientErrorException(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.toString()));
-    when(restTemplate.postForEntity(props.getServicesCardApiURL(), servicesCardEntity, ServicesCardEntity.class)).thenThrow(createHttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.toString()));
+            .thenThrow(createHttpClientErrorException(HttpStatus.NOT_FOUND));
+    when(restTemplate.postForEntity(props.getServicesCardApiURL(), servicesCardEntity, ServicesCardEntity.class)).thenThrow(createHttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
     assertThrows(SoamRuntimeException.class, () -> service.performLogin("BCeId", "12345", "TESTMARCO", servicesCardEntity));
 
     //lets verify the get method was called to  get digital id.
@@ -393,7 +394,7 @@ public class SoamServiceTest {
     doNothing().when(restTemplate).put(props.getDigitalIdentifierApiURL(), updatedEntity, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
     when(restTemplate.exchange(props.getServicesCardApiURL() + "?did=" + servicesCardEntity.getDid().toUpperCase(), HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), ServicesCardEntity.class))
             .thenReturn(ResponseEntity.ok(servicesCardEntity));
-    doThrow(createHttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.toString())).when(restTemplate).put(props.getServicesCardApiURL(), servicesCardEntity, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), ServicesCardEntity.class);
+    doThrow(createHttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR)).when(restTemplate).put(props.getServicesCardApiURL(), servicesCardEntity, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), ServicesCardEntity.class);
     assertThrows(SoamRuntimeException.class, () -> service.performLogin("BCeId", "12345", "TESTMARCO", servicesCardEntity));
 
     //lets verify the get method was called to  get digital id.
@@ -428,11 +429,11 @@ public class SoamServiceTest {
     when(soamUtil.getUpdatedDigitalId(Objects.requireNonNull(responseEntity.getBody()))).thenReturn(updatedEntity);
     when(codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(createDummyIdentityTypeMap());
     when(restTemplate.exchange(props.getDigitalIdentifierApiURL() + "?identitytype=BCeId&identityvalue=12345", HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class)).
-            thenThrow(createHttpClientErrorException(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.toString()));
+            thenThrow(createHttpClientErrorException(HttpStatus.NOT_FOUND));
     when(restTemplate.postForEntity(props.getDigitalIdentifierApiURL(), entity
             , DigitalIDEntity.class)).thenReturn(ResponseEntity.ok(entity));
     when(restTemplate.exchange(props.getServicesCardApiURL() + "?did=" + servicesCardEntity.getDid().toUpperCase(), HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), ServicesCardEntity.class)).
-            thenThrow(createHttpClientErrorException(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.toString()));
+            thenThrow(createHttpClientErrorException(HttpStatus.NOT_FOUND));
     when(restTemplate.postForEntity(props.getServicesCardApiURL(), servicesCardEntity, ServicesCardEntity.class)).thenReturn(ResponseEntity.ok().build());
     service.performLogin("BCeId", "12345", "TESTMARCO", servicesCardEntity);
 
@@ -462,7 +463,7 @@ public class SoamServiceTest {
     when(restUtils.getRestTemplate()).thenReturn(restTemplate);
     when(codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(createDummyIdentityTypeMap());
     when(restTemplate.exchange(props.getDigitalIdentifierApiURL() + "?identitytype=BCeId&identityvalue=12345", HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class)).
-            thenThrow(createHttpClientErrorException(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.toString()));
+            thenThrow(createHttpClientErrorException(HttpStatus.NOT_FOUND));
 
     assertThrows(SoamRuntimeException.class, () -> service.getSoamLoginEntity("BCeId", "12345"));
 
@@ -490,7 +491,7 @@ public class SoamServiceTest {
     when(restUtils.getRestTemplate()).thenReturn(restTemplate);
     when(codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(createDummyIdentityTypeMap());
     when(restTemplate.exchange(props.getDigitalIdentifierApiURL() + "?identitytype=BCeId&identityvalue=12345", HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class)).
-            thenThrow(createHttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.toString()));
+            thenThrow(createHttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
 
     assertThrows(SoamRuntimeException.class, () -> service.getSoamLoginEntity("BCeId", "12345"));
 
@@ -569,7 +570,7 @@ public class SoamServiceTest {
     when(codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(createDummyIdentityTypeMap());
     when(restTemplate.exchange(props.getDigitalIdentifierApiURL() + "?identitytype=BCeId&identityvalue=12345", HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class)).
             thenReturn(responseEntity);
-    when(restTemplate.exchange(props.getStudentApiURL() + "/" + studentId.toString(), HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), StudentEntity.class)).thenThrow(createHttpClientErrorException(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.toString()));
+    when(restTemplate.exchange(props.getStudentApiURL() + "/" + studentId.toString(), HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), StudentEntity.class)).thenThrow(createHttpClientErrorException(HttpStatus.NOT_FOUND));
     assertThrows(SoamRuntimeException.class, () -> service.getSoamLoginEntity("BCeId", "12345"));
 
     //lets verify the get method was called to  get digital id.
@@ -594,7 +595,7 @@ public class SoamServiceTest {
     when(codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(createDummyIdentityTypeMap());
     when(restTemplate.exchange(props.getDigitalIdentifierApiURL() + "?identitytype=BCeId&identityvalue=12345", HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class)).
             thenReturn(responseEntity);
-    when(restTemplate.exchange(props.getStudentApiURL() + "/" + studentId.toString(), HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), StudentEntity.class)).thenThrow(createHttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.toString()));
+    when(restTemplate.exchange(props.getStudentApiURL() + "/" + studentId.toString(), HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), StudentEntity.class)).thenThrow(createHttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
     assertThrows(SoamRuntimeException.class, () -> service.getSoamLoginEntity("BCeId", "12345"));
 
     //lets verify the get method was called to  get digital id.
@@ -663,7 +664,7 @@ public class SoamServiceTest {
             thenReturn(responseEntity);
     when(restTemplate.exchange(props.getStudentApiURL() + "/" + studentId.toString(), HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), StudentEntity.class)).thenReturn(studentResponseEntity);
     when(restTemplate.exchange(props.getServicesCardApiURL() + "?did=" + "12345", HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), ServicesCardEntity.class))
-            .thenThrow(createHttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.toString()));
+            .thenThrow(createHttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
    assertThrows(SoamRuntimeException.class, ()-> service.getSoamLoginEntity("BCSC", "12345"));
 
     //lets verify the get method was called to  get digital id.
@@ -708,8 +709,8 @@ public class SoamServiceTest {
   }
 
 
-  private HttpClientErrorException createHttpClientErrorException(HttpStatus status, String statusText) {
-    return new HttpClientErrorException(status, statusText);
+  private HttpClientErrorException createHttpClientErrorException(HttpStatus status) {
+    return new HttpClientErrorException(status, status.toString());
   }
 
   private Map<String, IdentityTypeCodeEntity> createDummyIdentityTypeMap() {

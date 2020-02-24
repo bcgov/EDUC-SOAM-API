@@ -1,1 +1,4 @@
 /target/
+/soam-api.iml
+*.project
+*.classpath

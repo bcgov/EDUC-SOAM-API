@@ -5,8 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,6 +14,6 @@ public class AccessChannelCodeEntity {
   String label;
   String description;
   Integer displayOrder;
-  Date effectiveDate;
-  Date expiryDate;
+  String effectiveDate;
+  String expiryDate;
 }

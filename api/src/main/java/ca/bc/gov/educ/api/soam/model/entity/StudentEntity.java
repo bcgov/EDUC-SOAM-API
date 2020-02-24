@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
 import java.util.UUID;
 
 @Data
@@ -18,7 +17,7 @@ public class StudentEntity {
   String legalFirstName;
   String legalMiddleNames;
   String legalLastName;
-  Date dob;
+  String dob;
   char sexCode;
   char genderCode;
   String dataSourceCode;
@@ -26,9 +25,9 @@ public class StudentEntity {
   String usualMiddleNames;
   String usualLastName;
   String email;
-  Date deceasedDate;
-  Date createDate;
-  Date updateDate;
+  String deceasedDate;
+  String createDate;
+  String updateDate;
   String createUser;
   String updateUser;
 }

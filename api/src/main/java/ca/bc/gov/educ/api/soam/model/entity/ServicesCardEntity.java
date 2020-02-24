@@ -1,9 +1,8 @@
 package ca.bc.gov.educ.api.soam.model.entity;
 
-import java.util.Date;
-import java.util.UUID;
-
 import lombok.Data;
+
+import java.util.UUID;
 
 
 @Data
@@ -25,7 +24,7 @@ public class ServicesCardEntity {
   String country; 
   String postalCode;   
   String createUser;
-  Date createDate;
+  String createDate;
   String updateUser;
-  Date updateDate;
+  String updateDate;
 }

@@ -1,9 +1,8 @@
 package ca.bc.gov.educ.api.soam.model;
 
-import java.util.Date;
-import java.util.UUID;
-
 import lombok.Data;
+
+import java.util.UUID;
 
 
 @Data
@@ -25,7 +24,7 @@ public class SoamServicesCard {
   String identityAssuranceLevel; 
   String postalCode;   
   String createUser;
-  Date createDate;
+  String createDate;
   String updateUser;
-  Date updateDate;
+  String updateDate;
 }

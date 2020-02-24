@@ -305,6 +305,45 @@ public class SoamServiceTest {
     verify(restTemplate, atLeastOnce()).put(props.getServicesCardApiURL(), servicesCardEntity, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), ServicesCardEntity.class);
   }
 
+
+  @Test
+  public void testPerformLogin_GivenDigitalIdExistAndServiceCardGetCallReturnsNullBody_ShouldThrowAssertionError() {
+    DigitalIDEntity entity = createDigitalIdentity();
+    ResponseEntity<DigitalIDEntity> responseEntity = createResponseEntity(entity);
+    DigitalIDEntity updatedEntity = responseEntity.getBody();
+    ServicesCardEntity servicesCardEntity = createServiceCardEntity();
+    when(restUtils.getRestTemplate()).thenReturn(restTemplate);
+    when(soamUtil.getUpdatedDigitalId(Objects.requireNonNull(responseEntity.getBody()))).thenReturn(updatedEntity);
+    when(codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(createDummyIdentityTypeMap());
+    when(restTemplate.exchange(props.getDigitalIdentifierApiURL() + "?identitytype=BCeId&identityvalue=12345", HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class)).
+            thenReturn(responseEntity);
+    doNothing().when(restTemplate).put(props.getDigitalIdentifierApiURL(), updatedEntity, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
+    when(restTemplate.exchange(props.getServicesCardApiURL() + "?did=" + servicesCardEntity.getDid().toUpperCase(), HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), ServicesCardEntity.class))
+            .thenReturn(ResponseEntity.ok().build());
+    doNothing().when(restTemplate).put(props.getServicesCardApiURL(), servicesCardEntity, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), ServicesCardEntity.class);
+    assertThrows(AssertionError.class, ()-> service.performLogin("BCeId", "12345", "TESTMARCO", servicesCardEntity));
+
+    //lets verify the get method was called to  get digital id.
+    verify(restTemplate, atLeastOnce()).exchange(props.getDigitalIdentifierApiURL() + "?identitytype=BCeId&identityvalue=12345", HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
+
+
+    //lets verify the post method was never called to create a new digital id record.
+    verify(restTemplate, never()).postForEntity(props.getDigitalIdentifierApiURL(), entity
+            , DigitalIDEntity.class);
+
+    //lets verify digital id api update was called.
+    verify(restTemplate, atLeastOnce()).put(props.getDigitalIdentifierApiURL(), updatedEntity, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
+
+    //lets verify Service card api get was called.
+    verify(restTemplate, atLeastOnce()).exchange(props.getServicesCardApiURL() + "?did=" + servicesCardEntity.getDid().toUpperCase(), HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), ServicesCardEntity.class);
+
+    //lets verify service card api create was never called.
+    verify(restTemplate, never()).postForEntity(props.getServicesCardApiURL(), servicesCardEntity, ServicesCardEntity.class);
+
+    //lets verify service card api update was called.
+    verify(restTemplate, never()).put(props.getServicesCardApiURL(), servicesCardEntity, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), ServicesCardEntity.class);
+  }
+
   @Test
   public void testPerformLogin_GivenDigitalIdExistAndServiceCardGetCallFailed_ShouldThrowSoamRuntimeException() {
     DigitalIDEntity entity = createDigitalIdentity();

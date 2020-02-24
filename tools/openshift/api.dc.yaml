@@ -60,7 +60,7 @@ objects:
                 - containerPort: ${{CONTAINER_PORT}}
                   protocol: TCP
               resources: {}
-            volumes:
+          volumes:
               - name: tls-certs
                 secret:
                   secretName: soam-api-cert

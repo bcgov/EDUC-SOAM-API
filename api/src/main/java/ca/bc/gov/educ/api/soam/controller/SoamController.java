@@ -48,7 +48,7 @@ public class SoamController implements SoamEndpoint {
       serviceCard.setSurname(formData.getFirst("surname"));
       serviceCard.setUserDisplayName(formData.getFirst("userDisplayName"));
     }
-    service.performLogin(formData.getFirst("identifierType"), formData.getFirst("identifierValue"), formData.getFirst("userID"), serviceCard);
+    service.performLogin(formData.getFirst("identifierType"), formData.getFirst("identifierValue"), serviceCard);
     return ResponseEntity.noContent().build();
   }
 

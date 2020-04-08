@@ -14,14 +14,14 @@ import java.util.UUID;
 @Component
 public class SoamUtil {
 
-  public DigitalIDEntity createDigitalIdentity(String identityTypeCode, String identityValue, String userID) {
+  public DigitalIDEntity createDigitalIdentity(String identityTypeCode, String identityValue) {
     DigitalIDEntity entity = new DigitalIDEntity();
     entity.setIdentityTypeCode(identityTypeCode);
     entity.setIdentityValue(identityValue);
     entity.setLastAccessChannelCode("OSPR");
     entity.setLastAccessDate(LocalDateTime.now().toString());
-    entity.setCreateUser(userID);
-    entity.setUpdateUser(userID);
+    entity.setCreateUser("SOAM");
+    entity.setUpdateUser("SOAM");
     return entity;
   }
 

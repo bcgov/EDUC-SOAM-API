@@ -70,44 +70,32 @@ public class SoamServiceTest {
 
   @Test
   public void testPerformLogin_GivenIdentifierTypeNull_ThrowsInvalidParameterException() {
-    assertThrows(InvalidParameterException.class, () -> service.performLogin(null, "12345", "TESTMARCO", null));
+    assertThrows(InvalidParameterException.class, () -> service.performLogin(null, "12345", null));
   }
 
   @Test
   public void testPerformLogin_GivenIdentifierValueNull_ThrowsInvalidParameterException() {
     when(codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(createDummyIdentityTypeMap());
-    assertThrows(InvalidParameterException.class, () -> service.performLogin("BCeId", null, "TESTMARCO", null));
+    assertThrows(InvalidParameterException.class, () -> service.performLogin("BCeId", null, null));
   }
 
   @Test
   public void testPerformLogin_GivenIdentifierValueBlank_ThrowsInvalidParameterException() {
     when(codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(createDummyIdentityTypeMap());
-    assertThrows(InvalidParameterException.class, () -> service.performLogin("BCeId", "", "TESTMARCO", null));
-  }
-
-  @Test
-  public void testPerformLogin_GivenUserIDNull_ThrowsInvalidParameterException() {
-    when(codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(createDummyIdentityTypeMap());
-    assertThrows(InvalidParameterException.class, () -> service.performLogin("BCeId", "12345", null, null));
-  }
-
-  @Test
-  public void testPerformLogin_GivenUserIDBlank_ThrowsInvalidParameterException() {
-    when(codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(createDummyIdentityTypeMap());
-    assertThrows(InvalidParameterException.class, () -> service.performLogin("BCeId", "12345", "", null));
+    assertThrows(InvalidParameterException.class, () -> service.performLogin("BCeId", "", null));
   }
 
   @Test
   public void testPerformLogin_GivenIdentifierTypeNotInCodeTable_ThrowsInvalidParameterException() {
     when(codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(createBlankDummyIdentityTypeMap());
-    assertThrows(InvalidParameterException.class, () -> service.performLogin("BCS", "12345", "TESTMARCO", null));
+    assertThrows(InvalidParameterException.class, () -> service.performLogin("BCS", "12345", null));
   }
 
   @Test
   public void testPerformLogin_GivenDigitalIdGetCallFailed_ShouldThrowSoamRuntimeException() {
 
     DigitalIDEntity entity = createDigitalIdentity();
-    when(soamUtil.createDigitalIdentity("BCeId", "12345", "TESTMARCO")).thenReturn(entity);
+    when(soamUtil.createDigitalIdentity("BCeId", "12345")).thenReturn(entity);
     headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     when(codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(createDummyIdentityTypeMap());
     when(restUtils.getRestTemplate()).thenReturn(restTemplate);
@@ -115,7 +103,7 @@ public class SoamServiceTest {
             .thenThrow(createHttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
     when(restTemplate.postForEntity(props.getDigitalIdentifierApiURL(), entity
             , DigitalIDEntity.class)).thenReturn(ResponseEntity.ok(entity));
-    assertThrows(SoamRuntimeException.class, () -> service.performLogin("BCeId", "12345", "TESTMARCO", null));
+    assertThrows(SoamRuntimeException.class, () -> service.performLogin("BCeId", "12345", null));
     verify(restTemplate, never()).postForEntity(props.getDigitalIdentifierApiURL(), entity
             , DigitalIDEntity.class);
   }
@@ -124,7 +112,7 @@ public class SoamServiceTest {
   public void testPerformLogin_GivenDigitalIdPostCallFailed_ShouldThrowSoamRuntimeException() {
 
     DigitalIDEntity entity = createDigitalIdentity();
-    when(soamUtil.createDigitalIdentity("BCeId", "12345", "TESTMARCO")).thenReturn(entity);
+    when(soamUtil.createDigitalIdentity("BCeId", "12345")).thenReturn(entity);
     headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     when(codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(createDummyIdentityTypeMap());
     when(restUtils.getRestTemplate()).thenReturn(restTemplate);
@@ -132,7 +120,7 @@ public class SoamServiceTest {
             .thenThrow(createHttpClientErrorException(HttpStatus.NOT_FOUND));
     when(restTemplate.postForEntity(props.getDigitalIdentifierApiURL(), entity
             , DigitalIDEntity.class)).thenThrow(createHttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
-    assertThrows(HttpClientErrorException.class, () -> service.performLogin("BCeId", "12345", "TESTMARCO", null));
+    assertThrows(HttpClientErrorException.class, () -> service.performLogin("BCeId", "12345", null));
     verify(restTemplate, atLeastOnce()).exchange(props.getDigitalIdentifierApiURL() + "?identitytype=BCeId&identityvalue=12345", HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
     verify(restTemplate, atLeastOnce()).postForEntity(props.getDigitalIdentifierApiURL(), entity
             , DigitalIDEntity.class);
@@ -155,7 +143,7 @@ public class SoamServiceTest {
             .thenThrow(createHttpClientErrorException(HttpStatus.NOT_FOUND));
     when(restTemplate.postForEntity(props.getServicesCardApiURL(), servicesCardEntity, ServicesCardEntity.class))
             .thenThrow(createHttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
-    assertThrows(SoamRuntimeException.class, () -> service.performLogin("BCeId", "12345", "TESTMARCO", servicesCardEntity));
+    assertThrows(SoamRuntimeException.class, () -> service.performLogin("BCeId", "12345", servicesCardEntity));
     //lets verify the get method was called to  get digital id.
     verify(restTemplate, atLeastOnce()).exchange(props.getDigitalIdentifierApiURL() + "?identitytype=BCeId&identityvalue=12345", HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
 
@@ -178,7 +166,7 @@ public class SoamServiceTest {
   public void testPerformLogin_GivenDigitalIdDoesNotExistAndServiceCardIsNull_ShouldCreateDigitalId() {
 
     DigitalIDEntity entity = createDigitalIdentity();
-    when(soamUtil.createDigitalIdentity("BCeId", "12345", "TESTMARCO")).thenReturn(entity);
+    when(soamUtil.createDigitalIdentity("BCeId", "12345")).thenReturn(entity);
     when(soamUtil.getUpdatedDigitalId(entity)).thenReturn(entity);
     headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     when(codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(createDummyIdentityTypeMap());
@@ -187,7 +175,7 @@ public class SoamServiceTest {
             .thenThrow(createHttpClientErrorException(HttpStatus.NOT_FOUND));
     when(restTemplate.postForEntity(props.getDigitalIdentifierApiURL(), entity
             , DigitalIDEntity.class)).thenReturn(ResponseEntity.ok(entity));
-    service.performLogin("BCeId", "12345", "TESTMARCO", null);
+    service.performLogin("BCeId", "12345", null);
 
     //lets verify the get method was called.
     verify(restTemplate, atLeastOnce()).exchange(props.getDigitalIdentifierApiURL() + "?identitytype=BCeId&identityvalue=12345", HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
@@ -214,7 +202,7 @@ public class SoamServiceTest {
     when(restTemplate.exchange(props.getDigitalIdentifierApiURL() + "?identitytype=BCeId&identityvalue=12345", HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class)).
             thenReturn(responseEntity);
     doNothing().when(restTemplate).put(props.getDigitalIdentifierApiURL(), updatedEntity, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
-    service.performLogin("BCeId", "12345", "TESTMARCO", null);
+    service.performLogin("BCeId", "12345", null);
 
     //lets verify the get method was called.
     verify(restTemplate, atLeastOnce()).exchange(props.getDigitalIdentifierApiURL() + "?identitytype=BCeId&identityvalue=12345", HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
@@ -246,7 +234,7 @@ public class SoamServiceTest {
     when(restTemplate.exchange(props.getServicesCardApiURL() + "?did=" + servicesCardEntity.getDid().toUpperCase(), HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), ServicesCardEntity.class))
             .thenThrow(createHttpClientErrorException(HttpStatus.NOT_FOUND));
     when(restTemplate.postForEntity(props.getServicesCardApiURL(), servicesCardEntity, ServicesCardEntity.class)).thenReturn(ResponseEntity.ok().build());
-    service.performLogin("BCeId", "12345", "TESTMARCO", servicesCardEntity);
+    service.performLogin("BCeId", "12345", servicesCardEntity);
 
     //lets verify the get method was called to  get digital id.
     verify(restTemplate, atLeastOnce()).exchange(props.getDigitalIdentifierApiURL() + "?identitytype=BCeId&identityvalue=12345", HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
@@ -282,7 +270,7 @@ public class SoamServiceTest {
     when(restTemplate.exchange(props.getServicesCardApiURL() + "?did=" + servicesCardEntity.getDid().toUpperCase(), HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), ServicesCardEntity.class))
             .thenReturn(ResponseEntity.ok(servicesCardEntity));
     doNothing().when(restTemplate).put(props.getServicesCardApiURL(), servicesCardEntity, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), ServicesCardEntity.class);
-    service.performLogin("BCeId", "12345", "TESTMARCO", servicesCardEntity);
+    service.performLogin("BCeId", "12345", servicesCardEntity);
 
     //lets verify the get method was called to  get digital id.
     verify(restTemplate, atLeastOnce()).exchange(props.getDigitalIdentifierApiURL() + "?identitytype=BCeId&identityvalue=12345", HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
@@ -321,7 +309,7 @@ public class SoamServiceTest {
     when(restTemplate.exchange(props.getServicesCardApiURL() + "?did=" + servicesCardEntity.getDid().toUpperCase(), HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), ServicesCardEntity.class))
             .thenReturn(ResponseEntity.ok().build());
     doNothing().when(restTemplate).put(props.getServicesCardApiURL(), servicesCardEntity, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), ServicesCardEntity.class);
-    assertThrows(AssertionError.class, ()-> service.performLogin("BCeId", "12345", "TESTMARCO", servicesCardEntity));
+    assertThrows(AssertionError.class, ()-> service.performLogin("BCeId", "12345", servicesCardEntity));
 
     //lets verify the get method was called to  get digital id.
     verify(restTemplate, atLeastOnce()).exchange(props.getDigitalIdentifierApiURL() + "?identitytype=BCeId&identityvalue=12345", HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
@@ -358,7 +346,7 @@ public class SoamServiceTest {
     doNothing().when(restTemplate).put(props.getDigitalIdentifierApiURL(), updatedEntity, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
     when(restTemplate.exchange(props.getServicesCardApiURL() + "?did=" + servicesCardEntity.getDid().toUpperCase(), HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), ServicesCardEntity.class))
             .thenThrow(createHttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
-    assertThrows(SoamRuntimeException.class, () -> service.performLogin("BCeId", "12345", "TESTMARCO", servicesCardEntity));
+    assertThrows(SoamRuntimeException.class, () -> service.performLogin("BCeId", "12345", servicesCardEntity));
 
     //lets verify the get method was called to  get digital id.
     verify(restTemplate, atLeastOnce()).exchange(props.getDigitalIdentifierApiURL() + "?identitytype=BCeId&identityvalue=12345", HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
@@ -396,7 +384,7 @@ public class SoamServiceTest {
     when(restTemplate.exchange(props.getServicesCardApiURL() + "?did=" + servicesCardEntity.getDid().toUpperCase(), HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), ServicesCardEntity.class))
             .thenThrow(createHttpClientErrorException(HttpStatus.NOT_FOUND));
     when(restTemplate.postForEntity(props.getServicesCardApiURL(), servicesCardEntity, ServicesCardEntity.class)).thenThrow(createHttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
-    assertThrows(SoamRuntimeException.class, () -> service.performLogin("BCeId", "12345", "TESTMARCO", servicesCardEntity));
+    assertThrows(SoamRuntimeException.class, () -> service.performLogin("BCeId", "12345", servicesCardEntity));
 
     //lets verify the get method was called to  get digital id.
     verify(restTemplate, atLeastOnce()).exchange(props.getDigitalIdentifierApiURL() + "?identitytype=BCeId&identityvalue=12345", HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
@@ -434,7 +422,7 @@ public class SoamServiceTest {
     when(restTemplate.exchange(props.getServicesCardApiURL() + "?did=" + servicesCardEntity.getDid().toUpperCase(), HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), ServicesCardEntity.class))
             .thenReturn(ResponseEntity.ok(servicesCardEntity));
     doThrow(createHttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR)).when(restTemplate).put(props.getServicesCardApiURL(), servicesCardEntity, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), ServicesCardEntity.class);
-    assertThrows(SoamRuntimeException.class, () -> service.performLogin("BCeId", "12345", "TESTMARCO", servicesCardEntity));
+    assertThrows(SoamRuntimeException.class, () -> service.performLogin("BCeId", "12345", servicesCardEntity));
 
     //lets verify the get method was called to  get digital id.
     verify(restTemplate, atLeastOnce()).exchange(props.getDigitalIdentifierApiURL() + "?identitytype=BCeId&identityvalue=12345", HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
@@ -464,7 +452,7 @@ public class SoamServiceTest {
     DigitalIDEntity updatedEntity = responseEntity.getBody();
     ServicesCardEntity servicesCardEntity = createServiceCardEntity();
     when(restUtils.getRestTemplate()).thenReturn(restTemplate);
-    when(soamUtil.createDigitalIdentity("BCeId", "12345", "TESTMARCO")).thenReturn(entity);
+    when(soamUtil.createDigitalIdentity("BCeId", "12345")).thenReturn(entity);
     when(soamUtil.getUpdatedDigitalId(Objects.requireNonNull(responseEntity.getBody()))).thenReturn(updatedEntity);
     when(codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(createDummyIdentityTypeMap());
     when(restTemplate.exchange(props.getDigitalIdentifierApiURL() + "?identitytype=BCeId&identityvalue=12345", HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class)).
@@ -474,7 +462,7 @@ public class SoamServiceTest {
     when(restTemplate.exchange(props.getServicesCardApiURL() + "?did=" + servicesCardEntity.getDid().toUpperCase(), HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), ServicesCardEntity.class)).
             thenThrow(createHttpClientErrorException(HttpStatus.NOT_FOUND));
     when(restTemplate.postForEntity(props.getServicesCardApiURL(), servicesCardEntity, ServicesCardEntity.class)).thenReturn(ResponseEntity.ok().build());
-    service.performLogin("BCeId", "12345", "TESTMARCO", servicesCardEntity);
+    service.performLogin("BCeId", "12345", servicesCardEntity);
 
     //lets verify the get method was called to  get digital id.
     verify(restTemplate, atLeastOnce()).exchange(props.getDigitalIdentifierApiURL() + "?identitytype=BCeId&identityvalue=12345", HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);

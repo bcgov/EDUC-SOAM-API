@@ -41,12 +41,12 @@ public class SoamService {
     this.soamUtil = util;
   }
 
-  public void performLogin(String identifierType, String identifierValue, String userID, ServicesCardEntity servicesCard) {
-    validateExtendedSearchParameters(identifierType, identifierValue, userID);
+  public void performLogin(String identifierType, String identifierValue, ServicesCardEntity servicesCard) {
+    validateExtendedSearchParameters(identifierType, identifierValue);
     RestTemplate restTemplate = restUtils.getRestTemplate();
     HttpHeaders headers = new HttpHeaders();
     headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-    manageLogin(identifierType, identifierValue, userID, servicesCard, restTemplate, headers);
+    manageLogin(identifierType, identifierValue, servicesCard, restTemplate, headers);
   }
 
   private void updateDigitalID(ServicesCardEntity servicesCard, RestTemplate restTemplate, HttpHeaders headers, ResponseEntity<DigitalIDEntity> response) {
@@ -62,7 +62,7 @@ public class SoamService {
     }
   }
 
-  private void manageLogin(String identifierType, String identifierValue, String userID, ServicesCardEntity servicesCard, RestTemplate restTemplate, HttpHeaders headers) {
+  private void manageLogin(String identifierType, String identifierValue, ServicesCardEntity servicesCard, RestTemplate restTemplate, HttpHeaders headers) {
     ResponseEntity<DigitalIDEntity> response;
     try {
       //This is the initial call to determine if we have this digital identity
@@ -71,7 +71,7 @@ public class SoamService {
     } catch (final HttpClientErrorException e) {
       if (e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
         //Digital Identity does not exist, let's create it
-        DigitalIDEntity entity = soamUtil.createDigitalIdentity(identifierType, identifierValue.toUpperCase(), userID);
+        DigitalIDEntity entity = soamUtil.createDigitalIdentity(identifierType, identifierValue.toUpperCase());
         ResponseEntity<DigitalIDEntity> responseEntity = restTemplate.postForEntity(props.getDigitalIdentifierApiURL(), entity, DigitalIDEntity.class);
         if (servicesCard != null && responseEntity.getBody() != null) {
           createOrUpdateBCSC(servicesCard, restTemplate, responseEntity.getBody().getDigitalID());
@@ -182,11 +182,8 @@ public class SoamService {
     return "Unexpected HTTP return code: " + status + " error message: " + body;
   }
 
-  private void validateExtendedSearchParameters(String identifierType, String identifierValue, String userID) {
+  private void validateExtendedSearchParameters(String identifierType, String identifierValue) {
     validateSearchParameters(identifierType, identifierValue);
-    if (userID == null || userID.length() < 1) {
-      throw new InvalidParameterException("userID");
-    }
   }
 
   private void validateSearchParameters(String identifierType, String identifierValue) {

@@ -24,7 +24,7 @@ public class SoamApiResourceApplication {
     @Override
     public void configure(WebSecurity web) {
       web.ignoring().antMatchers("/v3/api-docs/**",
-              "/actuator/**", "/metrics",
+              "/actuator/health","/actuator/prometheus",
               "/swagger-ui/**", "/health");
     }
   }

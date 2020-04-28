@@ -17,9 +17,6 @@ oc project $OPENSHIFT_NAMESPACE-tools
 echo SOAM USER: $SOAM_KC_LOAD_USER_ADMIN
 echo SOAM PASS: $SOAM_KC_LOAD_USER_PASS
 
-###########################################################
-#Fetch the public key
-###########################################################
 $KCADM_FILE_BIN_FOLDER/kcadm.sh config credentials --server https://$SOAM_KC/auth --realm $SOAM_KC_REALM_ID --user $SOAM_KC_LOAD_USER_ADMIN --password $SOAM_KC_LOAD_USER_PASS
 
 #SOAM_LOGIN

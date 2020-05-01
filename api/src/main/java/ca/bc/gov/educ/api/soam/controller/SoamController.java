@@ -8,8 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -29,7 +27,7 @@ public class SoamController implements SoamEndpoint {
     this.service = soamService;
   }
 
-  public ResponseEntity<Void> performLogin(@RequestBody MultiValueMap<String, String> formData) {
+  public ResponseEntity<Void> performLogin(MultiValueMap<String, String> formData) {
     ServicesCardEntity serviceCard = null;
     if (formData.getFirst("did") != null) {
       serviceCard = new ServicesCardEntity();
@@ -52,11 +50,8 @@ public class SoamController implements SoamEndpoint {
     return ResponseEntity.noContent().build();
   }
 
-  public ResponseEntity<SoamLoginEntity> getSoamLoginEntity(@PathVariable String typeCode, @PathVariable String typeValue) {
+  public ResponseEntity<SoamLoginEntity> getSoamLoginEntity(String typeCode, String typeValue) {
     return ResponseEntity.ok(service.getSoamLoginEntity(typeCode, typeValue));
   }
 
-  public ResponseEntity<String> health() {
-    return ResponseEntity.ok("OK");
-  }
 }

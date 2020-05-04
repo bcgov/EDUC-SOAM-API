@@ -19,14 +19,14 @@ public class SoamUtil {
     entity.setIdentityTypeCode(identityTypeCode);
     entity.setIdentityValue(identityValue);
     entity.setLastAccessChannelCode("OSPR");
-    entity.setLastAccessDate(LocalDateTime.now().toString());
+    entity.setLastAccessDate(LocalDateTime.now().minusMinutes(1).toString());
     entity.setCreateUser("SOAM");
     entity.setUpdateUser("SOAM");
     return entity;
   }
 
   public DigitalIDEntity getUpdatedDigitalId(DigitalIDEntity digitalIDEntity) {
-    digitalIDEntity.setLastAccessDate(LocalDateTime.now().toString());
+    digitalIDEntity.setLastAccessDate(LocalDateTime.now().minusMinutes(1).toString());
     digitalIDEntity.setCreateDate(null);
     digitalIDEntity.setUpdateDate(null);
     return digitalIDEntity;

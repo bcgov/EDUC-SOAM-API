@@ -44,10 +44,11 @@ pipeline{
     }
   }
     environment{
-      TOOLS = 'c2mvws-tools'
-      DEV = 'c2mvws-dev'
-      TEST = 'c2mvws-test'
-      PROD = 'c2mvws-prod'
+      NAMESPACE='c2mvws'
+      TOOLS = "${NAMESPACE}-tools"
+      DEV = "${NAMESPACE}-dev"
+      TEST = "${NAMESPACE}-test"
+      PROD = "${NAMESPACE}-prod"
 
       REPO_NAME = 'educ-soam-api'
       OWNER = 'bcgov'
@@ -67,6 +68,15 @@ pipeline{
       PROD_HOST_ROUTE = "${APP_NAME}-${PROD}.${APP_DOMAIN}"
   }
   stages{
+    stage('Download setup files'){
+      steps{
+          script{
+              dir('tools/jenkins'){
+                  sh "bash ./download-kc.sh \"${NAMESPACE}\""
+              }
+          }
+      }
+    }
     stage('Unit Tests') {
       steps {
         script {
@@ -141,6 +151,15 @@ pipeline{
         }
         failure{
           echo 'Deployment to Dev failed'
+        }
+      }
+    }
+    stage('Create/Update Config Maps'){
+      steps{
+        script{
+          dir('tools/jenkins'){
+            sh "bash ./update-configmap.sh \"dev\" ${APP_NAME} ${NAMESPACE}"
+          }
         }
       }
     }

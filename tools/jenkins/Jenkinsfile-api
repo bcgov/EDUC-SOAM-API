@@ -1,49 +1,6 @@
 pipeline{
-  agent {
-    kubernetes {
-      label 'mavenPod-SoamApi'
-      cloud 'openshift'
-      defaultContainer 'jnlp'
-      serviceAccount 'jenkins'
-      yaml """
-        kind: Pod
-        metadata:
-          name: jenkins-slave
-        spec:
-          containers:
-          - name: jnlp
-            image: registry.access.redhat.com/openshift3/jenkins-agent-maven-35-rhel7
-            privileged: false
-            alwaysPullImage: false
-            workingDir: /tmp
-            ttyEnabled: false
-            resourceRequestCpu: 3
-            resourceRequestMemory: 2Gi
-            resourceLimitCpu: 3
-            resourceLimitMemory: 2Gi
-            env:
-            - name: SONARQUBE_HOSTNAME
-              valueFrom:
-                secretKeyRef:
-                  name: 'soam-api-secrets'
-                  key: sonarqube-host
-            - name: SONARQUBE_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: 'soam-api-secrets'
-                  key: sonarqube-token
-            volumeMounts:
-            - mountPath: '/home/jenkins/.m2'
-              name: pvc
-          volumes:
-          - name: pvc
-            persistentVolumeClaim:
-              claimName: 'maven-slave-pvc'
-              
-      """
-    }
-  }
-    environment{
+   agent any
+   environment{
       NAMESPACE='c2mvws'
       TOOLS = "${NAMESPACE}-tools"
       DEV = "${NAMESPACE}-dev"
@@ -54,7 +11,7 @@ pipeline{
       OWNER = 'bcgov'
       JOB_NAME = 'master'
       TAG = 'dev'
-      
+
       APP_NAME = 'soam-api'
       APP_DOMAIN = 'pathfinder.gov.bc.ca'
 
@@ -68,54 +25,18 @@ pipeline{
       PROD_HOST_ROUTE = "${APP_NAME}-${PROD}.${APP_DOMAIN}"
   }
   stages{
-    stage('Download setup files'){
-      steps{
-          script{
-              dir('tools/jenkins'){
-                  sh "bash ./download-kc.sh \"${NAMESPACE}\""
-              }
-          }
-      }
-    }
-    stage('Unit Tests') {
-      steps {
-        script {
-          def pom = readMavenPom file: 'api/pom.xml'
-          VERSION = pom.version
-		  
-          sh '/bin/bash -c "mvn -f ./api/pom.xml test"'
-        }
-      }
-    }
     stage('Build App') {
-      steps {
+       steps {
         script {
-          def pom = readMavenPom file: 'api/pom.xml'
+          def pom = readMavenPom file: './api/pom.xml'
           VERSION = pom.version
         }
         sh '/bin/bash -c "mvn -f ./api/pom.xml -Dmaven.test.skip=true package"'
-      }
-    }
-    stage('Create Image Builder') {
-      when {
-        expression {
-          openshift.withCluster() {
-            return !openshift.selector("bc", "${REPO_NAME}-${JOB_NAME}").exists();
-          }
-        }
-      }
-      steps {
         script {
           openshift.withCluster() {
-            openshift.newBuild("--name=${REPO_NAME}-${JOB_NAME}", "--image-stream=redhat-openjdk18-openshift:1.1", "--binary")
-          }
-        }
-      }
-    }
-    stage('Build Image') {
-      steps {
-        script {
-          openshift.withCluster() {
+            if (!openshift.selector("bc", "${REPO_NAME}-${JOB_NAME}").exists()){
+              openshift.newBuild("--name=${REPO_NAME}-${JOB_NAME}", "--image-stream=redhat-openjdk18-openshift:1.1", "--binary")
+            }
             openshift.selector("bc", "${REPO_NAME}-${JOB_NAME}").startBuild("--from-file=./api/target/soam-api-${VERSION}.jar", "--wait")
           }
         }
@@ -155,22 +76,22 @@ pipeline{
       }
     }
     stage('Create/Update Config Maps'){
+      environment {
+	     APP_NAME = "soam-api"
+      }
       steps{
         script{
+            dir('tools/jenkins'){
+                sh "bash ./download-kc.sh \"${NAMESPACE}\""
+            }
+        }
+        script{
           dir('tools/jenkins'){
+            def configVars
             sh "bash ./update-configmap.sh \"dev\" ${APP_NAME} ${NAMESPACE}"
           }
         }
       }
-    }
-    stage('Report to SonarQube') {
-        steps {
-            script{
-                dir('api'){
-                    sh '/bin/bash -c "mvn sonar:sonar -Dsonar.host.url=${SONARQUBE_HOSTNAME} -Dsonar.login=${SONARQUBE_TOKEN}"'
-                }
-            }
-        }
     }
   }
 }
@@ -197,12 +118,6 @@ def deployStage(String stageEnv, String projectEnv, String hostRouteEnv, String 
 
       echo "Applying Deployment ${REPO_NAME}"
       def dc = openshift.apply(dcTemplate).narrow('dc')
-
-      echo "Waiting for deployment to roll out"
-      // Wait for deployments to roll out
-      timeout(10) {
-        dc.rollout().status('--watch=true')
-      }
     }
   }
 }

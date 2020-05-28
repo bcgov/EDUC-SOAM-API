@@ -12,7 +12,6 @@ objects:
       labels:
         build: educ-soam-api-pipeline
       name: educ-soam-api-pipeline
-      namespace: c2mvws-tools
     spec:
       source:
         contextDir: api

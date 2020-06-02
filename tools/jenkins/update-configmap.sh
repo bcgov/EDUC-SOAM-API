@@ -72,17 +72,17 @@ $KCADM_FILE_BIN_FOLDER/kcadm.sh create authentication/flows -r $SOAM_KC_REALM_ID
 $KCADM_FILE_BIN_FOLDER/kcadm.sh create authentication/flows -r $SOAM_KC_REALM_ID  --body "{\"alias\" : \"SOAMPostLogin\",\"providerId\" : \"basic-flow\",\"topLevel\" : true,\"builtIn\" : false}"
 
 echo Removing executors if exists
-getSoamFirstLoginExecutorID(){
-    executorID= $KCADM_FILE_BIN_FOLDER/kcadm.sh get authentication/flows/SOAMFirstLogin/executions -r $SOAM_KC_REALM_ID | grep -Po '"id" :(\d*?,|.*?[^\\]",)'
+getSoamFirstLoginExecutorIDForDelete(){
+    executorID= $KCADM_FILE_BIN_FOLDER/kcadm.sh get authentication/flows/SOAMFirstLogin/executions -r $SOAM_KC_REALM_ID | grep -Po '"id" :(\d*?,|.*?[^\\]",)' | grep -Po "(\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}"
 }
 
-soamFirstLoginExecutorID=$(getSoamFirstLoginExecutorID)
+soamFirstLoginExecutorID=$(getSoamFirstLoginExecutorIDForDelete)
 
-getSoamPostLoginExecutorID(){
-    executorID= $KCADM_FILE_BIN_FOLDER/kcadm.sh get authentication/flows/SOAMPostLogin/executions -r $SOAM_KC_REALM_ID | grep -Po '"id" :(\d*?,|.*?[^\\]",)'
+getSoamPostLoginExecutorIDForDelete(){
+    executorID= $KCADM_FILE_BIN_FOLDER/kcadm.sh get authentication/flows/SOAMPostLogin/executions -r $SOAM_KC_REALM_ID | grep -Po '"id" :(\d*?,|.*?[^\\]",)' | grep -Po "(\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}"
 }
 
-soamPostLoginExecutorID=$(getSoamPostLoginExecutorID)
+soamPostLoginExecutorID=$(getSoamPostLoginExecutorIDForDelete)
 $KCADM_FILE_BIN_FOLDER/kcadm.sh delete authentication/executions/$soamPostLoginExecutorID -r $SOAM_KC_REALM_ID 
 $KCADM_FILE_BIN_FOLDER/kcadm.sh delete authentication/executions/$soamFirstLoginExecutorID -r $SOAM_KC_REALM_ID 
 
@@ -91,7 +91,7 @@ $KCADM_FILE_BIN_FOLDER/kcadm.sh create authentication/flows/SOAMPostLogin/execut
 $KCADM_FILE_BIN_FOLDER/kcadm.sh create authentication/flows/SOAMFirstLogin/executions/execution -r $SOAM_KC_REALM_ID -s provider=bcgov-soam-authenticator
 
 getSoamFirstLoginExecutorID(){
-    executorID= $KCADM_FILE_BIN_FOLDER/kcadm.sh get authentication/flows/SOAMFirstLogin/executions -r $SOAM_KC_REALM_ID | grep -Po '"id" :(\d*?,|.*?[^\\]",)'
+    executorID= $KCADM_FILE_BIN_FOLDER/kcadm.sh get authentication/flows/SOAMFirstLogin/executions -r $SOAM_KC_REALM_ID | grep -Po '"id" :(\d*?,|.*?[^\\]",)' 
 }
 
 soamFirstLoginExecutorID=$(getSoamFirstLoginExecutorID)

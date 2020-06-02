@@ -3,6 +3,7 @@ pipeline{
    environment{
       DEBUG_OUTPUT = 'false'
       NAMESPACE='mvubjx'
+      DEV_EXCHANGE_REALM='v45fd2kb'
       TOOLS = "${NAMESPACE}-tools"
       DEV = "${NAMESPACE}-dev"
       TEST = "${NAMESPACE}-test"
@@ -106,7 +107,7 @@ pipeline{
         script{
           dir('tools/jenkins'){
             def configVars
-            sh "bash ./update-configmap.sh \"dev\" ${APP_NAME} ${NAMESPACE}"
+            sh "bash ./update-configmap.sh \"dev\" ${APP_NAME} ${NAMESPACE} ${DEV_EXCHANGE_REALM}"
           }
         }
       }

@@ -1,6 +1,7 @@
 envValue=$1
 APP_NAME=$2
 OPENSHIFT_NAMESPACE=$3
+DEVEXCHANGE_KC_REALM_ID=$4
 
 TZVALUE="America/Vancouver"
 SOAM_KC_REALM_ID="master"

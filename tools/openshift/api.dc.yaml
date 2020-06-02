@@ -61,7 +61,7 @@ objects:
                   protocol: TCP
               resources:
                 requests:
-                  cpu: "50m"
+                  cpu: "30m"
                 limits:
                   cpu: "300m"
           volumes:

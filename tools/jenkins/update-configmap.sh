@@ -83,8 +83,8 @@ getSoamPostLoginExecutorID(){
 }
 
 soamPostLoginExecutorID=$(getSoamPostLoginExecutorID)
-$KCADM_FILE_BIN_FOLDER/kcadm.sh create authentication/executions/$soamPostLoginExecutorID -r $SOAM_KC_REALM_ID 
-$KCADM_FILE_BIN_FOLDER/kcadm.sh create authentication/executions/$soamFirstLoginExecutorID -r $SOAM_KC_REALM_ID 
+$KCADM_FILE_BIN_FOLDER/kcadm.sh delete authentication/executions/$soamPostLoginExecutorID -r $SOAM_KC_REALM_ID 
+$KCADM_FILE_BIN_FOLDER/kcadm.sh delete authentication/executions/$soamFirstLoginExecutorID -r $SOAM_KC_REALM_ID 
 
 echo Creating executors
 $KCADM_FILE_BIN_FOLDER/kcadm.sh create authentication/flows/SOAMPostLogin/executions/execution -r $SOAM_KC_REALM_ID -s provider=bcgov-soam-post-authenticator

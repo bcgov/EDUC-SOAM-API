@@ -14,8 +14,8 @@ NATS_URL="nats://nats.${OPENSHIFT_NAMESPACE}-${envValue}.svc.cluster.local:4222"
 oc project $OPENSHIFT_NAMESPACE-$envValue
 SOAM_KC_LOAD_USER_ADMIN=$(oc -o json get secret sso-admin-${envValue} | sed -n 's/.*"username": "\(.*\)"/\1/p' | base64 --decode)
 SOAM_KC_LOAD_USER_PASS=$(oc -o json get secret sso-admin-${envValue} | sed -n 's/.*"password": "\(.*\)",/\1/p' | base64 --decode)
-DEVEXCHANGE_KC_LOAD_USER_ADMIN=$(oc -o json get secret devexchange-keycloak-secrets-${envValue} | sed -n 's/.*"password": "\(.*\)",/\1/p' | base64 --decode)
-DEVEXCHANGE_KC_LOAD_USER_PASS=$(oc -o json get secret devexchange-keycloak-secrets-${envValue} | sed -n 's/.*"username": "\(.*\)",/\1/p' | base64 --decode)
+DEVEXCHANGE_KC_LOAD_USER_PASS=$(oc -o json get secret devexchange-keycloak-secrets-${envValue} | sed -n 's/.*"password": "\(.*\)",/\1/p' | base64 --decode)
+DEVEXCHANGE_KC_LOAD_USER_ADMIN=$(oc -o json get secret devexchange-keycloak-secrets-${envValue} | sed -n 's/.*"username": "\(.*\)"/\1/p' | base64 --decode)
 DEVEXCHANGE_KC_REALM_ID=$(oc -o json get secret devexchange-keycloak-secrets-${envValue} | sed -n 's/.*"realm": "\(.*\)",/\1/p' | base64 --decode)
 
 if [ "$envValue" != "prod" ]

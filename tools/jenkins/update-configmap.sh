@@ -70,6 +70,22 @@ oc set env --from=configmap/$APP_NAME-config-map dc/$APP_NAME-$SOAM_KC_REALM_ID
 echo Creating authenticators
 $KCADM_FILE_BIN_FOLDER/kcadm.sh create authentication/flows -r $SOAM_KC_REALM_ID  --body "{\"alias\" : \"SOAMFirstLogin\",\"providerId\" : \"basic-flow\",\"topLevel\" : true,\"builtIn\" : false}"
 $KCADM_FILE_BIN_FOLDER/kcadm.sh create authentication/flows -r $SOAM_KC_REALM_ID  --body "{\"alias\" : \"SOAMPostLogin\",\"providerId\" : \"basic-flow\",\"topLevel\" : true,\"builtIn\" : false}"
+
+echo Removing executors if exists
+getSoamFirstLoginExecutorID(){
+    executorID= $KCADM_FILE_BIN_FOLDER/kcadm.sh get authentication/flows/SOAMFirstLogin/executions -r $SOAM_KC_REALM_ID | grep -Po '"id" :(\d*?,|.*?[^\\]",)'
+}
+
+soamFirstLoginExecutorID=$(getSoamFirstLoginExecutorID)
+
+getSoamPostLoginExecutorID(){
+    executorID= $KCADM_FILE_BIN_FOLDER/kcadm.sh get authentication/flows/SOAMPostLogin/executions -r $SOAM_KC_REALM_ID | grep -Po '"id" :(\d*?,|.*?[^\\]",)'
+}
+
+soamPostLoginExecutorID=$(getSoamPostLoginExecutorID)
+$KCADM_FILE_BIN_FOLDER/kcadm.sh create authentication/executions/$soamPostLoginExecutorID -r $SOAM_KC_REALM_ID 
+$KCADM_FILE_BIN_FOLDER/kcadm.sh create authentication/executions/$soamFirstLoginExecutorID -r $SOAM_KC_REALM_ID 
+
 echo Creating executors
 $KCADM_FILE_BIN_FOLDER/kcadm.sh create authentication/flows/SOAMPostLogin/executions/execution -r $SOAM_KC_REALM_ID -s provider=bcgov-soam-post-authenticator
 $KCADM_FILE_BIN_FOLDER/kcadm.sh create authentication/flows/SOAMFirstLogin/executions/execution -r $SOAM_KC_REALM_ID -s provider=bcgov-soam-authenticator
@@ -79,6 +95,13 @@ getSoamFirstLoginExecutorID(){
 }
 
 soamFirstLoginExecutorID=$(getSoamFirstLoginExecutorID)
+
+getSoamPostLoginExecutorID(){
+    executorID= $KCADM_FILE_BIN_FOLDER/kcadm.sh get authentication/flows/SOAMPostLogin/executions -r $SOAM_KC_REALM_ID | grep -Po '"id" :(\d*?,|.*?[^\\]",)'
+}
+
+soamPostLoginExecutorID=$(getSoamPostLoginExecutorID)
+
 echo Updating first login executor to required
 $KCADM_FILE_BIN_FOLDER/kcadm.sh update authentication/flows/SOAMFirstLogin/executions -r $SOAM_KC_REALM_ID  --body "{$soamFirstLoginExecutorID \"configurable\": false,\"displayName\": \"SOAM Authenticator\",\"index\": 0,\"level\": 0,\"providerId\": \"bcgov-soam-authenticator\",\"requirement\": \"REQUIRED\",\"requirementChoices\": [\"ALTERNATIVE\", \"REQUIRED\", \"DISABLED\"]}"
 

@@ -110,6 +110,7 @@ pipeline{
             sh "bash ./update-configmap.sh \"dev\" ${APP_NAME} ${NAMESPACE} ${DEV_EXCHANGE_REALM}"
           }
         }
+        deployStageNoTag('Dev', DEV, DEV_HOST_ROUTE)
       }
     }
   }
@@ -125,6 +126,30 @@ def deployStage(String stageEnv, String projectEnv, String hostRouteEnv, String 
     openshift.withProject(projectEnv) {
       echo "Tagging image"
       openshift.tag("${TOOLS}/${REPO_NAME}-${JOB_NAME}:latest", "${REPO_NAME}-${JOB_NAME}:${tag}")
+      def dcTemplate = openshift.process('-f',
+        'tools/openshift/api.dc.yaml',
+        "REPO_NAME=${REPO_NAME}",
+        "JOB_NAME=${JOB_NAME}",
+        "NAMESPACE=${projectEnv}",
+        "APP_NAME=${APP_NAME}",
+        "HOST_ROUTE=${hostRouteEnv}",
+        "TAG=${tag}"
+      )
+
+      echo "Applying Deployment ${REPO_NAME}"
+      def dc = openshift.apply(dcTemplate).narrow('dc')
+    }
+  }
+}
+
+def deployStageNoTag(String stageEnv, String projectEnv, String hostRouteEnv) {
+
+  if (!stageEnv.equalsIgnoreCase('Dev')) {
+    input("Deploy to ${projectEnv}?")
+  }
+
+  openshift.withCluster() {
+    openshift.withProject(projectEnv) {
       def dcTemplate = openshift.process('-f',
         'tools/openshift/api.dc.yaml',
         "REPO_NAME=${REPO_NAME}",

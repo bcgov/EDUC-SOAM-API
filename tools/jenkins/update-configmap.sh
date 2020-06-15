@@ -17,11 +17,13 @@ SOAM_KC_LOAD_USER_PASS=$(oc -o json get secret sso-admin-${envValue} | sed -n 's
 DEVEXCHANGE_KC_LOAD_USER_PASS=$(oc -o json get secret devexchange-keycloak-secrets-${envValue} | sed -n 's/.*"password": "\(.*\)",/\1/p' | base64 --decode)
 DEVEXCHANGE_KC_LOAD_USER_ADMIN=$(oc -o json get secret devexchange-keycloak-secrets-${envValue} | sed -n 's/.*"username": "\(.*\)"/\1/p' | base64 --decode)
 DEVEXCHANGE_KC_REALM_ID=$(oc -o json get secret devexchange-keycloak-secrets-${envValue} | sed -n 's/.*"realm": "\(.*\)",/\1/p' | base64 --decode)
+SERVICES_CARD_DNS=id.gov.bc.ca
 
 if [ "$envValue" != "prod" ]
 then
     SSO_ENV=sso-$envValue.pathfinder.gov.bc.ca
     SOAM_KC=$OPENSHIFT_NAMESPACE-$envValue.pathfinder.gov.bc.ca
+    SERVICES_CARD_DNS=idtest.gov.bc.ca
 fi
 
 ###########################################################
@@ -45,7 +47,7 @@ echo Removing BCSC IDP if exists...
 $KCADM_FILE_BIN_FOLDER/kcadm.sh delete identity-provider/instances/bcsc -r $DEVEXCHANGE_KC_REALM_ID
 
 echo Creating BC Services Card IDP...
-$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances -r $DEVEXCHANGE_KC_REALM_ID --body "{\"alias\" : \"bcsc\",\"displayName\" : \"BC Services Card\",\"providerId\" : \"oidc\",\"enabled\" : true,\"updateProfileFirstLoginMode\" : \"on\",\"trustEmail\" : false,\"storeToken\" : false,\"addReadTokenRoleOnCreate\" : false,\"authenticateByDefault\" : false,\"linkOnly\" : false,\"firstBrokerLoginFlowAlias\" : \"first broker login\",\"config\" : {\"hideOnLoginPage\" : \"\",\"userInfoUrl\" : \"https://$SERVICES_CARD_DNS/oauth2/userinfo\",\"validateSignature\" : \"true\",\"clientId\" : \"$bcscClientID\",\"tokenUrl\" : \"https://$SERVICES_CARD_DNS/oauth2/token\",\"uiLocales\" : \"\",\"jwksUrl\" : \"https://$SERVICES_CARD_DNS/oauth2/jwk.json\",\"backchannelSupported\" : \"\",\"issuer\" : \"https://$SERVICES_CARD_DNS/oauth2/\",\"useJwksUrl\" : \"true\",\"loginHint\" : \"\",\"authorizationUrl\" : \"https://$SERVICES_CARD_DNS/login/oidc/authorize\",\"disableUserInfo\" : \"\",\"logoutUrl\" : \"\",\"clientSecret\" : \"$bcscClientSecret\",\"prompt\" : \"\",\"defaultScope\" : \"openid profile email address\"}}"
+$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances -r $DEVEXCHANGE_KC_REALM_ID --body "{\"alias\" : \"bcsc\",\"displayName\" : \"BC Services Card\",\"providerId\" : \"oidc\",\"enabled\" : false,\"updateProfileFirstLoginMode\" : \"on\",\"trustEmail\" : false,\"storeToken\" : false,\"addReadTokenRoleOnCreate\" : false,\"authenticateByDefault\" : false,\"linkOnly\" : false,\"firstBrokerLoginFlowAlias\" : \"first broker login\",\"config\" : {\"hideOnLoginPage\" : \"\",\"userInfoUrl\" : \"https://$SERVICES_CARD_DNS/oauth2/userinfo\",\"validateSignature\" : \"true\",\"clientId\" : \"$bcscClientID\",\"tokenUrl\" : \"https://$SERVICES_CARD_DNS/oauth2/token\",\"uiLocales\" : \"\",\"jwksUrl\" : \"https://$SERVICES_CARD_DNS/oauth2/jwk.json\",\"backchannelSupported\" : \"\",\"issuer\" : \"https://$SERVICES_CARD_DNS/oauth2/\",\"useJwksUrl\" : \"true\",\"loginHint\" : \"\",\"authorizationUrl\" : \"https://$SERVICES_CARD_DNS/login/oidc/authorize\",\"disableUserInfo\" : \"\",\"logoutUrl\" : \"\",\"clientSecret\" : \"$bcscClientSecret\",\"prompt\" : \"\",\"defaultScope\" : \"openid profile email address\"}}"
 
 echo Creating mappers for BC Services Card DevExchange IDP...
 $KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"First Name\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"given_name\",\"user.attribute\" : \"firstName\"}}"

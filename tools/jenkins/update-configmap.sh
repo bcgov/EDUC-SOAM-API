@@ -8,46 +8,78 @@ SOAM_KC_REALM_ID="master"
 KCADM_FILE_BIN_FOLDER="/tmp/keycloak-9.0.3/bin"
 SSO_ENV=sso.pathfinder.gov.bc.ca
 SOAM_KC=$OPENSHIFT_NAMESPACE.pathfinder.gov.bc.ca
-NATS_CLUSTER=educ_pen_nats_cluster
-NATS_URL="nats://nats.${OPENSHIFT_NAMESPACE}-${envValue}.svc.cluster.local:4222"
 
-oc project $OPENSHIFT_NAMESPACE-$envValue
-SOAM_KC_LOAD_USER_ADMIN=$(oc -o json get secret sso-admin-${envValue} | sed -n 's/.*"username": "\(.*\)"/\1/p' | base64 --decode)
-SOAM_KC_LOAD_USER_PASS=$(oc -o json get secret sso-admin-${envValue} | sed -n 's/.*"password": "\(.*\)",/\1/p' | base64 --decode)
-DEVEXCHANGE_KC_LOAD_USER_PASS=$(oc -o json get secret devexchange-keycloak-secrets-${envValue} | sed -n 's/.*"password": "\(.*\)",/\1/p' | base64 --decode)
-DEVEXCHANGE_KC_LOAD_USER_ADMIN=$(oc -o json get secret devexchange-keycloak-secrets-${envValue} | sed -n 's/.*"username": "\(.*\)"/\1/p' | base64 --decode)
-DEVEXCHANGE_KC_REALM_ID=$(oc -o json get secret devexchange-keycloak-secrets-${envValue} | sed -n 's/.*"realm": "\(.*\)",/\1/p' | base64 --decode)
+oc project "$OPENSHIFT_NAMESPACE"-"$envValue"
+SOAM_KC_LOAD_USER_ADMIN=$(oc -o json get secret sso-admin-"${envValue}" | sed -n 's/.*"username": "\(.*\)"/\1/p' | base64 --decode)
+SOAM_KC_LOAD_USER_PASS=$(oc -o json get secret sso-admin-"${envValue}" | sed -n 's/.*"password": "\(.*\)",/\1/p' | base64 --decode)
+DEVEXCHANGE_KC_LOAD_USER_PASS=$(oc -o json get secret devexchange-keycloak-secrets-"${envValue}" | sed -n 's/.*"password": "\(.*\)",/\1/p' | base64 --decode)
+DEVEXCHANGE_KC_LOAD_USER_ADMIN=$(oc -o json get secret devexchange-keycloak-secrets-"${envValue}" | sed -n 's/.*"username": "\(.*\)"/\1/p' | base64 --decode)
+DEVEXCHANGE_KC_REALM_ID=$(oc -o json get secret devexchange-keycloak-secrets-"${envValue}" | sed -n 's/.*"realm": "\(.*\)",/\1/p' | base64 --decode)
+SPLUNK_TOKEN=$(oc -o json get configmaps "${APP_NAME}"-"${envValue}"-setup-config | sed -n "s/.*\"SPLUNK_TOKEN_${APP_NAME_UPPER}\": \"\(.*\)\"/\1/p")
 SERVICES_CARD_DNS=id.gov.bc.ca
 
+SPLUNK_URL=""
 if [ "$envValue" != "prod" ]
 then
     SSO_ENV=sso-$envValue.pathfinder.gov.bc.ca
     SOAM_KC=$OPENSHIFT_NAMESPACE-$envValue.pathfinder.gov.bc.ca
     SERVICES_CARD_DNS=idtest.gov.bc.ca
+    SPLUNK_URL="dev.splunk.educ.gov.bc.ca"
+else
+    SPLUNK_URL="gww.splunk.educ.gov.bc.ca"
 fi
+
+FLB_CONFIG="[SERVICE]
+   Flush        1
+   Daemon       Off
+   Log_Level    debug
+   HTTP_Server   On
+   HTTP_Listen   0.0.0.0
+   HTTP_Port     2020
+[INPUT]
+   Name   tail
+   Path   /mnt/log/*
+   Mem_Buf_Limit 20MB
+[FILTER]
+   Name record_modifier
+   Match *
+   Record hostname \${HOSTNAME}
+[OUTPUT]
+   Name   stdout
+   Match  *
+[OUTPUT]
+   Name  splunk
+   Match *
+   Host  $SPLUNK_URL
+   Port  443
+   TLS         On
+   TLS.Verify  Off
+   Message_Key $APP_NAME
+   Splunk_Token $SPLUNK_TOKEN
+"
 
 ###########################################################
 #Setup for Dev Exchange
 ###########################################################
 echo Logging in
-$KCADM_FILE_BIN_FOLDER/kcadm.sh config credentials --server https://$SSO_ENV/auth --realm $DEVEXCHANGE_KC_REALM_ID --user $DEVEXCHANGE_KC_LOAD_USER_ADMIN --password $DEVEXCHANGE_KC_LOAD_USER_PASS
+$KCADM_FILE_BIN_FOLDER/kcadm.sh config credentials --server https://"$SSO_ENV"/auth --realm "$DEVEXCHANGE_KC_REALM_ID" --user "$DEVEXCHANGE_KC_LOAD_USER_ADMIN" --password "$DEVEXCHANGE_KC_LOAD_USER_PASS"
 
 echo Updating realm details
-$KCADM_FILE_BIN_FOLDER/kcadm.sh update realms/$DEVEXCHANGE_KC_REALM_ID --body "{\"loginWithEmailAllowed\" : false, \"duplicateEmailsAllowed\" : true}"
+$KCADM_FILE_BIN_FOLDER/kcadm.sh update realms/"$DEVEXCHANGE_KC_REALM_ID" --body "{\"loginWithEmailAllowed\" : false, \"duplicateEmailsAllowed\" : true}"
 
 echo Updating First Broker Login executers
 getFirstBrokerLoginRegistrationExecuterID(){
-    executorID= $KCADM_FILE_BIN_FOLDER/kcadm.sh get -r $DEVEXCHANGE_KC_REALM_ID authentication/flows/first%20broker%20login/executions | grep -B6 '"providerId" : "idp-review-profile"' | grep -Po "(\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}"
+    executorID= $KCADM_FILE_BIN_FOLDER/kcadm.sh get -r "$DEVEXCHANGE_KC_REALM_ID" authentication/flows/first%20broker%20login/executions | grep -B6 '"providerId" : "idp-review-profile"' | grep -Po "(\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}"
 }
 
 FIRST_BROKER_EXECUTER_ID=$(getFirstBrokerLoginRegistrationExecuterID)
-$KCADM_FILE_BIN_FOLDER/kcadm.sh update authentication/flows/first%20broker%20login/executions -r $DEVEXCHANGE_KC_REALM_ID --body "{ \"id\" : \"$FIRST_BROKER_EXECUTER_ID\", \"requirement\" : \"DISABLED\", \"displayName\" : \"Review Profile\", \"alias\" : \"review profile config\", \"requirementChoices\" : [ \"REQUIRED\", \"DISABLED\" ], \"configurable\" : true, \"providerId\" : \"idp-review-profile\", \"authenticationConfig\" : \"0ee684cd-7ce1-4278-9477-d40d1a3486bf\", \"level\" : 0, \"index\" : 0}" 
+$KCADM_FILE_BIN_FOLDER/kcadm.sh update authentication/flows/first%20broker%20login/executions -r "$DEVEXCHANGE_KC_REALM_ID" --body "{ \"id\" : \"$FIRST_BROKER_EXECUTER_ID\", \"requirement\" : \"DISABLED\", \"displayName\" : \"Review Profile\", \"alias\" : \"review profile config\", \"requirementChoices\" : [ \"REQUIRED\", \"DISABLED\" ], \"configurable\" : true, \"providerId\" : \"idp-review-profile\", \"authenticationConfig\" : \"0ee684cd-7ce1-4278-9477-d40d1a3486bf\", \"level\" : 0, \"index\" : 0}"
 
 echo Removing BCSC IDP if exists...
-$KCADM_FILE_BIN_FOLDER/kcadm.sh delete identity-provider/instances/bcsc -r $DEVEXCHANGE_KC_REALM_ID
+$KCADM_FILE_BIN_FOLDER/kcadm.sh delete identity-provider/instances/bcsc -r "$DEVEXCHANGE_KC_REALM_ID"
 
 echo Creating BC Services Card IDP...
-$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances -r $DEVEXCHANGE_KC_REALM_ID --body "{\"alias\" : \"bcsc\",\"displayName\" : \"BC Services Card\",\"providerId\" : \"oidc\",\"enabled\" : false,\"updateProfileFirstLoginMode\" : \"on\",\"trustEmail\" : false,\"storeToken\" : false,\"addReadTokenRoleOnCreate\" : false,\"authenticateByDefault\" : false,\"linkOnly\" : false,\"firstBrokerLoginFlowAlias\" : \"first broker login\",\"config\" : {\"hideOnLoginPage\" : \"\",\"userInfoUrl\" : \"https://$SERVICES_CARD_DNS/oauth2/userinfo\",\"validateSignature\" : \"true\",\"clientId\" : \"$bcscClientID\",\"tokenUrl\" : \"https://$SERVICES_CARD_DNS/oauth2/token\",\"uiLocales\" : \"\",\"jwksUrl\" : \"https://$SERVICES_CARD_DNS/oauth2/jwk.json\",\"backchannelSupported\" : \"\",\"issuer\" : \"https://$SERVICES_CARD_DNS/oauth2/\",\"useJwksUrl\" : \"true\",\"loginHint\" : \"\",\"authorizationUrl\" : \"https://$SERVICES_CARD_DNS/login/oidc/authorize\",\"disableUserInfo\" : \"\",\"logoutUrl\" : \"\",\"clientSecret\" : \"$bcscClientSecret\",\"prompt\" : \"\",\"defaultScope\" : \"openid profile email address\"}}"
+$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances -r "$DEVEXCHANGE_KC_REALM_ID" --body "{\"alias\" : \"bcsc\",\"displayName\" : \"BC Services Card\",\"providerId\" : \"oidc\",\"enabled\" : false,\"updateProfileFirstLoginMode\" : \"on\",\"trustEmail\" : false,\"storeToken\" : false,\"addReadTokenRoleOnCreate\" : false,\"authenticateByDefault\" : false,\"linkOnly\" : false,\"firstBrokerLoginFlowAlias\" : \"first broker login\",\"config\" : {\"hideOnLoginPage\" : \"\",\"userInfoUrl\" : \"https://$SERVICES_CARD_DNS/oauth2/userinfo\",\"validateSignature\" : \"true\",\"clientId\" : \"$bcscClientID\",\"tokenUrl\" : \"https://$SERVICES_CARD_DNS/oauth2/token\",\"uiLocales\" : \"\",\"jwksUrl\" : \"https://$SERVICES_CARD_DNS/oauth2/jwk.json\",\"backchannelSupported\" : \"\",\"issuer\" : \"https://$SERVICES_CARD_DNS/oauth2/\",\"useJwksUrl\" : \"true\",\"loginHint\" : \"\",\"authorizationUrl\" : \"https://$SERVICES_CARD_DNS/login/oidc/authorize\",\"disableUserInfo\" : \"\",\"logoutUrl\" : \"\",\"clientSecret\" : \"$bcscClientSecret\",\"prompt\" : \"\",\"defaultScope\" : \"openid profile email address\"}}"
 
 echo Creating mappers for BC Services Card DevExchange IDP...
 $KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"First Name\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"given_name\",\"user.attribute\" : \"firstName\"}}"
@@ -170,8 +202,6 @@ soamAPIServiceClientSecret=$(getSoamAPIServiceClientSecret)
 
 echo Fetching public key from SOAM
 soamFullPublicKey="-----BEGIN PUBLIC KEY----- $(getPublicKey) -----END PUBLIC KEY-----"
-newline=$'\n'
-formattedPublicKey="${soamFullPublicKey:0:26}${newline}${soamFullPublicKey:27:64}${newline}${soamFullPublicKey:91:64}${newline}${soamFullPublicKey:155:64}${newline}${soamFullPublicKey:219:64}${newline}${soamFullPublicKey:283:64}${newline}${soamFullPublicKey:347:64}${newline}${soamFullPublicKey:411:9}${newline}${soamFullPublicKey:420}"
 
 ###########################################################
 #Setup for config-map
@@ -282,3 +312,6 @@ oc create -n $OPENSHIFT_NAMESPACE-$envValue configmap soam-sso-config-map --from
 echo
 echo Setting environment variables for sso-$envValue application
 oc set env --from=configmap/soam-sso-config-map dc/sso-$envValue
+
+echo Creating config map "$APP_NAME"-flb-sc-config-map
+oc create -n "$OPENSHIFT_NAMESPACE"-"$envValue" configmap "$APP_NAME"-flb-sc-config-map --from-literal=fluent-bit.conf="$FLB_CONFIG"  --dry-run -o yaml | oc apply -f -

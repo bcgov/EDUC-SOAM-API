@@ -39,7 +39,7 @@ objects:
       postCommit: {}
       resources:
         requests:
-          cpu: 300m
+          cpu: 100m
           memory: 1Gi
         limits:
           cpu: 1000m

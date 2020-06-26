@@ -140,7 +140,7 @@ def configMapSetup(String appName,String appNameUpper, String namespace){
       sh """
 		  set +x
 		  echo Running curl command...
-		  oc create -n ${namespace}-dev configmap ${appName}-dev-setup-config --from-literal=SPLUNK_TOKEN_${appNameUpper}=${configProperties.SPLUNK_TOKEN} --dry-run -o yaml | oc apply -f -
+		  oc create -n ${namespace}-dev configmap ${appName}-dev-setup-config --from-literal=SPLUNK_TOKEN_${appNameUpper}=${configProperties} --dry-run -o yaml | oc apply -f -
 		  oc project ${namespace}-tools
 		"""
     }

@@ -13,7 +13,7 @@ oc project "$OPENSHIFT_NAMESPACE"-"$envValue"
 SOAM_KC_LOAD_USER_ADMIN=$(oc -o json get secret sso-admin-"${envValue}" | sed -n 's/.*"username": "\(.*\)"/\1/p' | base64 --decode)
 SOAM_KC_LOAD_USER_PASS=$(oc -o json get secret sso-admin-"${envValue}" | sed -n 's/.*"password": "\(.*\)",/\1/p' | base64 --decode)
 DEVEXCHANGE_KC_LOAD_USER_PASS=$(oc -o json get secret devexchange-keycloak-secrets-"${envValue}" | sed -n 's/.*"password": "\(.*\)",/\1/p' | base64 --decode)
-DEVEXCHANGE_KC_LOAD_USER_ADMIN=$(oc -o json get secret devexchange-keycloak-secrets-"${envValue}" | sed -n 's/.*"username": "\(.*\)"/\1/p' | base64 --decode)
+DEVEXCHANGE_KC_LOAD_USER_ADMIN=$(oc -o json get secret devexchange-keycloak-secrets-"${envValue}" | sed -n 's/.*"username": "\(.*\)",/\1/p' | base64 --decode)
 DEVEXCHANGE_KC_REALM_ID=$(oc -o json get secret devexchange-keycloak-secrets-"${envValue}" | sed -n 's/.*"realm": "\(.*\)",/\1/p' | base64 --decode)
 SPLUNK_TOKEN=$(oc -o json get configmaps "${APP_NAME}"-"${envValue}"-setup-config | sed -n "s/.*\"SPLUNK_TOKEN_${APP_NAME_UPPER}\": \"\(.*\)\"/\1/p")
 SERVICES_CARD_DNS=id.gov.bc.ca

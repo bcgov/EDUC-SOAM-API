@@ -19,6 +19,9 @@ DEVEXCHANGE_KC_REALM_ID=$(oc -o json get secret devexchange-keycloak-secrets-${e
 SPLUNK_TOKEN=$(oc -o json get configmaps ${APP_NAME}-${envValue}-setup-config | sed -n "s/.*\"SPLUNK_TOKEN_${APP_NAME_UPPER}\": \"\(.*\)\"/\1/p")
 SERVICES_CARD_DNS=id.gov.bc.ca
 
+echo 'Testing: ' + $DEVEXCHANGE_KC_LOAD_USER_ADMIN
+echo 'Testing2: ' + $DEVEXCHANGE_KC_LOAD_USER_PASS
+
 SPLUNK_URL=""
 if [ "$envValue" != "prod" ]
 then

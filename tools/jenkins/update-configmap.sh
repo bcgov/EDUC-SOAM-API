@@ -22,15 +22,11 @@ SERVICES_CARD_DNS=id.gov.bc.ca
 SPLUNK_URL=""
 if [ "$envValue" != "prod" ]
 then
-    SSO_ENV=sso-$envValue.pathfinder.gov.bc.ca
-    SOAM_KC=$OPENSHIFT_NAMESPACE-$envValue.pathfinder.gov.bc.ca
-    SERVICES_CARD_DNS=idtest.gov.bc.ca
-    SPLUNK_URL="dev.splunk.educ.gov.bc.ca"
-else
-    SPLUNK_URL="gww.splunk.educ.gov.bc.ca"
-fi
-
-FLB_CONFIG="[SERVICE]
+  SSO_ENV=sso-$envValue.pathfinder.gov.bc.ca
+  SOAM_KC=$OPENSHIFT_NAMESPACE-$envValue.pathfinder.gov.bc.ca
+  SERVICES_CARD_DNS=idtest.gov.bc.ca
+  SPLUNK_URL="dev.splunk.educ.gov.bc.ca"
+  FLB_CONFIG="[SERVICE]
    Flush        1
    Daemon       Off
    Log_Level    debug
@@ -58,7 +54,27 @@ FLB_CONFIG="[SERVICE]
    Message_Key $APP_NAME
    Splunk_Token $SPLUNK_TOKEN
 "
-
+else
+  FLB_CONFIG="[SERVICE]
+   Flush        1
+   Daemon       Off
+   Log_Level    debug
+   HTTP_Server   On
+   HTTP_Listen   0.0.0.0
+   HTTP_Port     2020
+[INPUT]
+   Name   tail
+   Path   /mnt/log/*
+   Mem_Buf_Limit 20MB
+[FILTER]
+   Name record_modifier
+   Match *
+   Record hostname \${HOSTNAME}
+[OUTPUT]
+   Name   stdout
+   Match  *
+"
+fi
 ###########################################################
 #Setup for Dev Exchange
 ###########################################################

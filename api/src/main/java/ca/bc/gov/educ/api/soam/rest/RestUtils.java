@@ -30,12 +30,15 @@ public class RestUtils {
     return getRestTemplate(null);
   }
 
-  public RestTemplate getRestTemplate() {
+  public RestTemplate getRestTemplate(List<String> scopes) {
     log.debug("Calling get token method");
     ClientCredentialsResourceDetails resourceDetails = new ClientCredentialsResourceDetails();
     resourceDetails.setClientId(props.getClientID());
     resourceDetails.setClientSecret(props.getClientSecret());
     resourceDetails.setAccessTokenUri(props.getTokenURL());
+    if (scopes != null) {
+      resourceDetails.setScope(scopes);
+    }
     return new OAuth2RestTemplate(resourceDetails, new DefaultOAuth2ClientContext());
   }
 

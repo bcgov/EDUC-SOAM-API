@@ -7,7 +7,7 @@ APP_NAME_UPPER=${APP_NAME^^}
 TZVALUE="America/Vancouver"
 SOAM_KC_REALM_ID="master"
 KCADM_FILE_BIN_FOLDER="/mnt/c/Arcshift/Apps/keycloak-8.0.1/bin"
-SSO_ENV=sso.pathfinder.gov.bc.ca
+SSO_ENV=oidc.gov.bc.ca
 SOAM_KC=$OPENSHIFT_NAMESPACE.pathfinder.gov.bc.ca
 
 oc project "$OPENSHIFT_NAMESPACE"-"$envValue"
@@ -22,7 +22,7 @@ SERVICES_CARD_DNS=id.gov.bc.ca
 SPLUNK_URL=""
 if [ "$envValue" != "prod" ]
 then
-  SSO_ENV=sso-$envValue.pathfinder.gov.bc.ca
+  SSO_ENV=$envValue.oidc.gov.bc.ca
   SOAM_KC=$OPENSHIFT_NAMESPACE-$envValue.pathfinder.gov.bc.ca
   SERVICES_CARD_DNS=idtest.gov.bc.ca
   SPLUNK_URL="dev.splunk.educ.gov.bc.ca"

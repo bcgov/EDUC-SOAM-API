@@ -120,7 +120,7 @@ public class SoamServiceTest {
             .thenThrow(createHttpClientErrorException(HttpStatus.NOT_FOUND));
     when(restTemplate.postForEntity(props.getDigitalIdentifierApiURL(), entity
             , DigitalIDEntity.class)).thenThrow(createHttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
-    assertThrows(HttpClientErrorException.class, () -> service.performLogin("BCeId", "12345", null));
+    assertThrows(SoamRuntimeException.class, () -> service.performLogin("BCeId", "12345", null));
     verify(restTemplate, atLeastOnce()).exchange(props.getDigitalIdentifierApiURL() + "?identitytype=BCeId&identityvalue=12345", HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
     verify(restTemplate, atLeastOnce()).postForEntity(props.getDigitalIdentifierApiURL(), entity
             , DigitalIDEntity.class);

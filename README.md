@@ -1,3 +1,9 @@
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=bcgov_EDUC-SOAM-API&metric=alert_status)](https://sonarcloud.io/dashboard?id=bcgov_EDUC-SOAM-API)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=bcgov_EDUC-SOAM-API&metric=coverage)](https://sonarcloud.io/dashboard?id=bcgov_EDUC-SOAM-API)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=bcgov_EDUC-SOAM-API&metric=ncloc)](https://sonarcloud.io/dashboard?id=bcgov_EDUC-SOAM-API)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=bcgov_EDUC-SOAM-API&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=bcgov_EDUC-SOAM-API)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=bcgov_EDUC-SOAM-API&metric=bugs)](https://sonarcloud.io/dashboard?id=bcgov_EDUC-SOAM-API)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=bcgov_EDUC-SOAM-API&metric=security_rating)](https://sonarcloud.io/dashboard?id=bcgov_EDUC-SOAM-API)
 # EDUC-SOAM-API
 An API for the Student Online Access Module for the Ministry of Education.
 

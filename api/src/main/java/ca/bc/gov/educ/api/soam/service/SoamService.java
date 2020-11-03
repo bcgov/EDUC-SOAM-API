@@ -72,9 +72,13 @@ public class SoamService {
       if (e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
         //Digital Identity does not exist, let's create it
         DigitalIDEntity entity = soamUtil.createDigitalIdentity(identifierType, identifierValue.toUpperCase());
-        ResponseEntity<DigitalIDEntity> responseEntity = restTemplate.postForEntity(props.getDigitalIdentifierApiURL(), entity, DigitalIDEntity.class);
-        if (servicesCard != null && responseEntity.getBody() != null) {
-          createOrUpdateBCSC(servicesCard, restTemplate, responseEntity.getBody().getDigitalID());
+        try {
+          ResponseEntity<DigitalIDEntity> responseEntity = restTemplate.postForEntity(props.getDigitalIdentifierApiURL(), entity, DigitalIDEntity.class);
+          if (servicesCard != null && responseEntity.getBody() != null) {
+            createOrUpdateBCSC(servicesCard, restTemplate, Objects.requireNonNull(responseEntity.getBody()).getDigitalID());
+          }
+        } catch (final HttpClientErrorException ex) {
+          throw new SoamRuntimeException(getErrorMessageString(ex.getStatusCode(), ex.getResponseBodyAsString()));
         }
       } else {
         throw new SoamRuntimeException(getErrorMessageString(e.getStatusCode(), e.getResponseBodyAsString()));

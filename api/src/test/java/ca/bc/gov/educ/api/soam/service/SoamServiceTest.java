@@ -545,7 +545,7 @@ public class SoamServiceTest {
     verify(restTemplate, atLeastOnce()).exchange(props.getDigitalIdentifierApiURL() + "?identitytype=BCeId&identityvalue=12345", HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), DigitalIDEntity.class);
 
     assertNotNull(soamLoginEntity.getDigitalIdentityID());
-    assertThat(digitalId.equals(soamLoginEntity.getDigitalIdentityID())).isTrue();
+    assertThat(soamLoginEntity.getDigitalIdentityID()).isEqualTo(digitalId);
     assertNull(soamLoginEntity.getServiceCard());
     assertNull(soamLoginEntity.getStudent());
 
@@ -576,11 +576,11 @@ public class SoamServiceTest {
     verify(restTemplate, atLeastOnce()).exchange(props.getStudentApiURL() + "/" + studentId.toString(), HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), StudentEntity.class);
 
     assertNotNull(soamLoginEntity.getDigitalIdentityID());
-    assertThat(digitalId.equals(soamLoginEntity.getDigitalIdentityID())).isTrue();
+    assertThat(soamLoginEntity.getDigitalIdentityID()).isEqualTo(digitalId);
     assertNull(soamLoginEntity.getServiceCard());
     assertNotNull(soamLoginEntity.getStudent());
     assertNotNull(soamLoginEntity.getStudent().getDob());
-    assertThat("test".equals(soamLoginEntity.getStudent().getLegalLastName())).isTrue();
+    assertThat(soamLoginEntity.getStudent().getLegalLastName()).isEqualTo("test");
   }
 
   @Test
@@ -665,11 +665,11 @@ public class SoamServiceTest {
     verify(restTemplate, atLeastOnce()).exchange(props.getServicesCardApiURL() + "?did=" + "12345", HttpMethod.GET, new HttpEntity<>(PARAMETERS_ATTRIBUTE, headers), ServicesCardEntity.class);
 
     assertNotNull(soamLoginEntity.getDigitalIdentityID());
-    assertThat(digitalId.equals(soamLoginEntity.getDigitalIdentityID())).isTrue();
+    assertThat(digitalId).isEqualTo(soamLoginEntity.getDigitalIdentityID());
     assertNotNull(soamLoginEntity.getServiceCard());
     assertNotNull(soamLoginEntity.getStudent());
     assertNotNull(soamLoginEntity.getStudent().getDob());
-    assertThat("test".equals(soamLoginEntity.getStudent().getLegalLastName())).isTrue();
+    assertThat(soamLoginEntity.getStudent().getLegalLastName()).isEqualTo("test");
   }
 
   @Test
@@ -712,11 +712,7 @@ public class SoamServiceTest {
 
   private StudentEntity createStudentEntity(UUID studentId) {
     StudentEntity.StudentEntityBuilder builder = StudentEntity.builder();
-    if (studentId != null) {
-      builder.studentID(studentId);
-    } else {
-      builder.studentID(UUID.randomUUID());
-    }
+    builder.studentID(Objects.requireNonNullElseGet(studentId, UUID::randomUUID));
     builder.dob(LocalDate.now().toString());
     builder.legalFirstName("test").legalLastName("test").email("test@abc.com").genderCode('M').pen("123456789").sexCode('M').dataSourceCode("MYED");
     return builder.build();

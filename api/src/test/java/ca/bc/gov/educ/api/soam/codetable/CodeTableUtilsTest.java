@@ -14,6 +14,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,7 +45,7 @@ public class CodeTableUtilsTest {
     when(restUtils.getRestTemplate()).thenReturn(restTemplate);
     when(restTemplate.exchange(eq(props.getDigitalIdentifierApiURL() + "/accessChannelCodes"), eq(HttpMethod.GET), any(), eq(AccessChannelCodeEntity[].class))).thenReturn(getAccessChannelMap());
     var results = codeTableUtils.getAllAccessChannelCodes();
-    assertThat(results).size().isEqualTo(0);
+    assertThat(results).size().isEqualTo(1);
     verify(restTemplate, atLeastOnce()).exchange(eq(props.getDigitalIdentifierApiURL() + "/accessChannelCodes"), eq(HttpMethod.GET), any(), eq(AccessChannelCodeEntity[].class));
   }
 
@@ -58,8 +59,15 @@ public class CodeTableUtilsTest {
   }
 
   ResponseEntity<AccessChannelCodeEntity[]> getAccessChannelMap() {
-    AccessChannelCodeEntity[] accessChannelCodeEntities = new AccessChannelCodeEntity[0];
-    return ResponseEntity.ok(new ArrayList<AccessChannelCodeEntity>().toArray(accessChannelCodeEntities));
+    AccessChannelCodeEntity[] accessChannelCodeEntities = new AccessChannelCodeEntity[1];
+    var accessChannelCodes = new ArrayList<AccessChannelCodeEntity>();
+    accessChannelCodes.add(AccessChannelCodeEntity
+        .builder()
+        .effectiveDate(LocalDateTime.now().toString())
+        .expiryDate(LocalDateTime.MAX.toString())
+        .accessChannelCode("OSPR")
+        .build());
+    return ResponseEntity.ok(accessChannelCodes.toArray(accessChannelCodeEntities));
   }
 
   ResponseEntity<IdentityTypeCodeEntity[]> getIdentityTypeCodeMap() {

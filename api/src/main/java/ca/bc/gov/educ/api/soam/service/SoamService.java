@@ -10,6 +10,7 @@ import ca.bc.gov.educ.api.soam.model.entity.StudentEntity;
 import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
 import ca.bc.gov.educ.api.soam.rest.RestUtils;
 import ca.bc.gov.educ.api.soam.util.SoamUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Service
+@Slf4j
 public class SoamService {
 
   private static final String PARAMETERS_ATTRIBUTE = "parameters";
@@ -192,11 +194,10 @@ public class SoamService {
 
   private void validateSearchParameters(String identifierType, String identifierValue) {
     if (identifierType == null || !codeTableUtils.getAllIdentifierTypeCodes().containsKey(identifierType)) {
+      log.error("Invalid Identifier Type :: {}", identifierType);
       throw new InvalidParameterException("identifierType");
     } else if (identifierValue == null || identifierValue.length() < 1) {
       throw new InvalidParameterException("identifierValue");
     }
   }
-
-
 }

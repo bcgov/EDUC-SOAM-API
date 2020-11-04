@@ -1,6 +1,5 @@
 package ca.bc.gov.educ.api.soam.support;
 
-import ca.bc.gov.educ.api.soam.codetable.CodeTableUtils;
 import ca.bc.gov.educ.api.soam.rest.RestUtils;
 import ca.bc.gov.educ.api.soam.util.SoamUtil;
 import org.mockito.Mockito;
@@ -25,15 +24,4 @@ public class MockConfiguration {
     return Mockito.mock(RestUtils.class);
   }
 
-  @Bean
-  @Primary
-  public CodeTableUtils codeTableUtils() {
-    return Mockito.mock(CodeTableUtils.class);
-  }
-
-  @Bean
-  @Primary
-  public SoamUtil soamUtil() {
-    return Mockito.mock(SoamUtil.class);
-  }
 }

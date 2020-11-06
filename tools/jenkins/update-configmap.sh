@@ -8,7 +8,7 @@ TZVALUE="America/Vancouver"
 SOAM_KC_REALM_ID="master"
 KCADM_FILE_BIN_FOLDER="/mnt/c/Arcshift/Apps/keycloak-8.0.1/bin"
 SSO_ENV=oidc.gov.bc.ca
-SOAM_KC=$OPENSHIFT_NAMESPACE.pathfinder.gov.bc.ca
+SOAM_KC=soam-$envValue.apps.silver.devops.gov.bc.ca
 
 oc project "$OPENSHIFT_NAMESPACE"-"$envValue"
 SOAM_KC_LOAD_USER_ADMIN=$(oc -o json get secret sso-admin-${envValue} | sed -n 's/.*"username": "\(.*\)"/\1/p' | base64 --decode)
@@ -52,7 +52,7 @@ FLB_CONFIG="[SERVICE]
 if [ "$envValue" != "prod" ]
 then
   SSO_ENV=$envValue.oidc.gov.bc.ca
-  SOAM_KC=$OPENSHIFT_NAMESPACE-$envValue.pathfinder.gov.bc.ca
+  SOAM_KC=soam-$envValue.apps.silver.devops.gov.bc.ca
   SERVICES_CARD_DNS=idtest.gov.bc.ca
 fi
 ###########################################################

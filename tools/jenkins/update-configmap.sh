@@ -9,6 +9,18 @@ SOAM_KC_REALM_ID="master"
 KCADM_FILE_BIN_FOLDER="/tmp/keycloak-9.0.3/bin"
 SSO_ENV=oidc.gov.bc.ca
 SOAM_KC=soam-$envValue.apps.silver.devops.gov.bc.ca
+TARGET_ENV=$envValue
+
+#THIS CONDITION IS ONLY ADDED FOR LOWER ENV DEPLOYMENT
+if [ "$envValue" == "tools" ]
+then
+  TARGET_ENV="dev"
+fi
+
+if [ "$envValue" == "dev" ]
+then
+  TARGET_ENV="test"
+fi
 
 oc project "$OPENSHIFT_NAMESPACE"-"$envValue"
 SOAM_KC_LOAD_USER_ADMIN=$(oc -o json get secret sso-admin-${envValue} | sed -n 's/.*"username": "\(.*\)"/\1/p' | base64 --decode)
@@ -51,7 +63,7 @@ FLB_CONFIG="[SERVICE]
 
 if [ "$envValue" != "prod" ]
 then
-  SSO_ENV=$envValue.oidc.gov.bc.ca
+  SSO_ENV=$TARGET_ENV.oidc.gov.bc.ca
   SOAM_KC=soam-$envValue.apps.silver.devops.gov.bc.ca
   SERVICES_CARD_DNS=idtest.gov.bc.ca
 fi

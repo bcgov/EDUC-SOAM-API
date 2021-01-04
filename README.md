@@ -1,3 +1,4 @@
+[![img](https://img.shields.io/badge/Lifecycle-Maturing-007EC6)](https://github.com/bcgov/repomountie/blob/master/doc/lifecycle-badges.md)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=bcgov_EDUC-SOAM-API&metric=alert_status)](https://sonarcloud.io/dashboard?id=bcgov_EDUC-SOAM-API)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=bcgov_EDUC-SOAM-API&metric=coverage)](https://sonarcloud.io/dashboard?id=bcgov_EDUC-SOAM-API)
 [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=bcgov_EDUC-SOAM-API&metric=ncloc)](https://sonarcloud.io/dashboard?id=bcgov_EDUC-SOAM-API)

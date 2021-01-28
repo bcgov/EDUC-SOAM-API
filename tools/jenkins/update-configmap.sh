@@ -73,73 +73,73 @@ fi
 echo Logging in
 $KCADM_FILE_BIN_FOLDER/kcadm.sh config credentials --server https://"$SSO_ENV"/auth --realm "$DEVEXCHANGE_KC_REALM_ID" --user "$DEVEXCHANGE_KC_LOAD_USER_ADMIN" --password "$DEVEXCHANGE_KC_LOAD_USER_PASS"
 
-echo Updating realm details
-$KCADM_FILE_BIN_FOLDER/kcadm.sh update realms/"$DEVEXCHANGE_KC_REALM_ID" --body "{\"loginWithEmailAllowed\" : false, \"duplicateEmailsAllowed\" : true}"
+#echo Updating realm details
+#$KCADM_FILE_BIN_FOLDER/kcadm.sh update realms/"$DEVEXCHANGE_KC_REALM_ID" --body "{\"loginWithEmailAllowed\" : false, \"duplicateEmailsAllowed\" : true}"
 
-echo Updating First Broker Login executers
-getFirstBrokerLoginRegistrationExecuterID(){
-    executorID= $KCADM_FILE_BIN_FOLDER/kcadm.sh get -r "$DEVEXCHANGE_KC_REALM_ID" authentication/flows/first%20broker%20login/executions | grep -B6 '"providerId" : "idp-review-profile"' | grep -Po "(\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}"
-}
+#echo Updating First Broker Login executers
+#getFirstBrokerLoginRegistrationExecuterID(){
+#    executorID= $KCADM_FILE_BIN_FOLDER/kcadm.sh get -r "$DEVEXCHANGE_KC_REALM_ID" authentication/flows/first%20broker%20login/executions | grep -B6 '"providerId" : "idp-review-profile"' | grep -Po "(\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}"
+#}
 
-FIRST_BROKER_EXECUTER_ID=$(getFirstBrokerLoginRegistrationExecuterID)
-$KCADM_FILE_BIN_FOLDER/kcadm.sh update authentication/flows/first%20broker%20login/executions -r "$DEVEXCHANGE_KC_REALM_ID" --body "{ \"id\" : \"$FIRST_BROKER_EXECUTER_ID\", \"requirement\" : \"DISABLED\", \"displayName\" : \"Review Profile\", \"alias\" : \"review profile config\", \"requirementChoices\" : [ \"REQUIRED\", \"DISABLED\" ], \"configurable\" : true, \"providerId\" : \"idp-review-profile\", \"authenticationConfig\" : \"0ee684cd-7ce1-4278-9477-d40d1a3486bf\", \"level\" : 0, \"index\" : 0}"
+#FIRST_BROKER_EXECUTER_ID=$(getFirstBrokerLoginRegistrationExecuterID)
+#$KCADM_FILE_BIN_FOLDER/kcadm.sh update authentication/flows/first%20broker%20login/executions -r "$DEVEXCHANGE_KC_REALM_ID" --body "{ \"id\" : \"$FIRST_BROKER_EXECUTER_ID\", \"requirement\" : \"DISABLED\", \"displayName\" : \"Review Profile\", \"alias\" : \"review profile config\", \"requirementChoices\" : [ \"REQUIRED\", \"DISABLED\" ], \"configurable\" : true, \"providerId\" : \"idp-review-profile\", \"authenticationConfig\" : \"0ee684cd-7ce1-4278-9477-d40d1a3486bf\", \"level\" : 0, \"index\" : 0}"
 
-echo Removing BCSC IDP if exists...
-$KCADM_FILE_BIN_FOLDER/kcadm.sh delete identity-provider/instances/bcsc -r "$DEVEXCHANGE_KC_REALM_ID"
+#echo Removing BCSC IDP if exists...
+#$KCADM_FILE_BIN_FOLDER/kcadm.sh delete identity-provider/instances/bcsc -r "$DEVEXCHANGE_KC_REALM_ID"
 
-echo Creating BC Services Card IDP...
-$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances -r "$DEVEXCHANGE_KC_REALM_ID" --body "{\"alias\" : \"bcsc\",\"displayName\" : \"BC Services Card\",\"providerId\" : \"oidc\",\"enabled\" : false,\"updateProfileFirstLoginMode\" : \"on\",\"trustEmail\" : false,\"storeToken\" : false,\"addReadTokenRoleOnCreate\" : false,\"authenticateByDefault\" : false,\"linkOnly\" : false,\"firstBrokerLoginFlowAlias\" : \"first broker login\",\"config\" : {\"hideOnLoginPage\" : \"\",\"userInfoUrl\" : \"https://$SERVICES_CARD_DNS/oauth2/userinfo\",\"validateSignature\" : \"true\",\"clientId\" : \"$bcscClientID\",\"tokenUrl\" : \"https://$SERVICES_CARD_DNS/oauth2/token\",\"uiLocales\" : \"\",\"jwksUrl\" : \"https://$SERVICES_CARD_DNS/oauth2/jwk.json\",\"backchannelSupported\" : \"\",\"issuer\" : \"https://$SERVICES_CARD_DNS/oauth2/\",\"useJwksUrl\" : \"true\",\"loginHint\" : \"\",\"authorizationUrl\" : \"https://$SERVICES_CARD_DNS/login/oidc/authorize\",\"disableUserInfo\" : \"\",\"logoutUrl\" : \"\",\"clientSecret\" : \"$bcscClientSecret\",\"prompt\" : \"\",\"defaultScope\" : \"openid profile email address\"}}"
+#echo Creating BC Services Card IDP...
+#$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances -r "$DEVEXCHANGE_KC_REALM_ID" --body "{\"alias\" : \"bcsc\",\"displayName\" : \"BC Services Card\",\"providerId\" : \"oidc\",\"enabled\" : false,\"updateProfileFirstLoginMode\" : \"on\",\"trustEmail\" : false,\"storeToken\" : false,\"addReadTokenRoleOnCreate\" : false,\"authenticateByDefault\" : false,\"linkOnly\" : false,\"firstBrokerLoginFlowAlias\" : \"first broker login\",\"config\" : {\"hideOnLoginPage\" : \"\",\"userInfoUrl\" : \"https://$SERVICES_CARD_DNS/oauth2/userinfo\",\"validateSignature\" : \"true\",\"clientId\" : \"$bcscClientID\",\"tokenUrl\" : \"https://$SERVICES_CARD_DNS/oauth2/token\",\"uiLocales\" : \"\",\"jwksUrl\" : \"https://$SERVICES_CARD_DNS/oauth2/jwk.json\",\"backchannelSupported\" : \"\",\"issuer\" : \"https://$SERVICES_CARD_DNS/oauth2/\",\"useJwksUrl\" : \"true\",\"loginHint\" : \"\",\"authorizationUrl\" : \"https://$SERVICES_CARD_DNS/login/oidc/authorize\",\"disableUserInfo\" : \"\",\"logoutUrl\" : \"\",\"clientSecret\" : \"$bcscClientSecret\",\"prompt\" : \"\",\"defaultScope\" : \"openid profile email address\"}}"
 
-echo Creating mappers for BC Services Card DevExchange IDP...
-$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"First Name\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"given_name\",\"user.attribute\" : \"firstName\"}}"
+#echo Creating mappers for BC Services Card DevExchange IDP...
+#$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"First Name\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"given_name\",\"user.attribute\" : \"firstName\"}}"
 
-$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Email\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"email\",\"user.attribute\" : \"email\"}}"
+#$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Email\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"email\",\"user.attribute\" : \"email\"}}"
 
-$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Gender\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"gender\",\"user.attribute\" : \"gender\"}}"
+#$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Gender\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"gender\",\"user.attribute\" : \"gender\"}}"
 
-$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"User Type\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"user_type\",\"user.attribute\" : \"user_type\"}}"
+#$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"User Type\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"user_type\",\"user.attribute\" : \"user_type\"}}"
 
-$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"account_type\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"hardcoded-attribute-idp-mapper\",\"config\" : {\"attribute.value\" : \"bcsc\",\"attribute\" : \"account_type\"}}"
+#$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"account_type\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"hardcoded-attribute-idp-mapper\",\"config\" : {\"attribute.value\" : \"bcsc\",\"attribute\" : \"account_type\"}}"
 
-$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Display Name\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"display_name\",\"user.attribute\" : \"display_name\"}}"
+#$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Display Name\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"display_name\",\"user.attribute\" : \"display_name\"}}"
 
-$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Region\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"address.region\",\"user.attribute\" : \"region\"}}"
+#$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Region\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"address.region\",\"user.attribute\" : \"region\"}}"
 
-$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Given Names\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"given_names\",\"user.attribute\" : \"given_names\"}}"
+#$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Given Names\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"given_names\",\"user.attribute\" : \"given_names\"}}"
 
-$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Given Name\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"given_name\",\"user.attribute\" : \"given_name\"}}"
+#$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Given Name\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"given_name\",\"user.attribute\" : \"given_name\"}}"
 
-$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Street Address\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"address.street_address\",\"user.attribute\" : \"street_address\"}}"
+#$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Street Address\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"address.street_address\",\"user.attribute\" : \"street_address\"}}"
 
-$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Postal Code\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"address.postal_code\",\"user.attribute\" : \"postal_code\"}}"
+#$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Postal Code\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"address.postal_code\",\"user.attribute\" : \"postal_code\"}}"
 
-$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Country\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"address.country\",\"user.attribute\" : \"country\"}}"
+#$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Country\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"address.country\",\"user.attribute\" : \"country\"}}"
 
-$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Birthdate\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"birthdate\",\"user.attribute\" : \"birthdate\"}}"
+#$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Birthdate\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"birthdate\",\"user.attribute\" : \"birthdate\"}}"
 
-$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Locality\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"address.locality\",\"user.attribute\" : \"locality\"}}"
+#$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Locality\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"address.locality\",\"user.attribute\" : \"locality\"}}"
 
-$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Directed Identifier\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"sub\",\"user.attribute\" : \"did\"}}"
+#$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Directed Identifier\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"sub\",\"user.attribute\" : \"did\"}}"
 
-$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Age\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"age\",\"user.attribute\" : \"age\"}}"
+#$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Age\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"age\",\"user.attribute\" : \"age\"}}"
 
-$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Identity Assurance Level\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"identity_assurance_level\",\"user.attribute\" : \"identity_assurance_level\"}}"
+#$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Identity Assurance Level\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"identity_assurance_level\",\"user.attribute\" : \"identity_assurance_level\"}}"
 
-$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Last Name\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"family_name\",\"user.attribute\" : \"lastName\"}}"
+#$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Last Name\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"family_name\",\"user.attribute\" : \"lastName\"}}"
 
-$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Username DID\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-username-idp-mapper\",\"config\" : {\"template\" : \"\${CLAIM.sub}@\${ALIAS}\"}}"
+#$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bcsc/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"Username DID\",\"identityProviderAlias\" : \"bcsc\",\"identityProviderMapper\" : \"oidc-username-idp-mapper\",\"config\" : {\"template\" : \"\${CLAIM.sub}@\${ALIAS}\"}}"
 
-echo Creating mappers for IDIR DevExchange IDP if not exist... 
+#echo Creating mappers for IDIR DevExchange IDP if not exist...
 
-$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/idir/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"account_type\",\"identityProviderAlias\" : \"idir\",\"identityProviderMapper\" : \"hardcoded-attribute-idp-mapper\",\"config\" : {\"attribute.value\" : \"idir\",\"attribute\" : \"account_type\"}}"
+#$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/idir/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"account_type\",\"identityProviderAlias\" : \"idir\",\"identityProviderMapper\" : \"hardcoded-attribute-idp-mapper\",\"config\" : {\"attribute.value\" : \"idir\",\"attribute\" : \"account_type\"}}"
 
-$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/idir/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"idir_userid\",\"identityProviderAlias\" : \"idir\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"idir_userid\",\"user.attribute\" : \"idir_userid\"}}"
+#$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/idir/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"idir_userid\",\"identityProviderAlias\" : \"idir\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"idir_userid\",\"user.attribute\" : \"idir_userid\"}}"
 
-echo Creating mappers for BCeID DevExchange IDP if not exist...
+#echo Creating mappers for BCeID DevExchange IDP if not exist...
 
-$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bceid/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"account_type\",\"identityProviderAlias\" : \"bceid\",\"identityProviderMapper\" : \"hardcoded-attribute-idp-mapper\",\"config\" : {\"attribute.value\" : \"bceid\",\"attribute\" : \"account_type\"}}"
+#$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bceid/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"account_type\",\"identityProviderAlias\" : \"bceid\",\"identityProviderMapper\" : \"hardcoded-attribute-idp-mapper\",\"config\" : {\"attribute.value\" : \"bceid\",\"attribute\" : \"account_type\"}}"
 
-$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bceid/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"bceid_userid\",\"identityProviderAlias\" : \"bceid\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"bceid_userid\",\"user.attribute\" : \"bceid_userid\"}}"
+#$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/bceid/mappers -r $DEVEXCHANGE_KC_REALM_ID --body "{\"name\" : \"bceid_userid\",\"identityProviderAlias\" : \"bceid\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"bceid_userid\",\"user.attribute\" : \"bceid_userid\"}}"
 
 getSoamClientID(){
     executorID= $KCADM_FILE_BIN_FOLDER/kcadm.sh get clients -r $DEVEXCHANGE_KC_REALM_ID --fields 'id,clientId' | grep -B2 '"clientId" : "soam"' | grep -Po "(\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}"
@@ -280,14 +280,14 @@ echo Updating post login executor to required
 $KCADM_FILE_BIN_FOLDER/kcadm.sh update authentication/flows/SOAMPostLogin/executions -r $SOAM_KC_REALM_ID  --body "{$soamPostLoginExecutorID \"configurable\": false,\"displayName\": \"SOAM Authenticator\",\"index\": 0,\"level\": 0,\"providerId\": \"bcgov-soam-authenticator\",\"requirement\": \"REQUIRED\",\"requirementChoices\": [\"ALTERNATIVE\", \"REQUIRED\", \"DISABLED\"]}"
 
 #Identity Providers------------------------------------------------
-echo Removing BCSC IDP if exists...
-$KCADM_FILE_BIN_FOLDER/kcadm.sh delete identity-provider/instances/keycloak_bcdevexchange_bcsc -r $SOAM_KC_REALM_ID
+#echo Removing BCSC IDP if exists...
+#$KCADM_FILE_BIN_FOLDER/kcadm.sh delete identity-provider/instances/keycloak_bcdevexchange_bcsc -r $SOAM_KC_REALM_ID
 
-echo Removing BCeID IDP if exists...
-$KCADM_FILE_BIN_FOLDER/kcadm.sh delete identity-provider/instances/keycloak_bcdevexchange_bceid -r $SOAM_KC_REALM_ID
+#echo Removing BCeID IDP if exists...
+#$KCADM_FILE_BIN_FOLDER/kcadm.sh delete identity-provider/instances/keycloak_bcdevexchange_bceid -r $SOAM_KC_REALM_ID
 
-echo Removing IDIR IDP if exists...
-$KCADM_FILE_BIN_FOLDER/kcadm.sh delete identity-provider/instances/keycloak_bcdevexchange_idir -r $SOAM_KC_REALM_ID
+#echo Removing IDIR IDP if exists...
+#$KCADM_FILE_BIN_FOLDER/kcadm.sh delete identity-provider/instances/keycloak_bcdevexchange_idir -r $SOAM_KC_REALM_ID
 
 echo Creating DevExchange IDP for BCeID
 echo Building IDP instance for BCeID...

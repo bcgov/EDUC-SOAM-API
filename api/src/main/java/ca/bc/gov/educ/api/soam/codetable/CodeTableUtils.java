@@ -15,6 +15,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -65,15 +66,15 @@ public class CodeTableUtils {
     //response = restTemplate.exchange(
     //        props.getDigitalIdentifierApiURL() + "/identityTypeCodes", HttpMethod.GET,
     //        new HttpEntity<>("parameters", headers), IdentityTypeCodeEntity[].class);
-    return this.webClient.get()
-            .uri(this.props.getDigitalIdentifierApiURL(), uri -> uri
-                    .path("/identityTypeCodes")
-                    .build())
-            .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .retrieve()
-            .bodyToFlux(IdentityTypeCodeEntity.class)
-            .collectList()
-            .block().stream().collect(Collectors.toConcurrentMap(IdentityTypeCodeEntity::getIdentityTypeCode, Function.identity()));
+    return Objects.requireNonNull(this.webClient.get()
+        .uri(this.props.getDigitalIdentifierApiURL(), uri -> uri
+            .path("/identityTypeCodes")
+            .build())
+        .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .retrieve()
+        .bodyToFlux(IdentityTypeCodeEntity.class)
+        .collectList()
+        .block()).stream().collect(Collectors.toConcurrentMap(IdentityTypeCodeEntity::getIdentityTypeCode, Function.identity()));
 
   }
 

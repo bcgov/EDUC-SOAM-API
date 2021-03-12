@@ -14,7 +14,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -77,7 +76,7 @@ public class CodeTableUtilsTest {
   @Test
   public void getAllIdentifierTypeCodes_givenApiCallSuccess_shouldReturnMap() {
     //when(restUtils.getRestTemplate()).thenReturn(restTemplate);
-    //when(restTemplate.exchange(eq(props.getDigitalIdentifierApiURL() + "/identityTypeCodes"), eq(HttpMethod.GET), any(), eq(IdentityTypeCodeEntity[].class))).thenReturn(getIdentityTypeCodeMap());
+    //when(restTemplate.exchange(eq(props.getDigitalIdentifierApiURL() + "/identityTypeCodes"), eq(HttpMethod.GET), any(), eq(IdentityTypeCodeEntity[].class))).thenReturn(getIdentityTypeCodeArray());
     //verify(restTemplate, atLeastOnce()).exchange(eq(props.getDigitalIdentifierApiURL() + "/identityTypeCodes"), eq(HttpMethod.GET), any(), eq(IdentityTypeCodeEntity[].class));
     //props.getDigitalIdentifierApiURL(),any(Function.class)
     when(webClient.get()).thenReturn(this.requestHeadersUriMock);
@@ -86,11 +85,11 @@ public class CodeTableUtilsTest {
     when(this.requestHeadersMock.header(any(),any())).thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.retrieve()).thenReturn(this.responseMock);
 
-    when(this.responseMock.bodyToMono(IdentityTypeCodeEntity[].class))
-            .thenReturn(Mono.just(this.getIdentityTypeCodeMap()));
+    when(this.responseMock.bodyToFlux(IdentityTypeCodeEntity.class))
+            .thenReturn(Flux.just(this.getIdentityTypeCodeArray()));
 
     var results = codeTableUtils.getAllIdentifierTypeCodes();
-    assertThat(results).size().isEqualTo(0);
+    assertThat(results).size().isEqualTo(1);
 
   }
 
@@ -105,8 +104,12 @@ public class CodeTableUtilsTest {
     return accessChannelCodeEntities;
   }
 
-  IdentityTypeCodeEntity[] getIdentityTypeCodeMap() {
-    IdentityTypeCodeEntity[] identityTypeCodeEntities = new IdentityTypeCodeEntity[0];
-    return new ArrayList<IdentityTypeCodeEntity>().toArray(identityTypeCodeEntities);
+  IdentityTypeCodeEntity[] getIdentityTypeCodeArray() {
+    IdentityTypeCodeEntity[] identityTypeCodeEntities = new IdentityTypeCodeEntity[1];
+    identityTypeCodeEntities[0]= IdentityTypeCodeEntity.builder()
+        .identityTypeCode("identityTypeCode")
+        .displayOrder(1)
+        .build();
+    return identityTypeCodeEntities;
   }
 }

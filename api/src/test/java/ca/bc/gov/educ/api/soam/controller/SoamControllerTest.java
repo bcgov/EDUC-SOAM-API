@@ -4,15 +4,13 @@ import ca.bc.gov.educ.api.soam.model.entity.DigitalIDEntity;
 import ca.bc.gov.educ.api.soam.model.entity.IdentityTypeCodeEntity;
 import ca.bc.gov.educ.api.soam.model.entity.ServicesCardEntity;
 import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
-import ca.bc.gov.educ.api.soam.rest.RestUtils;
-import ca.bc.gov.educ.api.soam.support.WithMockOAuth2Scope;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
@@ -21,16 +19,20 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.UUID;
+import java.util.function.Function;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.atMost;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -46,15 +48,26 @@ public class SoamControllerTest {
    */
   private MockMvc mockMvc;
 
+  @Mock
+  private WebClient.RequestHeadersSpec requestHeadersMock;
+
+  @Mock
+  private WebClient.RequestHeadersUriSpec requestHeadersUriMock;
+
+  @Mock
+  private WebClient.RequestBodySpec requestBodyMock;
+
+  @Mock
+  private WebClient.RequestBodyUriSpec requestBodyUriMock;
+
+  @Mock
+  private WebClient.ResponseSpec responseMock;
 
   @Autowired
   SoamController controller;
 
   @Autowired
-  RestUtils restUtils;
-
-  @Autowired
-  RestTemplate restTemplate;
+  WebClient webClient;
 
   @Autowired
   ApplicationProperties props;
@@ -63,31 +76,60 @@ public class SoamControllerTest {
 
   @Before
   public void before() {
-    MockitoAnnotations.initMocks(this);
-    mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
-    when(restUtils.getRestTemplate()).thenReturn(restTemplate);
-    when(restTemplate.exchange(eq(props.getDigitalIdentifierApiURL() + "/identityTypeCodes"), eq(HttpMethod.GET), any(), eq(IdentityTypeCodeEntity[].class))).thenReturn(getIdentityTypeCodeMap());
+    MockitoAnnotations.openMocks(this);
   }
 
   @Test
-  @WithMockOAuth2Scope(scope = "SOAM_LOGIN")
   public void performLogin_givenValidPayload_shouldReturnNoContent() throws Exception {
 
     MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
     map.add("identifierType", "BASIC");
     map.add("identifierValue", guid);
-    when(restTemplate.exchange(eq(props.getDigitalIdentifierApiURL() + "?identitytype=BASIC&identityvalue=" + guid.toUpperCase()), eq(HttpMethod.GET), any(), eq(DigitalIDEntity.class))).thenReturn(getDigitalIdentity());
-    doNothing().when(restTemplate).put(eq(props.getDigitalIdentifierApiURL()), any(), any(), eq(DigitalIDEntity.class));
+    final var invocations = mockingDetails(this.webClient).getInvocations().size();
+    DigitalIDEntity entity=getDigitalIdentity();
+    //change it webclient get
+    //when(this.webClient.exchange(eq(props.getDigitalIdentifierApiURL() + "?identitytype=BASIC&identityvalue=" + guid.toUpperCase()), eq(HttpMethod.GET), any(), eq(DigitalIDEntity.class))).thenReturn(getDigitalIdentity());
+    //doNothing().when(restTemplate).put(eq(props.getDigitalIdentifierApiURL()), any(), any(), eq(DigitalIDEntity.class));
+    when(webClient.get()).thenReturn(this.requestHeadersUriMock);
+    when(this.requestHeadersUriMock.uri(eq(props.getDigitalIdentifierApiURL()),any(Function.class)))
+            .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.header(any(),any()))
+            .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.retrieve())
+            .thenReturn(this.responseMock);
+    when(this.responseMock.bodyToMono(DigitalIDEntity.class))
+            .thenReturn(Mono.just(entity));
 
-    this.mockMvc.perform(multipart("/login").contentType(MediaType.APPLICATION_FORM_URLENCODED)
-        .params(map)
-        .accept(MediaType.APPLICATION_FORM_URLENCODED)).andDo(print()).andExpect(status().isNoContent());
+//       .identityTypeCode("BASIC")
+//            .identityValue(guid)
+//            .lastAccessChannelCode("OSPR")
+    assertThat(entity.getIdentityTypeCode()).isEqualTo("BASIC");
+    assertThat(entity.getIdentityValue()).isEqualTo(guid);
+    assertThat(entity.getLastAccessChannelCode()).isEqualTo("OSPR");
+
+    when(this.webClient.put()).thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.uri(eq(props.getDigitalIdentifierApiURL()), any(Function.class)))
+            .thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.header(any(), any()))
+            .thenReturn(this.returnMockBodySpec());
+    when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class)))
+            .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.retrieve())
+            .thenReturn(this.responseMock);
+    when(this.responseMock.bodyToMono(DigitalIDEntity.class))
+            .thenReturn(any());
+    verify(this.webClient,atMost(invocations+1)).put();
+
+    this.mockMvc.perform(multipart("/login")
+            .with(jwt().jwt((jwt) -> jwt.claim("scope", "SOAM_LOGIN")))
+            .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+            .params(map)
+            .accept(MediaType.APPLICATION_FORM_URLENCODED)).andDo(print()).andExpect(status().isNoContent());
 
   }
-
   @Test
-  @WithMockOAuth2Scope(scope = "SOAM_LOGIN")
   public void performLogin_givenValidPayloadWithServicesCard_shouldReturnNoContent() throws Exception {
+    final var invocations = mockingDetails(this.webClient).getInvocations().size();
 
     MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
     map.add("identifierType", "BASIC");
@@ -101,32 +143,103 @@ public class SoamControllerTest {
     map.add("identityAssuranceLevel","1");
     map.add("givenName","Given");
 
-    when(restTemplate.exchange(eq(props.getServicesCardApiURL() + "?did=" + guid.toUpperCase()), eq(HttpMethod.GET), any(),eq(ServicesCardEntity.class)))
-        .thenReturn(createServiceCardEntity());
-    when(restTemplate.exchange(eq(props.getDigitalIdentifierApiURL() + "?identitytype=BASIC&identityvalue=" + guid.toUpperCase()), eq(HttpMethod.GET), any(), eq(DigitalIDEntity.class))).thenReturn(getDigitalIdentity());
-    doNothing().when(restTemplate).put(eq(props.getDigitalIdentifierApiURL()), any(), any(), eq(DigitalIDEntity.class));
+    ServicesCardEntity servicesCardEntity=createServiceCardEntity();
 
-    this.mockMvc.perform(multipart("/login").contentType(MediaType.APPLICATION_FORM_URLENCODED)
-        .params(map)
-        .accept(MediaType.APPLICATION_FORM_URLENCODED)).andDo(print()).andExpect(status().isNoContent());
+  //  when(restTemplate.exchange(eq(props.getServicesCardApiURL() + "?did=" + guid.toUpperCase()), eq(HttpMethod.GET), any(),eq(ServicesCardEntity.class)))
+   //   .thenReturn(createServiceCardEntity());
+  //  when(restTemplate.exchange(eq(props.getDigitalIdentifierApiURL() + "?identitytype=BASIC&identityvalue=" + guid.toUpperCase()), eq(HttpMethod.GET), any(), eq(DigitalIDEntity.class))).thenReturn(getDigitalIdentity());
+   // doNothing().when(restTemplate).put(eq(props.getDigitalIdentifierApiURL()), any(), any(), eq(DigitalIDEntity.class));
+    when(webClient.get()).thenReturn(this.requestHeadersUriMock);
+    when(this.requestHeadersUriMock.uri(eq(props.getServicesCardApiURL()),any(Function.class)))
+            .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.header(any(),any()))
+            .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.retrieve())
+            .thenReturn(this.responseMock);
+    when(this.responseMock.bodyToMono(ServicesCardEntity.class))
+            .thenReturn(Mono.just(servicesCardEntity));
+
+    assertThat(servicesCardEntity.getDid()).isEqualTo(guid.toUpperCase());
+    assertThat(servicesCardEntity.getBirthDate()).isEqualTo("1984-11-02");
+    assertThat(servicesCardEntity.getCity()).isEqualTo("Victoria");
+
+    when(this.webClient.put()).thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.uri(eq(props.getDigitalIdentifierApiURL()), any(Function.class)))
+            .thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.header(any(), any()))
+            .thenReturn(this.returnMockBodySpec());
+    when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class)))
+            .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.retrieve())
+            .thenReturn(this.responseMock);
+    when(this.responseMock.bodyToMono(DigitalIDEntity.class))
+            .thenReturn(any());
+    verify(this.webClient,atMost(invocations+1)).put();
+    this.mockMvc.perform(multipart("/login")
+            .with(jwt().jwt((jwt) -> jwt.claim("scope", "SOAM_LOGIN")))
+            .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+            .params(map)
+            .accept(MediaType.APPLICATION_FORM_URLENCODED)).andDo(print()).andExpect(status().isNoContent());
 
   }
 
   @Test
-  @WithMockOAuth2Scope(scope = "SOAM_LOGIN")
   public void getSoamLoginEntity_givenValidPayloadWithServicesCard_shouldReturnOk() throws Exception {
+    final var invocations = mockingDetails(this.webClient).getInvocations().size();
+    //when(restTemplate.exchange(eq(props.getServicesCardApiURL() + "?did=" + guid.toUpperCase()), eq(HttpMethod.GET), any(),eq(ServicesCardEntity.class)))
+    //    .thenReturn(createServiceCardEntity());
+    //when(restTemplate.exchange(eq(props.getDigitalIdentifierApiURL() + "?identitytype=BASIC&identityvalue=" + guid.toUpperCase()), eq(HttpMethod.GET), any(), eq(DigitalIDEntity.class))).thenReturn(getDigitalIdentity());
+    //doNothing().when(restTemplate).put(eq(props.getDigitalIdentifierApiURL()), any(), any(), eq(DigitalIDEntity.class));
+    ServicesCardEntity servicesCardEntity= createServiceCardEntity();
+    when(webClient.get()).thenReturn(this.requestHeadersUriMock);
+    when(this.requestHeadersUriMock.uri(eq(props.getServicesCardApiURL()),any(Function.class)))
+            .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.header(any(),any()))
+            .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.retrieve())
+            .thenReturn(this.responseMock);
+    when(this.responseMock.bodyToMono(ServicesCardEntity.class))
+            .thenReturn(Mono.just(servicesCardEntity));
+    assertThat(servicesCardEntity.getDid()).isEqualTo(guid.toUpperCase());
+    assertThat(servicesCardEntity.getBirthDate()).isEqualTo("1984-11-02");
+    assertThat(servicesCardEntity.getCity()).isEqualTo("Victoria");
 
-    when(restTemplate.exchange(eq(props.getServicesCardApiURL() + "?did=" + guid.toUpperCase()), eq(HttpMethod.GET), any(),eq(ServicesCardEntity.class)))
-        .thenReturn(createServiceCardEntity());
-    when(restTemplate.exchange(eq(props.getDigitalIdentifierApiURL() + "?identitytype=BASIC&identityvalue=" + guid.toUpperCase()), eq(HttpMethod.GET), any(), eq(DigitalIDEntity.class))).thenReturn(getDigitalIdentity());
-    doNothing().when(restTemplate).put(eq(props.getDigitalIdentifierApiURL()), any(), any(), eq(DigitalIDEntity.class));
+    DigitalIDEntity entity=getDigitalIdentity();
+    when(webClient.get()).thenReturn(this.requestHeadersUriMock);
+    when(this.requestHeadersUriMock.uri(props.getDigitalIdentifierApiURL(),any(Function.class)))
+            .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.header(any(),any()))
+            .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.retrieve())
+            .thenReturn(this.responseMock);
+    when(this.responseMock.bodyToMono(DigitalIDEntity.class))
+            .thenReturn(Mono.just(entity));
 
-    this.mockMvc.perform(get("/BASIC/"+guid).contentType(MediaType.APPLICATION_JSON)
-        .accept(MediaType.APPLICATION_JSON)).andDo(print()).andExpect(status().isOk());
+    assertThat(entity.getIdentityTypeCode()).isEqualTo("BASIC");
+    assertThat(entity.getIdentityValue()).isEqualTo(guid);
+    assertThat(entity.getLastAccessChannelCode()).isEqualTo("OSPR");
 
+    when(this.webClient.put()).thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.uri(eq(props.getDigitalIdentifierApiURL()), any(Function.class)))
+            .thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.header(any(), any()))
+            .thenReturn(this.returnMockBodySpec());
+    when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class)))
+            .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.retrieve())
+            .thenReturn(this.responseMock);
+    when(this.responseMock.bodyToMono(DigitalIDEntity.class))
+            .thenReturn(any());
+    verify(this.webClient,atMost(invocations+1)).put();
+
+    this.mockMvc.perform(get("/BASIC/"+guid)
+            .with(jwt().jwt((jwt) -> jwt.claim("scope", "SOAM_LOGIN")))
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andDo(print()).andExpect(status().isOk());
   }
 
-  private ResponseEntity<DigitalIDEntity> getDigitalIdentity() {
+  private DigitalIDEntity getDigitalIdentity() {
     DigitalIDEntity entity = DigitalIDEntity.builder()
         .identityTypeCode("BASIC")
         .identityValue(guid)
@@ -134,10 +247,10 @@ public class SoamControllerTest {
         .lastAccessDate(LocalDateTime.now().toString())
         .build();
 
-    return ResponseEntity.ok(entity);
+    return entity;
   }
 
-  ResponseEntity<IdentityTypeCodeEntity[]> getIdentityTypeCodeMap() {
+  IdentityTypeCodeEntity[] getIdentityTypeCodeMap() {
     IdentityTypeCodeEntity[] identityTypeCodeEntities = new IdentityTypeCodeEntity[1];
     var identityTypes = new ArrayList<IdentityTypeCodeEntity>();
     identityTypes.add(IdentityTypeCodeEntity
@@ -146,9 +259,9 @@ public class SoamControllerTest {
         .expiryDate(LocalDateTime.MAX.toString())
         .identityTypeCode("BASIC")
         .build());
-    return ResponseEntity.ok(identityTypes.toArray(identityTypeCodeEntities));
+    return identityTypes.toArray(identityTypeCodeEntities);
   }
-  private ResponseEntity<ServicesCardEntity> createServiceCardEntity() {
+  private ServicesCardEntity createServiceCardEntity() {
     ServicesCardEntity serviceCard = new ServicesCardEntity();
     serviceCard.setBirthDate("1984-11-02");
     serviceCard.setCity("Victoria");
@@ -164,6 +277,10 @@ public class SoamControllerTest {
     serviceCard.setStreetAddress("Courtney Street");
     serviceCard.setSurname("Surname");
     serviceCard.setUserDisplayName("displayName");
-    return ResponseEntity.ok(serviceCard);
+    return serviceCard;
+  }
+
+  private WebClient.RequestBodySpec returnMockBodySpec() {
+    return this.requestBodyMock;
   }
 }

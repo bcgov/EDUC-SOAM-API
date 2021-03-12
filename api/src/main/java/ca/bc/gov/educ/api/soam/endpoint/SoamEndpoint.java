@@ -17,11 +17,11 @@ import org.springframework.web.bind.annotation.*;
 public interface SoamEndpoint {
 
   @PostMapping(value = "/login", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-  @PreAuthorize("#oauth2.hasScope('SOAM_LOGIN')")
+  @PreAuthorize("hasAuthority('SCOPE_SOAM_LOGIN')")
   ResponseEntity<Void> performLogin(@RequestBody MultiValueMap<String, String> formData);
 
   @GetMapping("/{typeCode}/{typeValue}")
-  @PreAuthorize("#oauth2.hasScope('SOAM_LOGIN')")
+  @PreAuthorize("hasAuthority('SCOPE_SOAM_LOGIN')")
   @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK"), @ApiResponse(responseCode = "404", description = "NOT FOUND.")})
   ResponseEntity<SoamLoginEntity> getSoamLoginEntity(@PathVariable String typeCode, @PathVariable String typeValue);
 

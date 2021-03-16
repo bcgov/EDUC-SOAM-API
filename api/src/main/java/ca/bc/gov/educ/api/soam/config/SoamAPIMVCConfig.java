@@ -20,6 +20,6 @@ public class SoamAPIMVCConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(soamAPIReqRspInterceptor).addPathPatterns("/**/**/");
+        registry.addInterceptor(soamAPIReqRspInterceptor).addPathPatterns("/**");
     }
 }

@@ -7,6 +7,9 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.reactive.function.client.WebClient;
 
+/**
+ * Mock Class for tests
+ */
 @Profile("test")
 @Configuration
 public class MockConfiguration {

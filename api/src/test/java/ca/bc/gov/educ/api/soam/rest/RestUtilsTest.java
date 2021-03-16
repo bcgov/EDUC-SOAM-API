@@ -38,6 +38,7 @@ import static org.mockito.MockitoAnnotations.openMocks;
 @RunWith(SpringRunner.class)
 @ActiveProfiles("test")
 @SpringBootTest
+@SuppressWarnings("java:S5778")
 public class RestUtilsTest {
 
   @Autowired

@@ -11,23 +11,16 @@
   <properties>
     <sonar.language>java</sonar.language>
     <sonar.exclusions>src/main/resources/**,
-      src/main/java/ca/bc/gov/educ/api/soam/mappers/**,
       src/main/java/ca/bc/gov/educ/api/soam/exception/**,
-      src/main/java/ca/bc/gov/educ/api/soam/model/**,
-      src/main/java/ca/bc/gov/educ/api/soam/struct/**,
       src/main/java/ca/bc/gov/educ/api/soam/endpoint/**,
-      src/main/java/ca/bc/gov/educ/api/soam/rest/**,
-      src/main/java/ca/bc/gov/educ/api/soam/util/**,
+      src/main/java/ca/bc/gov/educ/api/soam/rest/RestWebClient.java,
       src/main/java/ca/bc/gov/educ/api/soam/config/**,
-      src/main/java/ca/bc/gov/educ/api/soam/properties/**,
       src/main/java/ca/bc/gov/educ/api/soam/SoamApiResourceApplication.java
     </sonar.exclusions>
     <java.version>11</java.version>
     <maven.compiler.version>3.8.0</maven.compiler.version>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
-    <org.mapstruct.version>1.4.1.Final</org.mapstruct.version>
-    <shedlock.version>4.15.1</shedlock.version>
     <springdoc.version>1.4.8</springdoc.version>
     <lombok.version>1.18.12</lombok.version>
   </properties>
@@ -87,11 +80,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
     </dependency>
@@ -110,11 +98,6 @@
       <groupId>org.springdoc</groupId>
       <artifactId>springdoc-openapi-ui</artifactId>
       <version>${springdoc.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.mapstruct</groupId>
-      <artifactId>mapstruct</artifactId>
-      <version>${org.mapstruct.version}</version>
     </dependency>
     <dependency>
       <groupId>io.micrometer</groupId>
@@ -229,11 +212,6 @@
               <target>${java.version}</target>
               <annotationProcessorPaths>
                 <path>
-                  <groupId>org.mapstruct</groupId>
-                  <artifactId>mapstruct-processor</artifactId>
-                  <version>${org.mapstruct.version}</version>
-                </path>
-                <path>
                   <groupId>org.projectlombok</groupId>
                   <artifactId>lombok</artifactId>
                   <version>${lombok.version}</version>
@@ -255,22 +233,6 @@
                 <goals>
                   <goal>integration-test</goal>
                   <goal>verify</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>org.hibernate.orm.tooling</groupId>
-            <artifactId>hibernate-enhance-maven-plugin</artifactId>
-            <version>5.4.10.Final</version>
-            <executions>
-              <execution>
-                <configuration>
-                  <failOnError>true</failOnError>
-                  <enableLazyInitialization>true</enableLazyInitialization>
-                </configuration>
-                <goals>
-                  <goal>enhance</goal>
                 </goals>
               </execution>
             </executions>

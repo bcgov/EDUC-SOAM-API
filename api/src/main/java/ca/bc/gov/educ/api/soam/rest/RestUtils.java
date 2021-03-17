@@ -127,11 +127,12 @@ public class RestUtils {
   }
 
   public void updateDigitalID(final DigitalIDEntity digitalIDEntity) {
+   val updatedDigitalID = this.soamUtil.getUpdatedDigitalId(digitalIDEntity);
     try {
       this.webClient.put()
           .uri(this.props.getDigitalIdentifierApiURL())
           .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-          .body(Mono.just(digitalIDEntity), DigitalIDEntity.class)
+          .body(Mono.just(updatedDigitalID), DigitalIDEntity.class)
           .retrieve()
           .bodyToMono(DigitalIDEntity.class)
           .doOnError(this::logError)

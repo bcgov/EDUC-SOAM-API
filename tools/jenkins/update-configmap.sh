@@ -99,7 +99,7 @@ $KCADM_FILE_BIN_FOLDER/kcadm.sh config credentials --server https://"$SSO_ENV"/a
 getSoamClientID(){
     executorID= $KCADM_FILE_BIN_FOLDER/kcadm.sh get clients -r $DEVEXCHANGE_KC_REALM_ID --fields 'id,clientId' | grep -B2 '"clientId" : "soam"' | grep -Po "(\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}"
 }
-soamClientID=$(getSoamClientID)
+#soamClientID=$(getSoamClientID)
 
 #echo Removing SOAM client if exists
 #$KCADM_FILE_BIN_FOLDER/kcadm.sh delete clients/$soamClientID -r $DEVEXCHANGE_KC_REALM_ID

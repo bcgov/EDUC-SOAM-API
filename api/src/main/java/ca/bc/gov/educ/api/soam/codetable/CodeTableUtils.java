@@ -27,8 +27,12 @@ public class CodeTableUtils {
 
   @Autowired
   public CodeTableUtils(final WebClient webClient, final ApplicationProperties props) {
-    this.webClient=webClient;
+    this.webClient = webClient;
     this.props = props;
+    if (props.getIsHttpRampUp()) {
+      this.getAllIdentifierTypeCodes();
+      this.getAllAccessChannelCodes();
+    }
   }
 
   @Cacheable("accessChannelCodes")

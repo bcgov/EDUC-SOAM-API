@@ -101,7 +101,7 @@ public class SoamControllerTest {
         .thenReturn(Mono.just(entity));
 
     when(this.webClient.put()).thenReturn(this.requestBodyUriMock);
-    when(this.requestBodyUriMock.uri(this.props.getDigitalIdentifierApiURL()))
+    when(this.requestBodyUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
         .thenReturn(this.requestBodyUriMock);
     when(this.requestBodyUriMock.header(any(), any()))
         .thenReturn(this.returnMockBodySpec());
@@ -157,7 +157,7 @@ public class SoamControllerTest {
     when(this.webClient.put()).thenReturn(this.requestBodyUriMock);
     when(this.requestBodyUriMock.uri(this.props.getServicesCardApiURL()))
         .thenReturn(this.requestBodyUriMock);
-    when(this.requestBodyUriMock.uri(this.props.getDigitalIdentifierApiURL()))
+    when(this.requestBodyUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
         .thenReturn(this.requestBodyUriMock);
     when(this.requestBodyUriMock.header(any(), any()))
         .thenReturn(this.returnMockBodySpec());

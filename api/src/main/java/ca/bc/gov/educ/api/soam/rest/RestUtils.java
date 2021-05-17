@@ -130,7 +130,7 @@ public class RestUtils {
    val updatedDigitalID = this.soamUtil.getUpdatedDigitalId(digitalIDEntity);
     try {
       this.webClient.put()
-          .uri(this.props.getDigitalIdentifierApiURL())
+        .uri(this.props.getDigitalIdentifierApiURL(), uriBuilder -> uriBuilder.path("/{id}").build(digitalIDEntity.getDigitalID()))
           .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
           .body(Mono.just(updatedDigitalID), DigitalIDEntity.class)
           .retrieve()
@@ -148,7 +148,7 @@ public class RestUtils {
   }
 
   public DigitalIDEntity createDigitalID(@NonNull final String identifierType, @NonNull final String identifierValue) {
-    final DigitalIDEntity entity = this.soamUtil.createDigitalIdentity(identifierType, identifierValue.toUpperCase());
+    val entity = this.soamUtil.createDigitalIdentity(identifierType, identifierValue.toUpperCase());
     try {
       val response = this.webClient.post()
           .uri(this.props.getDigitalIdentifierApiURL())

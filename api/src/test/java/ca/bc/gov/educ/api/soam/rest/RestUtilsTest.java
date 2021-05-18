@@ -254,30 +254,34 @@ public class RestUtilsTest {
     final DigitalIDEntity entity = this.createDigitalIdentity();
     final DigitalIDEntity responseEntity = this.createResponseEntity(entity);
     when(this.webClient.put()).thenReturn(this.requestBodyUriMock);
-    when(this.requestBodyUriMock.uri(this.props.getDigitalIdentifierApiURL()))
-        .thenReturn(this.requestBodyMock);
+    when(this.requestBodyUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
+      .thenReturn(this.requestBodyMock);
     when(this.requestBodyMock.header(any(), any()))
-        .thenReturn(this.requestBodyMock);
+      .thenReturn(this.requestBodyMock);
     when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class))).thenReturn(this.requestHeadersUriMock);
     when(this.requestHeadersUriMock.retrieve()).thenReturn(this.responseMock);
     when(this.responseMock.bodyToMono(DigitalIDEntity.class))
-        .thenReturn(Mono.just(responseEntity));
-    this.restUtils.updateDigitalID(this.createDigitalIdentity());
-    verify(this.webClient.put(), times(1)).uri(this.props.getDigitalIdentifierApiURL());
+      .thenReturn(Mono.just(responseEntity));
+    val did = this.createDigitalIdentity();
+    did.setDigitalID(UUID.randomUUID());
+    this.restUtils.updateDigitalID(did);
+    verify(this.webClient.put(), times(1)).uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class));
   }
 
   @Test
   public void updateDigitalID_givenAPICallError_shouldThrowException() {
     when(this.webClient.put()).thenReturn(this.requestBodyUriMock);
-    when(this.requestBodyUriMock.uri(this.props.getDigitalIdentifierApiURL()))
-        .thenReturn(this.requestBodyMock);
+    when(this.requestBodyUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
+      .thenReturn(this.requestBodyMock);
     when(this.requestBodyMock.header(any(), any()))
-        .thenReturn(this.requestBodyMock);
+      .thenReturn(this.requestBodyMock);
     when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class))).thenReturn(this.requestHeadersUriMock);
     when(this.requestHeadersUriMock.retrieve())
-        .thenThrow(new WebClientResponseException(HttpStatus.SERVICE_UNAVAILABLE.value(),
-            HttpStatus.SERVICE_UNAVAILABLE.toString(), null, null, null));
-    assertThrows(SoamRuntimeException.class, () -> this.restUtils.updateDigitalID(this.createDigitalIdentity()));
+      .thenThrow(new WebClientResponseException(HttpStatus.SERVICE_UNAVAILABLE.value(),
+        HttpStatus.SERVICE_UNAVAILABLE.toString(), null, null, null));
+    val did = this.createDigitalIdentity();
+    did.setDigitalID(UUID.randomUUID());
+    assertThrows(SoamRuntimeException.class, () -> this.restUtils.updateDigitalID(did));
   }
 
 

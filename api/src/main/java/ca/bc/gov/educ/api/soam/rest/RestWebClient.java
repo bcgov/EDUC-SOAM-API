@@ -1,8 +1,8 @@
 package ca.bc.gov.educ.api.soam.rest;
 
 import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
-import io.netty.handler.logging.LogLevel;
 import lombok.val;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -17,8 +17,6 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import reactor.netty.http.client.HttpClient;
-
-import java.time.Duration;
 
 /**
  * The type Rest web client.
@@ -42,8 +40,7 @@ public class RestWebClient {
     this.props = props;
     this.factory = new DefaultUriBuilderFactory();
     this.factory.setEncodingMode(DefaultUriBuilderFactory.EncodingMode.NONE);
-    final HttpClient client = HttpClient.create().compress(true)
-      .resolver(spec -> spec.queryTimeout(Duration.ofMillis(200)).trace("DNS", LogLevel.TRACE));
+    final HttpClient client = HttpClient.create().compress(true);
     client.warmup()
       .block();
     this.connector = new ReactorClientHttpConnector(client);
@@ -55,7 +52,8 @@ public class RestWebClient {
    * @return the web client
    */
   @Bean
-  WebClient webClient() {
+  @Autowired
+  WebClient webClient(final WebClient.Builder builder) {
     val clientRegistryRepo = new InMemoryReactiveClientRegistrationRepository(ClientRegistration
       .withRegistrationId(this.props.getClientID())
       .tokenUri(this.props.getTokenURL())
@@ -68,7 +66,7 @@ public class RestWebClient {
       new AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager(clientRegistryRepo, clientService);
     val oauthFilter = new ServerOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
     oauthFilter.setDefaultClientRegistrationId(this.props.getClientID());
-    return WebClient.builder()
+    return builder
       .clientConnector(this.connector)
       .uriBuilderFactory(this.factory)
       .filter(oauthFilter)

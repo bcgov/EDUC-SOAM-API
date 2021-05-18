@@ -1,5 +1,6 @@
 package ca.bc.gov.educ.api.soam.rest;
 
+import ca.bc.gov.educ.api.soam.codetable.CodeTableUtils;
 import ca.bc.gov.educ.api.soam.exception.SoamRuntimeException;
 import ca.bc.gov.educ.api.soam.model.entity.DigitalIDEntity;
 import ca.bc.gov.educ.api.soam.model.entity.ServicesCardEntity;
@@ -29,10 +30,11 @@ public class RestUtils {
   private final ApplicationProperties props;
   private final SoamUtil soamUtil;
 
-  public RestUtils(final WebClient webClient, final ApplicationProperties props, final SoamUtil soamUtil) {
+  public RestUtils(final WebClient webClient, final ApplicationProperties props, final SoamUtil soamUtil, final CodeTableUtils codeTableUtils) {
     this.webClient = webClient;
     this.props = props;
     this.soamUtil = soamUtil;
+    codeTableUtils.init();
   }
 
   public Optional<DigitalIDEntity> getDigitalID(@NonNull final String identifierType, @NonNull final String identifierValue) {
@@ -109,7 +111,7 @@ public class RestUtils {
       servicesCardEntity.setCreateDate(null);
       servicesCardEntity.setUpdateDate(null);
       this.webClient.put()
-          .uri(this.props.getServicesCardApiURL())
+        .uri(this.props.getServicesCardApiURL(), uri -> uri.path("/{id}").build(servicesCardEntity.getServicesCardInfoID()))
           .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
           .body(Mono.just(servicesCardEntity), ServicesCardEntity.class)
           .retrieve()

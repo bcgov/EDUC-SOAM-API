@@ -313,30 +313,34 @@ public class RestUtilsTest {
   @Test
   public void updateServicesCard_givenAPICallSuccess_shouldNotDoAnything() {
     when(this.webClient.put()).thenReturn(this.requestBodyUriMock);
-    when(this.requestBodyUriMock.uri(this.props.getServicesCardApiURL()))
-        .thenReturn(this.requestBodyMock);
+    when(this.requestBodyUriMock.uri(eq(this.props.getServicesCardApiURL()), any(Function.class)))
+      .thenReturn(this.requestBodyMock);
     when(this.requestBodyMock.header(any(), any()))
-        .thenReturn(this.requestBodyMock);
+      .thenReturn(this.requestBodyMock);
     when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class))).thenReturn(this.requestHeadersUriMock);
     when(this.requestHeadersUriMock.retrieve()).thenReturn(this.responseMock);
     when(this.responseMock.bodyToMono(ServicesCardEntity.class))
-        .thenReturn(Mono.just(this.createServiceCardEntity()));
-    this.restUtils.updateServicesCard(this.createServiceCardEntity());
-    verify(this.webClient.put(), times(1)).uri(this.props.getServicesCardApiURL());
+      .thenReturn(Mono.just(this.createServiceCardEntity()));
+    val entity = this.createServiceCardEntity();
+    entity.setServicesCardInfoID(UUID.randomUUID());
+    this.restUtils.updateServicesCard(entity);
+    verify(this.webClient.put(), times(1)).uri(eq(this.props.getServicesCardApiURL()), any(Function.class));
   }
 
   @Test
   public void updateServicesCard_givenAPICallError_shouldThrowException() {
     when(this.webClient.put()).thenReturn(this.requestBodyUriMock);
-    when(this.requestBodyUriMock.uri(this.props.getServicesCardApiURL()))
-        .thenReturn(this.requestBodyMock);
+    when(this.requestBodyUriMock.uri(eq(this.props.getServicesCardApiURL()), any(Function.class)))
+      .thenReturn(this.requestBodyMock);
     when(this.requestBodyMock.header(any(), any()))
-        .thenReturn(this.requestBodyMock);
+      .thenReturn(this.requestBodyMock);
     when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class))).thenReturn(this.requestHeadersUriMock);
     when(this.requestHeadersUriMock.retrieve())
-        .thenThrow(new WebClientResponseException(HttpStatus.SERVICE_UNAVAILABLE.value(),
-            HttpStatus.SERVICE_UNAVAILABLE.toString(), null, null, null));
-    assertThrows(SoamRuntimeException.class, () -> this.restUtils.updateServicesCard(this.createServiceCardEntity()));
+      .thenThrow(new WebClientResponseException(HttpStatus.SERVICE_UNAVAILABLE.value(),
+        HttpStatus.SERVICE_UNAVAILABLE.toString(), null, null, null));
+    val entity = this.createServiceCardEntity();
+    entity.setServicesCardInfoID(UUID.randomUUID());
+    assertThrows(SoamRuntimeException.class, () -> this.restUtils.updateServicesCard(entity));
   }
 
   private StudentEntity createStudentEntity(final UUID studentId) {

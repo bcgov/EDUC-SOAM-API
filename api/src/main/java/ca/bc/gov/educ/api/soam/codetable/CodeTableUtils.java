@@ -29,7 +29,10 @@ public class CodeTableUtils {
   public CodeTableUtils(final WebClient webClient, final ApplicationProperties props) {
     this.webClient = webClient;
     this.props = props;
-    if (props.getIsHttpRampUp()) {
+  }
+
+  public void init() {
+    if (this.props.getIsHttpRampUp() != null && this.props.getIsHttpRampUp()) {
       this.getAllIdentifierTypeCodes();
       this.getAllAccessChannelCodes();
     }
@@ -39,14 +42,14 @@ public class CodeTableUtils {
   public Map<String, AccessChannelCodeEntity> getAllAccessChannelCodes() {
     log.info("Fetching all access channel codes");
     return Objects.requireNonNull(this.webClient.get()
-        .uri(this.props.getDigitalIdentifierApiURL(), uri -> uri
-            .path("/accessChannelCodes").build())
-        .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-        .retrieve()
-        .bodyToFlux(AccessChannelCodeEntity.class)
-        .collectList()
-        .block()).stream().collect(Collectors.toConcurrentMap(AccessChannelCodeEntity::getAccessChannelCode,
-        Function.identity()));
+      .uri(this.props.getDigitalIdentifierApiURL(), uri -> uri
+        .path("/accessChannelCodes").build())
+      .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+      .retrieve()
+      .bodyToFlux(AccessChannelCodeEntity.class)
+      .collectList()
+      .block()).stream().collect(Collectors.toConcurrentMap(AccessChannelCodeEntity::getAccessChannelCode,
+      Function.identity()));
 
   }
 
@@ -54,14 +57,14 @@ public class CodeTableUtils {
   public Map<String, IdentityTypeCodeEntity> getAllIdentifierTypeCodes() {
     log.info("Fetching all identity type codes");
     return Objects.requireNonNull(this.webClient.get()
-        .uri(this.props.getDigitalIdentifierApiURL(), uri -> uri
-            .path("/identityTypeCodes")
-            .build())
-        .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-        .retrieve()
-        .bodyToFlux(IdentityTypeCodeEntity.class)
-        .collectList()
-        .block()).stream().collect(Collectors.toConcurrentMap(IdentityTypeCodeEntity::getIdentityTypeCode, Function.identity()));
+      .uri(this.props.getDigitalIdentifierApiURL(), uri -> uri
+        .path("/identityTypeCodes")
+        .build())
+      .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+      .retrieve()
+      .bodyToFlux(IdentityTypeCodeEntity.class)
+      .collectList()
+      .block()).stream().collect(Collectors.toConcurrentMap(IdentityTypeCodeEntity::getIdentityTypeCode, Function.identity()));
 
   }
 

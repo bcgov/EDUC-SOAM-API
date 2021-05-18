@@ -155,7 +155,7 @@ public class SoamControllerTest {
         .thenReturn(Mono.just(this.getDigitalIdentity()));
 
     when(this.webClient.put()).thenReturn(this.requestBodyUriMock);
-    when(this.requestBodyUriMock.uri(this.props.getServicesCardApiURL()))
+    when(this.requestBodyUriMock.uri(eq(this.props.getServicesCardApiURL()), any(Function.class)))
         .thenReturn(this.requestBodyUriMock);
     when(this.requestBodyUriMock.uri(this.props.getDigitalIdentifierApiURL()))
         .thenReturn(this.requestBodyUriMock);

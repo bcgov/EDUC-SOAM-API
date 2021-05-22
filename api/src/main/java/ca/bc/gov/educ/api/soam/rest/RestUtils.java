@@ -40,27 +40,27 @@ public class RestUtils {
   public Optional<DigitalIDEntity> getDigitalID(@NonNull final String identifierType, @NonNull final String identifierValue) {
     try {
       val response = this.webClient.get()
-          .uri(this.props.getDigitalIdentifierApiURL(),
-              uri -> uri.queryParam("identitytype", identifierType)
-                  .queryParam("identityvalue", identifierValue.toUpperCase())
-                  .build())
-          .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-          .retrieve()
-          .bodyToMono(DigitalIDEntity.class)
-          .doOnError(error -> this.logError(error, identifierType, identifierValue))
-          .doOnSuccess(entity -> {
-            if (entity != null) {
-              this.logSuccess(entity.toString(), identifierType, identifierValue);
-            }
-          })
-          .block();
+        .uri(this.props.getDigitalIdentifierApiURL(),
+          uri -> uri.queryParam("identitytype", identifierType)
+            .queryParam("identityvalue", identifierValue.toUpperCase())
+            .build())
+        .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .retrieve()
+        .bodyToMono(DigitalIDEntity.class)
+        .doOnSuccess(entity -> {
+          if (entity != null) {
+            this.logSuccess(entity.toString(), identifierType, identifierValue.toUpperCase());
+          }
+        })
+        .block();
       if (response == null) {
         throw new SoamRuntimeException(this.getErrorMessageString(HttpStatus.INTERNAL_SERVER_ERROR, NULL_BODY_FROM +
-            "digitalID get call."));
+          "digitalID get call."));
       }
       return Optional.of(response);
     } catch (final WebClientResponseException e) {
       if (e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+        this.logNotFound(e.getStatusCode().toString(), identifierType, identifierValue.toUpperCase());
         return Optional.empty();
       } else {
         throw new SoamRuntimeException(this.getErrorMessageString(e.getStatusCode(), e.getResponseBodyAsString()));
@@ -68,37 +68,37 @@ public class RestUtils {
     }
   }
 
-  private void logError(final Throwable error, final String... args) {
-    log.error("Error from API call :: {} ", args, error);
-  }
-
   private void logSuccess(final String s, final String... args) {
     log.info("API call success :: {} {}", s, args);
+  }
+
+  private void logNotFound(final String s, final String... args) {
+    log.info("Entity not found :: {} {}", s, args);
   }
 
   public Optional<ServicesCardEntity> getServicesCard(@NonNull final String did) {
     try {
       val response = this.webClient.get()
-          .uri(this.props.getServicesCardApiURL(), uri -> uri
-              .queryParam("did", did)
-              .build())
-          .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-          .retrieve()
-          .bodyToMono(ServicesCardEntity.class)
-          .doOnError(error -> this.logError(error, did))
-          .doOnSuccess(entity -> {
-            if (entity != null) {
-              this.logSuccess(entity.toString(), did);
-            }
-          })
-          .block();
+        .uri(this.props.getServicesCardApiURL(), uri -> uri
+          .queryParam("did", did)
+          .build())
+        .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .retrieve()
+        .bodyToMono(ServicesCardEntity.class)
+        .doOnSuccess(entity -> {
+          if (entity != null) {
+            this.logSuccess(entity.toString(), did);
+          }
+        })
+        .block();
       if (response == null) {
         throw new SoamRuntimeException(this.getErrorMessageString(HttpStatus.INTERNAL_SERVER_ERROR, NULL_BODY_FROM +
-            "Services card get call."));
+          "Services card get call."));
       }
       return Optional.of(response);
     } catch (final WebClientResponseException e) {
       if (e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+        this.logNotFound(e.getStatusCode().toString(), did);
         return Optional.empty();
       } else {
         throw new SoamRuntimeException(this.getErrorMessageString(e.getStatusCode(), e.getResponseBodyAsString()));
@@ -112,38 +112,36 @@ public class RestUtils {
       servicesCardEntity.setUpdateDate(null);
       this.webClient.put()
         .uri(this.props.getServicesCardApiURL(), uri -> uri.path("/{id}").build(servicesCardEntity.getServicesCardInfoID()))
-          .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-          .body(Mono.just(servicesCardEntity), ServicesCardEntity.class)
-          .retrieve()
-          .bodyToMono(ServicesCardEntity.class)
-          .doOnError(this::logError)
-          .doOnSuccess(entity -> {
-            if (entity != null) {
-              this.logSuccess(entity.toString());
-            }
-          })
-          .block();
+        .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .body(Mono.just(servicesCardEntity), ServicesCardEntity.class)
+        .retrieve()
+        .bodyToMono(ServicesCardEntity.class)
+        .doOnSuccess(entity -> {
+          if (entity != null) {
+            this.logSuccess(entity.toString());
+          }
+        })
+        .block();
     } catch (final WebClientResponseException e) {
       throw new SoamRuntimeException(this.getErrorMessageString(e.getStatusCode(), e.getResponseBodyAsString()));
     }
   }
 
   public void updateDigitalID(final DigitalIDEntity digitalIDEntity) {
-   val updatedDigitalID = this.soamUtil.getUpdatedDigitalId(digitalIDEntity);
+    val updatedDigitalID = this.soamUtil.getUpdatedDigitalId(digitalIDEntity);
     try {
       this.webClient.put()
         .uri(this.props.getDigitalIdentifierApiURL(), uriBuilder -> uriBuilder.path("/{id}").build(digitalIDEntity.getDigitalID()))
-          .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-          .body(Mono.just(updatedDigitalID), DigitalIDEntity.class)
-          .retrieve()
-          .bodyToMono(DigitalIDEntity.class)
-          .doOnError(this::logError)
-          .doOnSuccess(entity -> {
-            if (entity != null) {
-              this.logSuccess(entity.toString());
-            }
-          })
-          .block();
+        .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .body(Mono.just(updatedDigitalID), DigitalIDEntity.class)
+        .retrieve()
+        .bodyToMono(DigitalIDEntity.class)
+        .doOnSuccess(entity -> {
+          if (entity != null) {
+            this.logSuccess(entity.toString());
+          }
+        })
+        .block();
     } catch (final WebClientResponseException e) {
       throw new SoamRuntimeException(this.getErrorMessageString(e.getStatusCode(), e.getResponseBodyAsString()));
     }
@@ -153,21 +151,20 @@ public class RestUtils {
     val entity = this.soamUtil.createDigitalIdentity(identifierType, identifierValue.toUpperCase());
     try {
       val response = this.webClient.post()
-          .uri(this.props.getDigitalIdentifierApiURL())
-          .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-          .body(Mono.just(entity), DigitalIDEntity.class)
-          .retrieve()
-          .bodyToMono(DigitalIDEntity.class)
-          .doOnError(error -> this.logError(error, identifierType, identifierValue))
-          .doOnSuccess(responseEntity -> {
-            if (responseEntity != null) {
-              this.logSuccess(responseEntity.toString(), identifierType, identifierValue);
-            }
-          })
-          .block();
+        .uri(this.props.getDigitalIdentifierApiURL())
+        .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .body(Mono.just(entity), DigitalIDEntity.class)
+        .retrieve()
+        .bodyToMono(DigitalIDEntity.class)
+        .doOnSuccess(responseEntity -> {
+          if (responseEntity != null) {
+            this.logSuccess(responseEntity.toString(), identifierType, identifierValue);
+          }
+        })
+        .block();
       if (response == null) {
         throw new SoamRuntimeException(this.getErrorMessageString(HttpStatus.INTERNAL_SERVER_ERROR, NULL_BODY_FROM +
-            "digitalID post call."));
+          "digitalID post call."));
       }
       return response;
     } catch (final WebClientResponseException e) {
@@ -178,18 +175,17 @@ public class RestUtils {
   public void createServicesCard(@NonNull final ServicesCardEntity servicesCardEntity) {
     try {
       this.webClient.post()
-          .uri(this.props.getServicesCardApiURL())
-          .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-          .body(Mono.just(servicesCardEntity), ServicesCardEntity.class)
-          .retrieve()
-          .bodyToMono(ServicesCardEntity.class)
-          .doOnError(this::logError)
-          .doOnSuccess(responseEntity -> {
-            if (responseEntity != null) {
-              this.logSuccess(responseEntity.toString());
-            }
-          })
-          .block();
+        .uri(this.props.getServicesCardApiURL())
+        .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .body(Mono.just(servicesCardEntity), ServicesCardEntity.class)
+        .retrieve()
+        .bodyToMono(ServicesCardEntity.class)
+        .doOnSuccess(responseEntity -> {
+          if (responseEntity != null) {
+            this.logSuccess(responseEntity.toString());
+          }
+        })
+        .block();
     } catch (final WebClientResponseException e) {
       throw new SoamRuntimeException(this.getErrorMessageString(e.getStatusCode(), e.getResponseBodyAsString()));
     }
@@ -198,25 +194,25 @@ public class RestUtils {
   public StudentEntity getStudentByStudentID(final String studentID) {
     try {
       val apiResponse = this.webClient.get()
-          .uri(this.props.getStudentApiURL(), uri -> uri.path("/{studentID}")
-              .build(studentID))
-          .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-          .retrieve()
-          .bodyToMono(StudentEntity.class)
-          .doOnError(error -> this.logError(error, studentID))
-          .doOnSuccess(responseEntity -> {
-            if (responseEntity != null) {
-              this.logSuccess(responseEntity.toString(), studentID);
-            }
-          })
-          .block();
+        .uri(this.props.getStudentApiURL(), uri -> uri.path("/{studentID}")
+          .build(studentID))
+        .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .retrieve()
+        .bodyToMono(StudentEntity.class)
+        .doOnSuccess(responseEntity -> {
+          if (responseEntity != null) {
+            this.logSuccess(responseEntity.toString(), studentID);
+          }
+        })
+        .block();
       if (apiResponse == null) {
         throw new SoamRuntimeException(this.getErrorMessageString(HttpStatus.INTERNAL_SERVER_ERROR, NULL_BODY_FROM +
-            "student get call."));
+          "student get call."));
       }
       return apiResponse;
     } catch (final WebClientResponseException e) {
       if (e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+        this.logNotFound(e.getStatusCode().toString(), studentID);
         throw new SoamRuntimeException("Student was not found. URL was: " + this.props.getStudentApiURL() + "/" + studentID);
       } else {
         throw new SoamRuntimeException(this.getErrorMessageString(e.getStatusCode(), e.getResponseBodyAsString()));

@@ -5,6 +5,7 @@ import ca.bc.gov.educ.api.soam.model.entity.DigitalIDEntity;
 import ca.bc.gov.educ.api.soam.model.entity.ServicesCardEntity;
 import ca.bc.gov.educ.api.soam.model.entity.StudentEntity;
 import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
+import lombok.SneakyThrows;
 import lombok.val;
 import org.junit.After;
 import org.junit.Before;
@@ -268,6 +269,7 @@ public class RestUtilsTest {
     verify(this.webClient.put(), times(1)).uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class));
   }
 
+  @SneakyThrows
   @Test
   public void updateDigitalID_givenAPICallError_shouldThrowException() {
     when(this.webClient.put()).thenReturn(this.requestBodyUriMock);

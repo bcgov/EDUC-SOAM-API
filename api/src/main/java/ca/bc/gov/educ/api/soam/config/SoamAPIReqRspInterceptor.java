@@ -43,7 +43,7 @@ public class SoamAPIReqRspInterceptor implements AsyncHandlerInterceptor {
   @Override
   public void afterCompletion(@NonNull final HttpServletRequest request, final HttpServletResponse response, @NonNull final Object handler, final Exception ex) {
     final int status = response.getStatus();
-    if (status >= 200 && status < 300) {
+    if(status == 404 || (status >= 200 && status < 300)) {
       log.info("RESPONSE STATUS: {}", status);
     } else {
       log.error("RESPONSE STATUS: {}", status);

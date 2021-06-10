@@ -10,16 +10,16 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class SoamAPIMVCConfig implements WebMvcConfigurer {
 
-    @Getter(AccessLevel.PRIVATE)
-    private final SoamAPIReqRspInterceptor soamAPIReqRspInterceptor;
+  @Getter(AccessLevel.PRIVATE)
+  private final RequestResponseInterceptor soamAPIReqRspInterceptor;
 
-    @Autowired
-    public SoamAPIMVCConfig(final SoamAPIReqRspInterceptor soamAPIReqRspInterceptor){
-        this.soamAPIReqRspInterceptor = soamAPIReqRspInterceptor;
-    }
+  @Autowired
+  public SoamAPIMVCConfig(final RequestResponseInterceptor soamAPIReqRspInterceptor) {
+    this.soamAPIReqRspInterceptor = soamAPIReqRspInterceptor;
+  }
 
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(soamAPIReqRspInterceptor).addPathPatterns("/**");
-    }
+  @Override
+  public void addInterceptors(final InterceptorRegistry registry) {
+    registry.addInterceptor(this.soamAPIReqRspInterceptor).addPathPatterns("/**");
+  }
 }

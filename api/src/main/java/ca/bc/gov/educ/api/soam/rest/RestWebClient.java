@@ -1,5 +1,6 @@
 package ca.bc.gov.educ.api.soam.rest;
 
+import ca.bc.gov.educ.api.soam.helpers.LogHelper;
 import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +15,10 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.reactive.function.client.ServerOAuth2AuthorizedClientExchangeFilterFunction;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import reactor.netty.http.client.HttpClient;
-
 /**
  * The type Rest web client.
  */
@@ -67,9 +68,17 @@ public class RestWebClient {
     val oauthFilter = new ServerOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
     oauthFilter.setDefaultClientRegistrationId(this.props.getClientID());
     return builder
+      .filter(this.log())
       .clientConnector(this.connector)
       .uriBuilderFactory(this.factory)
       .filter(oauthFilter)
       .build();
+  }
+
+  private ExchangeFilterFunction log() {
+    return (clientRequest, next) ->
+      next
+        .exchange(clientRequest)
+        .doOnNext((clientResponse -> LogHelper.logClientHttpReqResponseDetails(clientRequest.method(), clientRequest.url().toString(), clientResponse.rawStatusCode())));
   }
 }

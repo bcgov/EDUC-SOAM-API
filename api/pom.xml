@@ -16,6 +16,7 @@
       src/main/java/ca/bc/gov/educ/api/soam/endpoint/**,
       src/main/java/ca/bc/gov/educ/api/soam/rest/RestWebClient.java,
       src/main/java/ca/bc/gov/educ/api/soam/config/**,
+      src/main/java/ca/bc/gov/educ/api/soam/helpers/LogHelper.java,
       src/main/java/ca/bc/gov/educ/api/soam/SoamApiResourceApplication.java
     </sonar.exclusions>
     <java.version>11</java.version>

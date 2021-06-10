@@ -37,9 +37,11 @@ FLB_CONFIG="[SERVICE]
    HTTP_Server   On
    HTTP_Listen   0.0.0.0
    HTTP_Port     2020
+   Parsers_File parsers.conf
 [INPUT]
    Name   tail
    Path   /mnt/log/*
+   Parser docker
    Mem_Buf_Limit 20MB
 [FILTER]
    Name record_modifier
@@ -57,6 +59,11 @@ FLB_CONFIG="[SERVICE]
    TLS.Verify  Off
    Message_Key $APP_NAME
    Splunk_Token $SPLUNK_TOKEN
+"
+PARSER_CONFIG="
+[PARSER]
+    Name        docker
+    Format      json
 "
 
 if [ "$envValue" != "prod" ]; then
@@ -272,4 +279,4 @@ echo Setting environment variables for sso-$envValue application
 oc set env --from=configmap/soam-sso-config-map dc/sso-$envValue
 
 echo Creating config map "$APP_NAME"-flb-sc-config-map
-oc create -n "$OPENSHIFT_NAMESPACE"-"$envValue" configmap "$APP_NAME"-flb-sc-config-map --from-literal=fluent-bit.conf="$FLB_CONFIG" --dry-run -o yaml | oc apply -f -
+oc create -n "$OPENSHIFT_NAMESPACE"-"$envValue" configmap "$APP_NAME"-flb-sc-config-map --from-literal=fluent-bit.conf="$FLB_CONFIG" --from-literal=parsers.conf="$PARSER_CONFIG" --dry-run -o yaml | oc apply -f -

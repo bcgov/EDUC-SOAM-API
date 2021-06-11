@@ -75,11 +75,11 @@ public class SoamControllerTest {
 
     when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
     when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.header(any(), any())).thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.retrieve()).thenReturn(this.responseMock);
     when(this.responseMock.bodyToFlux(IdentityTypeCodeEntity.class))
-        .thenReturn(Flux.just(this.getIdentityTypeCodeArray()));
+      .thenReturn(Flux.just(this.getIdentityTypeCodeArray()));
   }
 
   @Test
@@ -92,31 +92,34 @@ public class SoamControllerTest {
     final DigitalIDEntity entity = this.getDigitalIdentity();
     when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
     when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.header(any(), any()))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.retrieve())
-        .thenReturn(this.responseMock);
+      .thenReturn(this.responseMock);
     when(this.responseMock.bodyToMono(DigitalIDEntity.class))
-        .thenReturn(Mono.just(entity));
+      .thenReturn(Mono.just(entity));
 
     when(this.webClient.put()).thenReturn(this.requestBodyUriMock);
     when(this.requestBodyUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
-        .thenReturn(this.requestBodyUriMock);
+      .thenReturn(this.requestBodyUriMock);
     when(this.requestBodyUriMock.header(any(), any()))
-        .thenReturn(this.returnMockBodySpec());
+      .thenReturn(this.returnMockBodySpec());
+    when(this.requestBodyUriMock.headers(any()))
+      .thenReturn(this.returnMockBodySpec());
     when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class)))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.retrieve())
-        .thenReturn(this.responseMock);
+      .thenReturn(this.responseMock);
     when(this.responseMock.bodyToMono(DigitalIDEntity.class)).thenReturn(Mono.just(entity));
 
 
     this.mockMvc.perform(multipart("/login")
-        .with(jwt().jwt((jwt) -> jwt.claim("scope", "SOAM_LOGIN")))
-        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-        .params(map)
-        .accept(MediaType.APPLICATION_FORM_URLENCODED)).andDo(print()).andExpect(status().isNoContent());
+      .with(jwt().jwt((jwt) -> jwt.claim("scope", "SOAM_LOGIN")))
+      .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+      .header("correlationID", this.guid)
+      .params(map)
+      .accept(MediaType.APPLICATION_FORM_URLENCODED)).andDo(print()).andExpect(status().isNoContent());
 
     verify(this.webClient, atMost(invocations + 1)).put();
   }
@@ -140,40 +143,41 @@ public class SoamControllerTest {
     final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
     when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
     when(this.requestHeadersUriMock.uri(eq(this.props.getServicesCardApiURL()), any(Function.class)))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
-        .thenReturn(this.requestHeadersMock);
-    when(this.requestHeadersMock.header(any(), any()))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.headers(any()))
+      .thenReturn(this.requestHeadersMock);
     when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class)))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.retrieve())
-        .thenReturn(this.responseMock);
+      .thenReturn(this.responseMock);
     when(this.responseMock.bodyToMono(ServicesCardEntity.class))
-        .thenReturn(Mono.just(servicesCardEntity));
+      .thenReturn(Mono.just(servicesCardEntity));
     when(this.responseMock.bodyToMono(DigitalIDEntity.class))
-        .thenReturn(Mono.just(this.getDigitalIdentity()));
+      .thenReturn(Mono.just(this.getDigitalIdentity()));
 
     when(this.webClient.put()).thenReturn(this.requestBodyUriMock);
     when(this.requestBodyUriMock.uri(eq(this.props.getServicesCardApiURL()), any(Function.class)))
-        .thenReturn(this.requestBodyUriMock);
+      .thenReturn(this.requestBodyUriMock);
     when(this.requestBodyUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
-        .thenReturn(this.requestBodyUriMock);
-    when(this.requestBodyUriMock.header(any(), any()))
-        .thenReturn(this.returnMockBodySpec());
+      .thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.headers(any()))
+      .thenReturn(this.returnMockBodySpec());
     when(this.requestHeadersMock.retrieve())
-        .thenReturn(this.responseMock);
+      .thenReturn(this.responseMock);
     when(this.responseMock.bodyToMono(ServicesCardEntity.class))
-        .thenReturn(Mono.just(servicesCardEntity));
+      .thenReturn(Mono.just(servicesCardEntity));
     when(this.responseMock.bodyToMono(DigitalIDEntity.class))
-        .thenReturn(Mono.just(this.getDigitalIdentity()));
+      .thenReturn(Mono.just(this.getDigitalIdentity()));
 
 
     this.mockMvc.perform(multipart("/login")
-        .with(jwt().jwt((jwt) -> jwt.claim("scope", "SOAM_LOGIN")))
-        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-        .params(map)
-        .accept(MediaType.APPLICATION_FORM_URLENCODED)).andDo(print()).andExpect(status().isNoContent());
+      .with(jwt().jwt((jwt) -> jwt.claim("scope", "SOAM_LOGIN")))
+      .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+      .header("correlationID", this.guid)
+      .params(map)
+      .accept(MediaType.APPLICATION_FORM_URLENCODED)).andDo(print()).andExpect(status().isNoContent());
     verify(this.webClient, atMost(invocations + 2)).put();
 
   }
@@ -184,50 +188,51 @@ public class SoamControllerTest {
     final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
     when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
     when(this.requestHeadersUriMock.uri(eq(this.props.getServicesCardApiURL()), any(Function.class)))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.header(any(), any()))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class)))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.retrieve())
-        .thenReturn(this.responseMock);
+      .thenReturn(this.responseMock);
     when(this.responseMock.bodyToMono(ServicesCardEntity.class))
-        .thenReturn(Mono.just(servicesCardEntity));
+      .thenReturn(Mono.just(servicesCardEntity));
     when(this.responseMock.bodyToMono(DigitalIDEntity.class))
-        .thenReturn(Mono.just(this.getDigitalIdentity()));
+      .thenReturn(Mono.just(this.getDigitalIdentity()));
 
     when(this.webClient.put()).thenReturn(this.requestBodyUriMock);
     when(this.requestBodyUriMock.uri(this.props.getServicesCardApiURL()))
-        .thenReturn(this.requestBodyUriMock);
+      .thenReturn(this.requestBodyUriMock);
     when(this.requestBodyUriMock.uri(this.props.getDigitalIdentifierApiURL()))
-        .thenReturn(this.requestBodyUriMock);
+      .thenReturn(this.requestBodyUriMock);
     when(this.requestBodyUriMock.header(any(), any()))
-        .thenReturn(this.returnMockBodySpec());
+      .thenReturn(this.returnMockBodySpec());
     when(this.requestHeadersMock.retrieve())
-        .thenReturn(this.responseMock);
+      .thenReturn(this.responseMock);
     when(this.responseMock.bodyToMono(ServicesCardEntity.class))
-        .thenReturn(Mono.just(servicesCardEntity));
+      .thenReturn(Mono.just(servicesCardEntity));
     when(this.responseMock.bodyToMono(DigitalIDEntity.class))
-        .thenReturn(Mono.just(this.getDigitalIdentity()));
+      .thenReturn(Mono.just(this.getDigitalIdentity()));
 
 
     this.mockMvc.perform(get("/BASIC/" + this.guid)
-        .with(jwt().jwt((jwt) -> jwt.claim("scope", "SOAM_LOGIN")))
-        .contentType(MediaType.APPLICATION_JSON)
-        .accept(MediaType.APPLICATION_JSON))
-        .andDo(print()).andExpect(status().isOk());
+      .with(jwt().jwt((jwt) -> jwt.claim("scope", "SOAM_LOGIN")))
+      .contentType(MediaType.APPLICATION_JSON)
+      .header("correlationID", this.guid)
+      .accept(MediaType.APPLICATION_JSON))
+      .andDo(print()).andExpect(status().isOk());
     verify(this.webClient, atMost(invocations + 2)).put();
   }
 
   private DigitalIDEntity getDigitalIdentity() {
     final DigitalIDEntity entity = DigitalIDEntity.builder()
-        .identityTypeCode("BASIC")
-        .identityValue(this.guid)
-        .lastAccessChannelCode("OSPR")
-        .lastAccessDate(LocalDateTime.now().toString())
-        .build();
+      .identityTypeCode("BASIC")
+      .identityValue(this.guid)
+      .lastAccessChannelCode("OSPR")
+      .lastAccessDate(LocalDateTime.now().toString())
+      .build();
 
     return entity;
   }
@@ -236,11 +241,11 @@ public class SoamControllerTest {
     final IdentityTypeCodeEntity[] identityTypeCodeEntities = new IdentityTypeCodeEntity[1];
     final var identityTypes = new ArrayList<IdentityTypeCodeEntity>();
     identityTypes.add(IdentityTypeCodeEntity
-        .builder()
-        .effectiveDate(LocalDateTime.now().toString())
-        .expiryDate(LocalDateTime.MAX.toString())
-        .identityTypeCode("BASIC")
-        .build());
+      .builder()
+      .effectiveDate(LocalDateTime.now().toString())
+      .expiryDate(LocalDateTime.MAX.toString())
+      .identityTypeCode("BASIC")
+      .build());
     return identityTypes.toArray(identityTypeCodeEntities);
   }
 
@@ -270,20 +275,20 @@ public class SoamControllerTest {
   AccessChannelCodeEntity[] getAccessChannelArray() {
     final AccessChannelCodeEntity[] accessChannelCodeEntities = new AccessChannelCodeEntity[1];
     accessChannelCodeEntities[0] = AccessChannelCodeEntity
-        .builder()
-        .effectiveDate(LocalDateTime.now().toString())
-        .expiryDate(LocalDateTime.MAX.toString())
-        .accessChannelCode("OSPR")
-        .build();
+      .builder()
+      .effectiveDate(LocalDateTime.now().toString())
+      .expiryDate(LocalDateTime.MAX.toString())
+      .accessChannelCode("OSPR")
+      .build();
     return accessChannelCodeEntities;
   }
 
   IdentityTypeCodeEntity[] getIdentityTypeCodeArray() {
     final IdentityTypeCodeEntity[] identityTypeCodeEntities = new IdentityTypeCodeEntity[1];
     identityTypeCodeEntities[0] = IdentityTypeCodeEntity.builder()
-        .identityTypeCode("BASIC")
-        .displayOrder(1)
-        .build();
+      .identityTypeCode("BASIC")
+      .displayOrder(1)
+      .build();
     return identityTypeCodeEntities;
   }
 }

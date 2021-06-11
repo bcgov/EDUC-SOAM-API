@@ -26,6 +26,7 @@ import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 public class RestUtils {
 
   public static final String NULL_BODY_FROM = "null body from ";
+  private static final String CORRELATION_ID = "correlationID";
   private final WebClient webClient;
   private final ApplicationProperties props;
   private final SoamUtil soamUtil;
@@ -37,7 +38,7 @@ public class RestUtils {
     codeTableUtils.init();
   }
 
-  public Optional<DigitalIDEntity> getDigitalID(@NonNull final String identifierType, @NonNull final String identifierValue) {
+  public Optional<DigitalIDEntity> getDigitalID(@NonNull final String identifierType, @NonNull final String identifierValue, final String correlationID) {
     try {
       val response = this.webClient.get()
         .uri(this.props.getDigitalIdentifierApiURL(),
@@ -45,11 +46,12 @@ public class RestUtils {
             .queryParam("identityvalue", identifierValue.toUpperCase())
             .build())
         .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .header(CORRELATION_ID, correlationID)
         .retrieve()
         .bodyToMono(DigitalIDEntity.class)
         .doOnSuccess(entity -> {
           if (entity != null) {
-            this.logSuccess(entity.toString(), identifierType, identifierValue.toUpperCase());
+            this.logSuccess(entity.toString(), identifierType, identifierValue.toUpperCase(), correlationID);
           }
         })
         .block();
@@ -76,18 +78,19 @@ public class RestUtils {
     log.info("Entity not found :: {} {}", s, args);
   }
 
-  public Optional<ServicesCardEntity> getServicesCard(@NonNull final String did) {
+  public Optional<ServicesCardEntity> getServicesCard(@NonNull final String did, final String correlationID) {
     try {
       val response = this.webClient.get()
         .uri(this.props.getServicesCardApiURL(), uri -> uri
           .queryParam("did", did)
           .build())
         .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .header(CORRELATION_ID, correlationID)
         .retrieve()
         .bodyToMono(ServicesCardEntity.class)
         .doOnSuccess(entity -> {
           if (entity != null) {
-            this.logSuccess(entity.toString(), did);
+            this.logSuccess(entity.toString(), did, correlationID);
           }
         })
         .block();
@@ -106,19 +109,22 @@ public class RestUtils {
     }
   }
 
-  public void updateServicesCard(final ServicesCardEntity servicesCardEntity) {
+  public void updateServicesCard(final ServicesCardEntity servicesCardEntity, final String correlationID) {
     try {
       servicesCardEntity.setCreateDate(null);
       servicesCardEntity.setUpdateDate(null);
       this.webClient.put()
         .uri(this.props.getServicesCardApiURL(), uri -> uri.path("/{id}").build(servicesCardEntity.getServicesCardInfoID()))
-        .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .headers(headers -> {
+          headers.add(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+          headers.add(CORRELATION_ID, correlationID);
+        })
         .body(Mono.just(servicesCardEntity), ServicesCardEntity.class)
         .retrieve()
         .bodyToMono(ServicesCardEntity.class)
         .doOnSuccess(entity -> {
           if (entity != null) {
-            this.logSuccess(entity.toString());
+            this.logSuccess(entity.toString(), correlationID);
           }
         })
         .block();
@@ -127,18 +133,21 @@ public class RestUtils {
     }
   }
 
-  public void updateDigitalID(final DigitalIDEntity digitalIDEntity) {
+  public void updateDigitalID(final DigitalIDEntity digitalIDEntity, final String correlationID) {
     val updatedDigitalID = this.soamUtil.getUpdatedDigitalId(digitalIDEntity);
     try {
       this.webClient.put()
         .uri(this.props.getDigitalIdentifierApiURL(), uriBuilder -> uriBuilder.path("/{id}").build(digitalIDEntity.getDigitalID()))
-        .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .headers(headers -> {
+          headers.add(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+          headers.add(CORRELATION_ID, correlationID);
+        })
         .body(Mono.just(updatedDigitalID), DigitalIDEntity.class)
         .retrieve()
         .bodyToMono(DigitalIDEntity.class)
         .doOnSuccess(entity -> {
           if (entity != null) {
-            this.logSuccess(entity.toString());
+            this.logSuccess(entity.toString(), correlationID);
           }
         })
         .block();
@@ -147,12 +156,13 @@ public class RestUtils {
     }
   }
 
-  public DigitalIDEntity createDigitalID(@NonNull final String identifierType, @NonNull final String identifierValue) {
+  public DigitalIDEntity createDigitalID(@NonNull final String identifierType, @NonNull final String identifierValue, final String correlationID) {
     val entity = this.soamUtil.createDigitalIdentity(identifierType, identifierValue.toUpperCase());
     try {
       val response = this.webClient.post()
         .uri(this.props.getDigitalIdentifierApiURL())
         .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .header(CORRELATION_ID, correlationID)
         .body(Mono.just(entity), DigitalIDEntity.class)
         .retrieve()
         .bodyToMono(DigitalIDEntity.class)
@@ -172,11 +182,12 @@ public class RestUtils {
     }
   }
 
-  public void createServicesCard(@NonNull final ServicesCardEntity servicesCardEntity) {
+  public void createServicesCard(@NonNull final ServicesCardEntity servicesCardEntity, final String correlationID) {
     try {
       this.webClient.post()
         .uri(this.props.getServicesCardApiURL())
         .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .header(CORRELATION_ID, correlationID)
         .body(Mono.just(servicesCardEntity), ServicesCardEntity.class)
         .retrieve()
         .bodyToMono(ServicesCardEntity.class)
@@ -191,12 +202,13 @@ public class RestUtils {
     }
   }
 
-  public StudentEntity getStudentByStudentID(final String studentID) {
+  public StudentEntity getStudentByStudentID(final String studentID, final String correlationID) {
     try {
       val apiResponse = this.webClient.get()
         .uri(this.props.getStudentApiURL(), uri -> uri.path("/{studentID}")
           .build(studentID))
         .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .header(CORRELATION_ID, correlationID)
         .retrieve()
         .bodyToMono(StudentEntity.class)
         .doOnSuccess(responseEntity -> {

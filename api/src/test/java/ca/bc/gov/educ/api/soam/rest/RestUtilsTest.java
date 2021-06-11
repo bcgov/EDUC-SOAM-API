@@ -41,7 +41,7 @@ import static org.mockito.MockitoAnnotations.openMocks;
 @SpringBootTest
 @SuppressWarnings("java:S5778")
 public class RestUtilsTest {
-
+  private static final String correlationID = UUID.randomUUID().toString();
   @Autowired
   RestUtils restUtils;
 
@@ -81,14 +81,14 @@ public class RestUtilsTest {
     final DigitalIDEntity responseEntity = this.createResponseEntity(entity);
     when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
     when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.header(any(), any()))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.retrieve())
-        .thenReturn(this.responseMock);
+      .thenReturn(this.responseMock);
     when(this.responseMock.bodyToMono(DigitalIDEntity.class))
-        .thenReturn(Mono.just(responseEntity));
-    val response = this.restUtils.getDigitalID("BCeId", "12345");
+      .thenReturn(Mono.just(responseEntity));
+    val response = this.restUtils.getDigitalID("BCeId", "12345", correlationID);
     assertThat(response).isPresent();
     assertThat(response.get().getDigitalID()).isNotNull();
   }
@@ -98,26 +98,26 @@ public class RestUtilsTest {
     final DigitalIDEntity entity = this.createDigitalIdentity();
     when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
     when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.header(any(), any()))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.retrieve())
-        .thenReturn(this.responseMock);
+      .thenReturn(this.responseMock);
     when(this.responseMock.bodyToMono(DigitalIDEntity.class))
-        .thenReturn(Mono.justOrEmpty(Optional.empty()));
-    assertThrows(SoamRuntimeException.class, () -> this.restUtils.getDigitalID("BCeId", "12345"));
+      .thenReturn(Mono.justOrEmpty(Optional.empty()));
+    assertThrows(SoamRuntimeException.class, () -> this.restUtils.getDigitalID("BCeId", "12345", correlationID));
   }
 
   @Test
   public void testGetDigitalID_givenAPICall404_shouldReturnOptionalEmpty() {
     when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
     when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.header(any(), any()))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.retrieve())
-        .thenThrow(new WebClientResponseException(404, "NOT FOUND", null, null, null));
-    val response = this.restUtils.getDigitalID("BCeId", "12345");
+      .thenThrow(new WebClientResponseException(404, "NOT FOUND", null, null, null));
+    val response = this.restUtils.getDigitalID("BCeId", "12345", correlationID);
     assertThat(response).isEmpty();
   }
 
@@ -125,12 +125,12 @@ public class RestUtilsTest {
   public void testGetDigitalID_givenAPICallError_shouldThrowException() {
     when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
     when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.header(any(), any()))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.retrieve())
-        .thenThrow(new WebClientResponseException(503, "SERVICE UNAVAILABLE", null, null, null));
-    assertThrows(SoamRuntimeException.class, () -> this.restUtils.getDigitalID("BCeId", "12345"));
+      .thenThrow(new WebClientResponseException(503, "SERVICE UNAVAILABLE", null, null, null));
+    assertThrows(SoamRuntimeException.class, () -> this.restUtils.getDigitalID("BCeId", "12345", correlationID));
   }
 
   @Test
@@ -138,14 +138,14 @@ public class RestUtilsTest {
     val responseEntity = this.createServiceCardEntity();
     when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
     when(this.requestHeadersUriMock.uri(eq(this.props.getServicesCardApiURL()), any(Function.class)))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.header(any(), any()))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.retrieve())
-        .thenReturn(this.responseMock);
+      .thenReturn(this.responseMock);
     when(this.responseMock.bodyToMono(ServicesCardEntity.class))
-        .thenReturn(Mono.just(responseEntity));
-    val response = this.restUtils.getServicesCard("12345");
+      .thenReturn(Mono.just(responseEntity));
+    val response = this.restUtils.getServicesCard("12345", correlationID);
     assertThat(response).isPresent();
     assertThat(response.get().getDid()).isNotNull();
   }
@@ -154,24 +154,24 @@ public class RestUtilsTest {
   public void testGetServicesCard_givenAPICallError_shouldThrowException() {
     when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
     when(this.requestHeadersUriMock.uri(eq(this.props.getServicesCardApiURL()), any(Function.class)))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.header(any(), any()))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.retrieve())
-        .thenThrow(new WebClientResponseException(503, "SERVICE UNAVAILABLE", null, null, null));
-    assertThrows(SoamRuntimeException.class, () -> this.restUtils.getServicesCard("12345"));
+      .thenThrow(new WebClientResponseException(503, "SERVICE UNAVAILABLE", null, null, null));
+    assertThrows(SoamRuntimeException.class, () -> this.restUtils.getServicesCard("12345", correlationID));
   }
 
   @Test
   public void testGetServicesCard_givenAPICall404_shouldReturnOptionalEmpty() {
     when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
     when(this.requestHeadersUriMock.uri(eq(this.props.getServicesCardApiURL()), any(Function.class)))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.header(any(), any()))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.retrieve())
-        .thenThrow(new WebClientResponseException(404, "NOT FOUND", null, null, null));
-    val response = this.restUtils.getServicesCard("12345");
+      .thenThrow(new WebClientResponseException(404, "NOT FOUND", null, null, null));
+    val response = this.restUtils.getServicesCard("12345", correlationID);
     assertThat(response).isEmpty();
   }
 
@@ -179,25 +179,25 @@ public class RestUtilsTest {
   public void getStudentByStudentID_givenAPICall404_shouldThrowException() {
     when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
     when(this.requestHeadersUriMock.uri(eq(this.props.getStudentApiURL()), any(Function.class)))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.header(any(), any()))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.retrieve())
-        .thenThrow(new WebClientResponseException(404, "NOT FOUND", null, null, null));
-    assertThrows(SoamRuntimeException.class, () -> this.restUtils.getStudentByStudentID("12345"));
+      .thenThrow(new WebClientResponseException(404, "NOT FOUND", null, null, null));
+    assertThrows(SoamRuntimeException.class, () -> this.restUtils.getStudentByStudentID("12345", correlationID));
   }
 
   @Test
   public void getStudentByStudentID_givenAPICall503_shouldThrowException() {
     when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
     when(this.requestHeadersUriMock.uri(eq(this.props.getStudentApiURL()), any(Function.class)))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.header(any(), any()))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.retrieve())
-        .thenThrow(new WebClientResponseException(HttpStatus.SERVICE_UNAVAILABLE.value(),
-            HttpStatus.SERVICE_UNAVAILABLE.toString(), null, null, null));
-    assertThrows(SoamRuntimeException.class, () -> this.restUtils.getStudentByStudentID("12345"));
+      .thenThrow(new WebClientResponseException(HttpStatus.SERVICE_UNAVAILABLE.value(),
+        HttpStatus.SERVICE_UNAVAILABLE.toString(), null, null, null));
+    assertThrows(SoamRuntimeException.class, () -> this.restUtils.getStudentByStudentID("12345", correlationID));
   }
 
   @Test
@@ -205,14 +205,14 @@ public class RestUtilsTest {
     val studentID = UUID.randomUUID();
     when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
     when(this.requestHeadersUriMock.uri(eq(this.props.getStudentApiURL()), any(Function.class)))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.header(any(), any()))
-        .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.retrieve())
-        .thenReturn(this.responseMock);
+      .thenReturn(this.responseMock);
     when(this.responseMock.bodyToMono(StudentEntity.class))
-        .thenReturn(Mono.just(this.createStudentEntity(studentID)));
-    val response = this.restUtils.getStudentByStudentID(studentID.toString());
+      .thenReturn(Mono.just(this.createStudentEntity(studentID)));
+    val response = this.restUtils.getStudentByStudentID(studentID.toString(), correlationID);
     assertThat(response).isNotNull();
     assertThat(response.getPen()).isEqualTo("123456789");
   }
@@ -223,31 +223,31 @@ public class RestUtilsTest {
     final DigitalIDEntity responseEntity = this.createResponseEntity(entity);
     when(this.webClient.post()).thenReturn(this.requestBodyUriMock);
     when(this.requestBodyUriMock.uri(this.props.getDigitalIdentifierApiURL()))
-        .thenReturn(this.requestBodyMock);
+      .thenReturn(this.requestBodyMock);
     when(this.requestBodyMock.header(any(), any()))
-        .thenReturn(this.requestBodyMock);
+      .thenReturn(this.requestBodyMock);
     when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class))).thenReturn(this.requestHeadersUriMock);
     when(this.requestHeadersUriMock.retrieve()).thenReturn(this.responseMock);
     when(this.responseMock.bodyToMono(DigitalIDEntity.class))
-        .thenReturn(Mono.just(responseEntity));
-    val response = this.restUtils.createDigitalID("BCeId", "12345");
+      .thenReturn(Mono.just(responseEntity));
+    val response = this.restUtils.createDigitalID("BCeId", "12345", correlationID);
     assertThat(response).isNotNull();
     assertThat(response.getDigitalID()).isNotNull();
-    assertThat(response.getIdentityValue()).isEqualTo("12345");
+    assertThat(response.getIdentityValue()).isEqualTo("12345", correlationID);
   }
 
   @Test
   public void createDigitalID_givenAPICallError_shouldThrowException() {
     when(this.webClient.post()).thenReturn(this.requestBodyUriMock);
     when(this.requestBodyUriMock.uri(this.props.getDigitalIdentifierApiURL()))
-        .thenReturn(this.requestBodyMock);
+      .thenReturn(this.requestBodyMock);
     when(this.requestBodyMock.header(any(), any()))
-        .thenReturn(this.requestBodyMock);
+      .thenReturn(this.requestBodyMock);
     when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class))).thenReturn(this.requestHeadersUriMock);
     when(this.requestHeadersUriMock.retrieve())
-        .thenThrow(new WebClientResponseException(HttpStatus.SERVICE_UNAVAILABLE.value(),
-            HttpStatus.SERVICE_UNAVAILABLE.toString(), null, null, null));
-    assertThrows(SoamRuntimeException.class, () -> this.restUtils.createDigitalID("BCeId", "12345"));
+      .thenThrow(new WebClientResponseException(HttpStatus.SERVICE_UNAVAILABLE.value(),
+        HttpStatus.SERVICE_UNAVAILABLE.toString(), null, null, null));
+    assertThrows(SoamRuntimeException.class, () -> this.restUtils.createDigitalID("BCeId", "12345", correlationID));
   }
 
   @Test
@@ -257,7 +257,7 @@ public class RestUtilsTest {
     when(this.webClient.put()).thenReturn(this.requestBodyUriMock);
     when(this.requestBodyUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
       .thenReturn(this.requestBodyMock);
-    when(this.requestBodyMock.header(any(), any()))
+    when(this.requestBodyMock.headers(any()))
       .thenReturn(this.requestBodyMock);
     when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class))).thenReturn(this.requestHeadersUriMock);
     when(this.requestHeadersUriMock.retrieve()).thenReturn(this.responseMock);
@@ -265,7 +265,7 @@ public class RestUtilsTest {
       .thenReturn(Mono.just(responseEntity));
     val did = this.createDigitalIdentity();
     did.setDigitalID(UUID.randomUUID());
-    this.restUtils.updateDigitalID(did);
+    this.restUtils.updateDigitalID(did, correlationID);
     verify(this.webClient.put(), times(1)).uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class));
   }
 
@@ -275,7 +275,7 @@ public class RestUtilsTest {
     when(this.webClient.put()).thenReturn(this.requestBodyUriMock);
     when(this.requestBodyUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
       .thenReturn(this.requestBodyMock);
-    when(this.requestBodyMock.header(any(), any()))
+    when(this.requestBodyMock.headers(any()))
       .thenReturn(this.requestBodyMock);
     when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class))).thenReturn(this.requestHeadersUriMock);
     when(this.requestHeadersUriMock.retrieve())
@@ -283,7 +283,7 @@ public class RestUtilsTest {
         HttpStatus.SERVICE_UNAVAILABLE.toString(), null, null, null));
     val did = this.createDigitalIdentity();
     did.setDigitalID(UUID.randomUUID());
-    assertThrows(SoamRuntimeException.class, () -> this.restUtils.updateDigitalID(did));
+    assertThrows(SoamRuntimeException.class, () -> this.restUtils.updateDigitalID(did, correlationID));
   }
 
 
@@ -291,35 +291,6 @@ public class RestUtilsTest {
   public void createServicesCard_givenAPICallSuccess_shouldNotDoAnything() {
     when(this.webClient.post()).thenReturn(this.requestBodyUriMock);
     when(this.requestBodyUriMock.uri(this.props.getServicesCardApiURL()))
-        .thenReturn(this.requestBodyMock);
-    when(this.requestBodyMock.header(any(), any()))
-        .thenReturn(this.requestBodyMock);
-    when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class))).thenReturn(this.requestHeadersUriMock);
-    when(this.requestHeadersUriMock.retrieve()).thenReturn(this.responseMock);
-    when(this.responseMock.bodyToMono(ServicesCardEntity.class))
-        .thenReturn(Mono.just(this.createServiceCardEntity()));
-    this.restUtils.createServicesCard(this.createServiceCardEntity());
-    verify(this.webClient.post(), times(1)).uri(this.props.getServicesCardApiURL());
-  }
-
-  @Test
-  public void createServicesCard_givenAPICallError_shouldThrowException() {
-    when(this.webClient.post()).thenReturn(this.requestBodyUriMock);
-    when(this.requestBodyUriMock.uri(this.props.getServicesCardApiURL()))
-        .thenReturn(this.requestBodyMock);
-    when(this.requestBodyMock.header(any(), any()))
-        .thenReturn(this.requestBodyMock);
-    when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class))).thenReturn(this.requestHeadersUriMock);
-    when(this.requestHeadersUriMock.retrieve())
-        .thenThrow(new WebClientResponseException(HttpStatus.SERVICE_UNAVAILABLE.value(),
-            HttpStatus.SERVICE_UNAVAILABLE.toString(), null, null, null));
-    assertThrows(SoamRuntimeException.class, () -> this.restUtils.createServicesCard(this.createServiceCardEntity()));
-  }
-
-  @Test
-  public void updateServicesCard_givenAPICallSuccess_shouldNotDoAnything() {
-    when(this.webClient.put()).thenReturn(this.requestBodyUriMock);
-    when(this.requestBodyUriMock.uri(eq(this.props.getServicesCardApiURL()), any(Function.class)))
       .thenReturn(this.requestBodyMock);
     when(this.requestBodyMock.header(any(), any()))
       .thenReturn(this.requestBodyMock);
@@ -327,9 +298,38 @@ public class RestUtilsTest {
     when(this.requestHeadersUriMock.retrieve()).thenReturn(this.responseMock);
     when(this.responseMock.bodyToMono(ServicesCardEntity.class))
       .thenReturn(Mono.just(this.createServiceCardEntity()));
+    this.restUtils.createServicesCard(this.createServiceCardEntity(), correlationID);
+    verify(this.webClient.post(), times(1)).uri(this.props.getServicesCardApiURL());
+  }
+
+  @Test
+  public void createServicesCard_givenAPICallError_shouldThrowException() {
+    when(this.webClient.post()).thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.uri(this.props.getServicesCardApiURL()))
+      .thenReturn(this.requestBodyMock);
+    when(this.requestBodyMock.header(any(), any()))
+      .thenReturn(this.requestBodyMock);
+    when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class))).thenReturn(this.requestHeadersUriMock);
+    when(this.requestHeadersUriMock.retrieve())
+      .thenThrow(new WebClientResponseException(HttpStatus.SERVICE_UNAVAILABLE.value(),
+        HttpStatus.SERVICE_UNAVAILABLE.toString(), null, null, null));
+    assertThrows(SoamRuntimeException.class, () -> this.restUtils.createServicesCard(this.createServiceCardEntity(), correlationID));
+  }
+
+  @Test
+  public void updateServicesCard_givenAPICallSuccess_shouldNotDoAnything() {
+    when(this.webClient.put()).thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.uri(eq(this.props.getServicesCardApiURL()), any(Function.class)))
+      .thenReturn(this.requestBodyMock);
+    when(this.requestBodyMock.headers(any()))
+      .thenReturn(this.requestBodyMock);
+    when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class))).thenReturn(this.requestHeadersUriMock);
+    when(this.requestHeadersUriMock.retrieve()).thenReturn(this.responseMock);
+    when(this.responseMock.bodyToMono(ServicesCardEntity.class))
+      .thenReturn(Mono.just(this.createServiceCardEntity()));
     val entity = this.createServiceCardEntity();
     entity.setServicesCardInfoID(UUID.randomUUID());
-    this.restUtils.updateServicesCard(entity);
+    this.restUtils.updateServicesCard(entity, correlationID);
     verify(this.webClient.put(), times(1)).uri(eq(this.props.getServicesCardApiURL()), any(Function.class));
   }
 
@@ -338,7 +338,7 @@ public class RestUtilsTest {
     when(this.webClient.put()).thenReturn(this.requestBodyUriMock);
     when(this.requestBodyUriMock.uri(eq(this.props.getServicesCardApiURL()), any(Function.class)))
       .thenReturn(this.requestBodyMock);
-    when(this.requestBodyMock.header(any(), any()))
+    when(this.requestBodyMock.headers(any()))
       .thenReturn(this.requestBodyMock);
     when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class))).thenReturn(this.requestHeadersUriMock);
     when(this.requestHeadersUriMock.retrieve())
@@ -346,7 +346,7 @@ public class RestUtilsTest {
         HttpStatus.SERVICE_UNAVAILABLE.toString(), null, null, null));
     val entity = this.createServiceCardEntity();
     entity.setServicesCardInfoID(UUID.randomUUID());
-    assertThrows(SoamRuntimeException.class, () -> this.restUtils.updateServicesCard(entity));
+    assertThrows(SoamRuntimeException.class, () -> this.restUtils.updateServicesCard(entity, correlationID));
   }
 
   private StudentEntity createStudentEntity(final UUID studentId) {

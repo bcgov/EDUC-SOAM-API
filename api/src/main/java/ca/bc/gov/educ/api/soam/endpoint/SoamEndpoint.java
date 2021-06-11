@@ -18,11 +18,11 @@ public interface SoamEndpoint {
 
   @PostMapping(value = "/login", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
   @PreAuthorize("hasAuthority('SCOPE_SOAM_LOGIN')")
-  ResponseEntity<Void> performLogin(@RequestBody MultiValueMap<String, String> formData);
+  ResponseEntity<Void> performLogin(@RequestBody MultiValueMap<String, String> formData, @RequestHeader String correlationID);
 
   @GetMapping("/{typeCode}/{typeValue}")
   @PreAuthorize("hasAuthority('SCOPE_SOAM_LOGIN')")
   @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK"), @ApiResponse(responseCode = "404", description = "NOT FOUND.")})
-  ResponseEntity<SoamLoginEntity> getSoamLoginEntity(@PathVariable String typeCode, @PathVariable String typeValue);
+  ResponseEntity<SoamLoginEntity> getSoamLoginEntity(@PathVariable String typeCode, @PathVariable String typeValue, @RequestHeader String correlationID);
 
 }

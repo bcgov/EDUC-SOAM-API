@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -25,13 +26,15 @@ public final class LogHelper {
     try {
       final int status = response.getStatus();
       val totalTime = Instant.now().toEpochMilli() - (Long) request.getAttribute("startTime");
-      final Map<String, String> httpMap = new HashMap<>();
-      httpMap.put("server_http_response_code", String.valueOf(status));
+      final Map<String, Object> httpMap = new HashMap<>();
+      httpMap.put("server_http_response_code", status);
       httpMap.put("server_http_request_method", request.getMethod());
       httpMap.put("server_http_query_params", request.getQueryString());
+      httpMap.put("server_http_request_correlation_id", request.getHeader("correlationID"));
       httpMap.put("server_http_request_url", String.valueOf(request.getRequestURL()));
-      httpMap.put("server_http_request_processing_time", totalTime + " ms");
+      httpMap.put("server_http_request_processing_time_ms", totalTime);
       httpMap.put("server_http_request_payload", String.valueOf(request.getAttribute("payload")));
+      httpMap.put("server_http_request_remote_address", request.getRemoteAddr());
       MDC.putCloseable("httpEvent", mapper.writeValueAsString(httpMap));
       log.info("");
       MDC.clear();
@@ -40,12 +43,15 @@ public final class LogHelper {
     }
   }
 
-  public static void logClientHttpReqResponseDetails(@NonNull final HttpMethod method, final String url, final int responseCode) {
+  public static void logClientHttpReqResponseDetails(@NonNull final HttpMethod method, final String url, final int responseCode, final List<String> correlationID) {
     try {
-      final Map<String, String> httpMap = new HashMap<>();
+      final Map<String, Object> httpMap = new HashMap<>();
       httpMap.put("client_http_response_code", String.valueOf(responseCode));
       httpMap.put("client_http_request_method", method.toString());
       httpMap.put("client_http_request_url", url);
+      if (correlationID != null) {
+        httpMap.put("client_http_request_correlation_id", correlationID);
+      }
       MDC.putCloseable("httpEvent", mapper.writeValueAsString(httpMap));
       log.info("");
       MDC.clear();

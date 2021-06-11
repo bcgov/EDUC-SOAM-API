@@ -36,59 +36,59 @@ public class SoamService {
     this.restUtils = restUtils;
   }
 
-  public void performLogin(final String identifierType, final String identifierValue, final ServicesCardEntity servicesCard) {
+  public void performLogin(final String identifierType, final String identifierValue, final ServicesCardEntity servicesCard, final String correlationID) {
     this.validateExtendedSearchParameters(identifierType, identifierValue);
-    this.manageLogin(identifierType, identifierValue, servicesCard);
+    this.manageLogin(identifierType, identifierValue, servicesCard, correlationID);
   }
 
-  private void updateDigitalID(final ServicesCardEntity servicesCard, final DigitalIDEntity digitalIDEntity) {
-    this.restUtils.updateDigitalID(digitalIDEntity);
+  private void updateDigitalID(final ServicesCardEntity servicesCard, final DigitalIDEntity digitalIDEntity, final String correlationID) {
+    this.restUtils.updateDigitalID(digitalIDEntity, correlationID);
     if (servicesCard != null) {
-      this.createOrUpdateBCSC(servicesCard, digitalIDEntity.getDigitalID());
+      this.createOrUpdateBCSC(servicesCard, digitalIDEntity.getDigitalID(), correlationID);
     }
   }
 
-  private void manageLogin(final String identifierType, final String identifierValue, final ServicesCardEntity servicesCard) {
-    val didResponseFromAPI = this.restUtils.getDigitalID(identifierType, identifierValue.toUpperCase());
+  private void manageLogin(final String identifierType, final String identifierValue, final ServicesCardEntity servicesCard, final String correlationID) {
+    val didResponseFromAPI = this.restUtils.getDigitalID(identifierType, identifierValue.toUpperCase(), correlationID);
     if (didResponseFromAPI.isPresent()) {
-      this.updateDigitalID(servicesCard, didResponseFromAPI.get()); //update Digital Id if we have one.
+      this.updateDigitalID(servicesCard, didResponseFromAPI.get(), correlationID); //update Digital Id if we have one.
     } else {
-      val responseEntity = this.restUtils.createDigitalID(identifierType, identifierValue.toUpperCase());
+      val responseEntity = this.restUtils.createDigitalID(identifierType, identifierValue.toUpperCase(), correlationID);
       if (servicesCard != null && responseEntity != null) {
-        this.createOrUpdateBCSC(servicesCard, responseEntity.getDigitalID());
+        this.createOrUpdateBCSC(servicesCard, responseEntity.getDigitalID(), correlationID);
       }
     }
   }
 
-  public void createOrUpdateBCSC(final ServicesCardEntity servicesCard, final UUID digitalIdentityID) {
+  public void createOrUpdateBCSC(final ServicesCardEntity servicesCard, final UUID digitalIdentityID, final String correlationID) {
     servicesCard.setDigitalIdentityID(digitalIdentityID);
-    val servicesCardFromAPIResponse = this.restUtils.getServicesCard(servicesCard.getDid());
+    val servicesCardFromAPIResponse = this.restUtils.getServicesCard(servicesCard.getDid(), correlationID);
     if (servicesCardFromAPIResponse.isPresent()) {
-      this.updateBCSC(servicesCardFromAPIResponse.get());
+      this.updateBCSC(servicesCardFromAPIResponse.get(), correlationID);
     } else {
-      this.restUtils.createServicesCard(servicesCard);
+      this.restUtils.createServicesCard(servicesCard, correlationID);
     }
   }
 
-  private void updateBCSC(final ServicesCardEntity servicesCardEntity) {
+  private void updateBCSC(final ServicesCardEntity servicesCardEntity, final String correlationID) {
     assert servicesCardEntity != null;
     servicesCardEntity.setCreateDate(null);
     servicesCardEntity.setUpdateDate(null);
-    this.restUtils.updateServicesCard(servicesCardEntity);
+    this.restUtils.updateServicesCard(servicesCardEntity, correlationID);
   }
 
-  public SoamLoginEntity getSoamLoginEntity(final String identifierType, final String identifierValue) {
+  public SoamLoginEntity getSoamLoginEntity(final String identifierType, final String identifierValue, final String correlationID) {
     this.validateSearchParameters(identifierType, identifierValue);
-    final DigitalIDEntity digitalIDEntity = this.getDigitalIDEntityForLogin(identifierType, identifierValue);
+    val digitalIDEntity = this.getDigitalIDEntityForLogin(identifierType, identifierValue, correlationID);
     //If we've reached here we do have a digital identity for this user, if they have a student ID in the digital ID record then we fetch the student
     ServicesCardEntity serviceCardEntity = null;
     if (identifierType.equals(ApplicationProperties.BCSC)) {
       serviceCardEntity =
-          this.restUtils.getServicesCard(identifierValue).orElseThrow();
+        this.restUtils.getServicesCard(identifierValue, correlationID).orElseThrow();
     }
     if (digitalIDEntity.getStudentID() != null) {
       final StudentEntity studentResponse;
-      studentResponse = this.restUtils.getStudentByStudentID(digitalIDEntity.getStudentID());
+      studentResponse = this.restUtils.getStudentByStudentID(digitalIDEntity.getStudentID(), correlationID);
       return this.soamUtil.createSoamLoginEntity(studentResponse, digitalIDEntity.getDigitalID(), serviceCardEntity);
     } else {
       return this.soamUtil.createSoamLoginEntity(null, digitalIDEntity.getDigitalID(), serviceCardEntity);
@@ -97,9 +97,9 @@ public class SoamService {
   }
 
 
-  private DigitalIDEntity getDigitalIDEntityForLogin(final String identifierType, final String identifierValue) {
+  private DigitalIDEntity getDigitalIDEntityForLogin(final String identifierType, final String identifierValue, final String correlationID) {
     //This is the initial call to determine if we have this digital identity
-    val response = this.restUtils.getDigitalID(identifierType, identifierValue);
+    val response = this.restUtils.getDigitalID(identifierType, identifierValue, correlationID);
     if (response.isEmpty()) {
       throw new SoamRuntimeException("Digital ID was null - unexpected error");
     }

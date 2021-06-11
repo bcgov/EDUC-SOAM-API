@@ -32,6 +32,7 @@ public class RequestResponseInterceptor implements AsyncHandlerInterceptor {
   @Override
   public void afterCompletion(@NonNull final HttpServletRequest request, final HttpServletResponse response, @NonNull final Object handler, final Exception ex) {
     LogHelper.logServerHttpReqResponseDetails(request, response);
+    response.setHeader("correlationID", request.getHeader("correlationID"));
   }
 
 

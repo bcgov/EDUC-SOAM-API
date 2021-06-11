@@ -35,6 +35,7 @@ import static org.mockito.MockitoAnnotations.openMocks;
 @SpringBootTest
 public class SoamServiceTest {
 
+  private static final String correlationID = UUID.randomUUID().toString();
   @Autowired
   SoamService service;
 
@@ -60,46 +61,46 @@ public class SoamServiceTest {
 
   @Test
   public void testPerformLogin_GivenIdentifierTypeNull_ThrowsInvalidParameterException() {
-    assertThrows(InvalidParameterException.class, () -> this.service.performLogin(null, "12345", null));
+    assertThrows(InvalidParameterException.class, () -> this.service.performLogin(null, "12345", null, correlationID));
   }
 
   @Test
   public void testPerformLogin_GivenIdentifierValueNull_ThrowsInvalidParameterException() {
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
-    assertThrows(InvalidParameterException.class, () -> this.service.performLogin("BCeId", null, null));
+    assertThrows(InvalidParameterException.class, () -> this.service.performLogin("BCeId", null, null, correlationID));
   }
 
   @Test
   public void testPerformLogin_GivenIdentifierValueBlank_ThrowsInvalidParameterException() {
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
-    assertThrows(InvalidParameterException.class, () -> this.service.performLogin("BCeId", "", null));
+    assertThrows(InvalidParameterException.class, () -> this.service.performLogin("BCeId", "", null, correlationID));
   }
 
   @Test
   public void testPerformLogin_GivenIdentifierTypeNotInCodeTable_ThrowsInvalidParameterException() {
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createBlankDummyIdentityTypeMap());
-    assertThrows(InvalidParameterException.class, () -> this.service.performLogin("BCS", "12345", null));
+    assertThrows(InvalidParameterException.class, () -> this.service.performLogin("BCS", "12345", null, correlationID));
   }
 
   @Test
   public void testPerformLogin_GivenDigitalIdGetCallFailed_ShouldThrowSoamRuntimeException() {
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
-    when(this.restUtils.getDigitalID(anyString(), anyString())).thenThrow(new SoamRuntimeException("503 SERVICE " +
-        "UNAVAILABLE"));
-    assertThrows(SoamRuntimeException.class, () -> this.service.performLogin("BCeId", "12345", null));
-    verify(this.restUtils, atLeast(1)).getDigitalID("BCeId", "12345");
+    when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenThrow(new SoamRuntimeException("503 SERVICE " +
+      "UNAVAILABLE"));
+    assertThrows(SoamRuntimeException.class, () -> this.service.performLogin("BCeId", "12345", null, correlationID));
+    verify(this.restUtils, atLeast(1)).getDigitalID("BCeId", "12345", correlationID);
   }
 
 
   @Test
   public void testPerformLogin_GivenDigitalIdPostCallFailed_ShouldThrowSoamRuntimeException() {
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
-    when(this.restUtils.getDigitalID(anyString(), anyString())).thenReturn(Optional.empty());
-    when(this.restUtils.createDigitalID(anyString(), anyString())).thenThrow(new SoamRuntimeException("503 SERVICE " +
-        "UNAVAILABLE"));
-    assertThrows(SoamRuntimeException.class, () -> this.service.performLogin("BCeId", "12345", null));
-    verify(this.restUtils, atLeast(1)).getDigitalID("BCeId", "12345");
-    verify(this.restUtils, atLeast(1)).createDigitalID("BCeId", "12345");
+    when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.empty());
+    when(this.restUtils.createDigitalID(anyString(), anyString(), anyString())).thenThrow(new SoamRuntimeException("503 SERVICE " +
+      "UNAVAILABLE"));
+    assertThrows(SoamRuntimeException.class, () -> this.service.performLogin("BCeId", "12345", null, correlationID));
+    verify(this.restUtils, atLeast(1)).getDigitalID("BCeId", "12345", correlationID);
+    verify(this.restUtils, atLeast(1)).createDigitalID("BCeId", "12345", correlationID);
   }
 
 
@@ -109,16 +110,16 @@ public class SoamServiceTest {
     final DigitalIDEntity responseEntity = this.createResponseEntity(entity);
     final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
-    when(this.restUtils.getDigitalID(anyString(), anyString())).thenReturn(Optional.of(responseEntity));
-    when(this.restUtils.getServicesCard(anyString())).thenReturn(Optional.empty());
-    doNothing().when(this.restUtils).updateDigitalID(any());
+    when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.of(responseEntity));
+    when(this.restUtils.getServicesCard(anyString(), anyString())).thenReturn(Optional.empty());
+    doNothing().when(this.restUtils).updateDigitalID(any(), any());
     doThrow(new SoamRuntimeException("503 SERVICE " +
-        "UNAVAILABLE")).when(this.restUtils).createServicesCard(any());
-    assertThrows(SoamRuntimeException.class, () -> this.service.performLogin("BCeId", "12345", servicesCardEntity));
-    verify(this.restUtils, atLeast(1)).getServicesCard("DIGITALID");
-    verify(this.restUtils, atLeast(1)).getDigitalID("BCeId", "12345");
-    verify(this.restUtils, atLeastOnce()).updateDigitalID(any());
-    verify(this.restUtils, atLeast(1)).createServicesCard(any());
+      "UNAVAILABLE")).when(this.restUtils).createServicesCard(any(), any());
+    assertThrows(SoamRuntimeException.class, () -> this.service.performLogin("BCeId", "12345", servicesCardEntity, correlationID));
+    verify(this.restUtils, atLeast(1)).getServicesCard("DIGITALID", correlationID);
+    verify(this.restUtils, atLeast(1)).getDigitalID("BCeId", "12345", correlationID);
+    verify(this.restUtils, atLeastOnce()).updateDigitalID(any(), any());
+    verify(this.restUtils, atLeast(1)).createServicesCard(any(), any());
   }
 
 
@@ -126,12 +127,12 @@ public class SoamServiceTest {
   public void testPerformLogin_GivenDigitalIdDoesNotExistAndServiceCardIsNull_ShouldCreateDigitalId() {
     final DigitalIDEntity entity = this.createDigitalIdentity();
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
-    when(this.restUtils.getDigitalID(anyString(), anyString())).thenReturn(Optional.empty());
-    when(this.restUtils.createDigitalID(anyString(), anyString())).thenReturn(entity);
-    this.service.performLogin("BCeId", "12345", null);
-    verify(this.restUtils, atMostOnce()).createDigitalID("BCeId", "12345");
-    verify(this.restUtils, atMostOnce()).getDigitalID("BCeId", "12345");
-    verify(this.restUtils, never()).updateDigitalID(any());
+    when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.empty());
+    when(this.restUtils.createDigitalID(anyString(), anyString(), anyString())).thenReturn(entity);
+    this.service.performLogin("BCeId", "12345", null, correlationID);
+    verify(this.restUtils, atMostOnce()).createDigitalID("BCeId", "12345", correlationID);
+    verify(this.restUtils, atMostOnce()).getDigitalID("BCeId", "12345", correlationID);
+    verify(this.restUtils, never()).updateDigitalID(any(), any());
   }
 
   @Test
@@ -139,12 +140,12 @@ public class SoamServiceTest {
     final DigitalIDEntity entity = this.createDigitalIdentity();
     final DigitalIDEntity responseEntity = this.createResponseEntity(entity);
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
-    when(this.restUtils.getDigitalID(anyString(), anyString())).thenReturn(Optional.of(responseEntity));
-    doNothing().when(this.restUtils).updateDigitalID(any());
-    this.service.performLogin("BCeId", "12345", null);
-    verify(this.restUtils, never()).createDigitalID("BCeId", "12345");
-    verify(this.restUtils, atMostOnce()).getDigitalID("BCeId", "12345");
-    verify(this.restUtils, atMostOnce()).updateDigitalID(any());
+    when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.of(responseEntity));
+    doNothing().when(this.restUtils).updateDigitalID(any(), any());
+    this.service.performLogin("BCeId", "12345", null, correlationID);
+    verify(this.restUtils, never()).createDigitalID("BCeId", "12345", correlationID);
+    verify(this.restUtils, atMostOnce()).getDigitalID("BCeId", "12345", correlationID);
+    verify(this.restUtils, atMostOnce()).updateDigitalID(any(), any());
   }
 
 
@@ -154,16 +155,16 @@ public class SoamServiceTest {
     final DigitalIDEntity responseEntity = this.createResponseEntity(entity);
     final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
-    when(this.restUtils.getDigitalID(anyString(), anyString())).thenReturn(Optional.of(responseEntity));
-    doNothing().when(this.restUtils).updateDigitalID(any());
-    when(this.restUtils.getServicesCard(anyString())).thenReturn(Optional.empty());
-    doNothing().when(this.restUtils).createServicesCard(any());
-    this.service.performLogin("BCeId", "12345", servicesCardEntity);
-    verify(this.restUtils, never()).createDigitalID("BCeId", "12345");
-    verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345");
-    verify(this.restUtils, times(1)).updateDigitalID(any());
-    verify(this.restUtils, times(1)).createServicesCard(any());
-    verify(this.restUtils, times(1)).getServicesCard("DIGITALID");
+    when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.of(responseEntity));
+    doNothing().when(this.restUtils).updateDigitalID(any(), any());
+    when(this.restUtils.getServicesCard(anyString(), anyString())).thenReturn(Optional.empty());
+    doNothing().when(this.restUtils).createServicesCard(any(), any());
+    this.service.performLogin("BCeId", "12345", servicesCardEntity, correlationID);
+    verify(this.restUtils, never()).createDigitalID("BCeId", "12345", correlationID);
+    verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345", correlationID);
+    verify(this.restUtils, times(1)).updateDigitalID(any(), any());
+    verify(this.restUtils, times(1)).createServicesCard(any(), any());
+    verify(this.restUtils, times(1)).getServicesCard("DIGITALID", correlationID);
   }
 
 
@@ -173,18 +174,18 @@ public class SoamServiceTest {
     final DigitalIDEntity responseEntity = this.createResponseEntity(entity);
     final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
-    when(this.restUtils.getDigitalID(anyString(), anyString())).thenReturn(Optional.of(responseEntity));
-    doNothing().when(this.restUtils).updateDigitalID(any());
-    when(this.restUtils.getServicesCard(anyString())).thenReturn(Optional.of(servicesCardEntity));
-    doNothing().when(this.restUtils).updateServicesCard(any());
+    when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.of(responseEntity));
+    doNothing().when(this.restUtils).updateDigitalID(any(), any());
+    when(this.restUtils.getServicesCard(anyString(), anyString())).thenReturn(Optional.of(servicesCardEntity));
+    doNothing().when(this.restUtils).updateServicesCard(any(), any());
 
-    this.service.performLogin("BCeId", "12345", servicesCardEntity);
-    verify(this.restUtils, never()).createDigitalID("BCeId", "12345");
-    verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345");
-    verify(this.restUtils, times(1)).updateDigitalID(any());
-    verify(this.restUtils, never()).createServicesCard(any());
-    verify(this.restUtils, times(1)).getServicesCard("DIGITALID");
-    verify(this.restUtils, times(1)).updateServicesCard(any());
+    this.service.performLogin("BCeId", "12345", servicesCardEntity, correlationID);
+    verify(this.restUtils, never()).createDigitalID("BCeId", "12345", correlationID);
+    verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345", correlationID);
+    verify(this.restUtils, times(1)).updateDigitalID(any(), any());
+    verify(this.restUtils, never()).createServicesCard(any(), any());
+    verify(this.restUtils, times(1)).getServicesCard("DIGITALID", correlationID);
+    verify(this.restUtils, times(1)).updateServicesCard(any(), any());
   }
 
 
@@ -194,18 +195,18 @@ public class SoamServiceTest {
     final DigitalIDEntity responseEntity = this.createResponseEntity(entity);
     final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
-    when(this.restUtils.getDigitalID(anyString(), anyString())).thenReturn(Optional.of(responseEntity));
-    doNothing().when(this.restUtils).updateDigitalID(any());
+    when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.of(responseEntity));
+    doNothing().when(this.restUtils).updateDigitalID(any(), any());
     doThrow(new SoamRuntimeException("503 SERVICE " +
-        "UNAVAILABLE")).when(this.restUtils).getServicesCard(anyString());
+      "UNAVAILABLE")).when(this.restUtils).getServicesCard(anyString(), anyString());
 
-    assertThrows(SoamRuntimeException.class, () -> this.service.performLogin("BCeId", "12345", servicesCardEntity));
-    verify(this.restUtils, never()).createDigitalID("BCeId", "12345");
-    verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345");
-    verify(this.restUtils, times(1)).updateDigitalID(any());
-    verify(this.restUtils, never()).createServicesCard(any());
-    verify(this.restUtils, times(1)).getServicesCard("DIGITALID");
-    verify(this.restUtils, never()).updateServicesCard(any());
+    assertThrows(SoamRuntimeException.class, () -> this.service.performLogin("BCeId", "12345", servicesCardEntity, correlationID));
+    verify(this.restUtils, never()).createDigitalID("BCeId", "12345", correlationID);
+    verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345", correlationID);
+    verify(this.restUtils, times(1)).updateDigitalID(any(), any());
+    verify(this.restUtils, never()).createServicesCard(any(), any());
+    verify(this.restUtils, times(1)).getServicesCard("DIGITALID", correlationID);
+    verify(this.restUtils, never()).updateServicesCard(any(), any());
 
   }
 
@@ -216,18 +217,18 @@ public class SoamServiceTest {
     final DigitalIDEntity responseEntity = this.createResponseEntity(entity);
     final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
-    when(this.restUtils.getDigitalID(anyString(), anyString())).thenReturn(Optional.of(responseEntity));
-    doNothing().when(this.restUtils).updateDigitalID(any());
-    when(this.restUtils.getServicesCard(anyString())).thenReturn(Optional.empty());
+    when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.of(responseEntity));
+    doNothing().when(this.restUtils).updateDigitalID(any(), any());
+    when(this.restUtils.getServicesCard(anyString(), anyString())).thenReturn(Optional.empty());
     doThrow(new SoamRuntimeException("503 SERVICE " +
-        "UNAVAILABLE")).when(this.restUtils).createServicesCard(any());
-    assertThrows(SoamRuntimeException.class, () -> this.service.performLogin("BCeId", "12345", servicesCardEntity));
-    verify(this.restUtils, never()).createDigitalID("BCeId", "12345");
-    verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345");
-    verify(this.restUtils, times(1)).updateDigitalID(any());
-    verify(this.restUtils, times(1)).createServicesCard(any());
-    verify(this.restUtils, times(1)).getServicesCard("DIGITALID");
-    verify(this.restUtils, never()).updateServicesCard(any());
+      "UNAVAILABLE")).when(this.restUtils).createServicesCard(any(), any());
+    assertThrows(SoamRuntimeException.class, () -> this.service.performLogin("BCeId", "12345", servicesCardEntity, correlationID));
+    verify(this.restUtils, never()).createDigitalID("BCeId", "12345", correlationID);
+    verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345", correlationID);
+    verify(this.restUtils, times(1)).updateDigitalID(any(), any());
+    verify(this.restUtils, times(1)).createServicesCard(any(), any());
+    verify(this.restUtils, times(1)).getServicesCard("DIGITALID", correlationID);
+    verify(this.restUtils, never()).updateServicesCard(any(), any());
 
   }
 
@@ -238,44 +239,44 @@ public class SoamServiceTest {
     final DigitalIDEntity responseEntity = this.createResponseEntity(entity);
     final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
-    when(this.restUtils.getDigitalID(anyString(), anyString())).thenReturn(Optional.of(responseEntity));
-    doNothing().when(this.restUtils).updateDigitalID(any());
-    when(this.restUtils.getServicesCard(anyString())).thenReturn(Optional.of(servicesCardEntity));
+    when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.of(responseEntity));
+    doNothing().when(this.restUtils).updateDigitalID(any(), any());
+    when(this.restUtils.getServicesCard(anyString(), anyString())).thenReturn(Optional.of(servicesCardEntity));
     doThrow(new SoamRuntimeException("503 SERVICE " +
-        "UNAVAILABLE")).when(this.restUtils).updateServicesCard(any());
-    assertThrows(SoamRuntimeException.class, () -> this.service.performLogin("BCeId", "12345", servicesCardEntity));
-    verify(this.restUtils, never()).createDigitalID("BCeId", "12345");
-    verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345");
-    verify(this.restUtils, times(1)).updateDigitalID(any());
-    verify(this.restUtils, never()).createServicesCard(any());
-    verify(this.restUtils, times(1)).getServicesCard("DIGITALID");
-    verify(this.restUtils, times(1)).updateServicesCard(any());
+      "UNAVAILABLE")).when(this.restUtils).updateServicesCard(any(), any());
+    assertThrows(SoamRuntimeException.class, () -> this.service.performLogin("BCeId", "12345", servicesCardEntity, correlationID));
+    verify(this.restUtils, never()).createDigitalID("BCeId", "12345", correlationID);
+    verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345", correlationID);
+    verify(this.restUtils, times(1)).updateDigitalID(any(), any());
+    verify(this.restUtils, never()).createServicesCard(any(), any());
+    verify(this.restUtils, times(1)).getServicesCard("DIGITALID", correlationID);
+    verify(this.restUtils, times(1)).updateServicesCard(any(), any());
   }
 
   @Test
   public void testPerformLogin_GivenDigitalIdAndServiceCardDoesNotExist_ShouldCreateBothRecords() {
     final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
-    when(this.restUtils.getDigitalID(anyString(), anyString())).thenReturn(Optional.empty());
-    when(this.restUtils.createDigitalID(anyString(), anyString())).thenReturn(this.createDigitalIdentity());
-    when(this.restUtils.getServicesCard(anyString())).thenReturn(Optional.empty());
-    doNothing().when(this.restUtils).createServicesCard(any());
-    this.service.performLogin("BCeId", "12345", servicesCardEntity);
-    verify(this.restUtils, times(1)).createDigitalID("BCeId", "12345");
-    verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345");
-    verify(this.restUtils, never()).updateDigitalID(any());
-    verify(this.restUtils, times(1)).createServicesCard(any());
-    verify(this.restUtils, times(1)).getServicesCard("DIGITALID");
-    verify(this.restUtils, never()).updateServicesCard(any());
+    when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.empty());
+    when(this.restUtils.createDigitalID(anyString(), anyString(), anyString())).thenReturn(this.createDigitalIdentity());
+    when(this.restUtils.getServicesCard(anyString(), anyString())).thenReturn(Optional.empty());
+    doNothing().when(this.restUtils).createServicesCard(any(), any());
+    this.service.performLogin("BCeId", "12345", servicesCardEntity, correlationID);
+    verify(this.restUtils, times(1)).createDigitalID("BCeId", "12345", correlationID);
+    verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345", correlationID);
+    verify(this.restUtils, never()).updateDigitalID(any(), any());
+    verify(this.restUtils, times(1)).createServicesCard(any(), any());
+    verify(this.restUtils, times(1)).getServicesCard("DIGITALID", correlationID);
+    verify(this.restUtils, never()).updateServicesCard(any(), any());
   }
 
 
   @Test
   public void testGetSoamLoginEntity_GivenDigitalIdGetCallNotFound_ShouldThrowSoamRuntimeException() {
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
-    when(this.restUtils.getDigitalID(anyString(), anyString())).thenReturn(Optional.empty());
-    assertThrows(SoamRuntimeException.class, () -> this.service.getSoamLoginEntity("BCeId", "12345"));
-    verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345");
+    when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.empty());
+    assertThrows(SoamRuntimeException.class, () -> this.service.getSoamLoginEntity("BCeId", "12345", correlationID));
+    verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345", correlationID);
   }
 
 
@@ -283,9 +284,9 @@ public class SoamServiceTest {
   public void testGetSoamLoginEntity_GivenDigitalIdGetCallReturnsBlankResponse_ShouldThrowSoamRuntimeException() {
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
     doThrow(new SoamRuntimeException("Unexpected HTTP return code: 500 error message: null body from digitalID get " +
-        "call.")).when(this.restUtils).getDigitalID(anyString(), anyString());
-    assertThrows(SoamRuntimeException.class, () -> this.service.getSoamLoginEntity("BCeId", "12345"));
-    verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345");
+      "call.")).when(this.restUtils).getDigitalID(anyString(), anyString(), anyString());
+    assertThrows(SoamRuntimeException.class, () -> this.service.getSoamLoginEntity("BCeId", "12345", correlationID));
+    verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345", correlationID);
 
   }
 
@@ -293,9 +294,9 @@ public class SoamServiceTest {
   @Test
   public void testGetSoamLoginEntity_GivenDigitalIdGetCallFailed_ShouldThrowSoamRuntimeException() {
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
-    doThrow(new SoamRuntimeException("Unexpected HTTP return code: 503 error message: SERVICE UNAVAILABLE ")).when(this.restUtils).getDigitalID(anyString(), anyString());
-    assertThrows(SoamRuntimeException.class, () -> this.service.getSoamLoginEntity("BCeId", "12345"));
-    verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345");
+    doThrow(new SoamRuntimeException("Unexpected HTTP return code: 503 error message: SERVICE UNAVAILABLE ")).when(this.restUtils).getDigitalID(anyString(), anyString(), anyString());
+    assertThrows(SoamRuntimeException.class, () -> this.service.getSoamLoginEntity("BCeId", "12345", correlationID));
+    verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345", correlationID);
   }
 
 
@@ -306,10 +307,10 @@ public class SoamServiceTest {
     final DigitalIDEntity entity = this.createDigitalIdentity();
     entity.setDigitalID(digitalId);
     final DigitalIDEntity responseEntity = this.createResponseEntity(entity);
-    when(this.restUtils.getDigitalID(anyString(), anyString())).thenReturn(Optional.of(responseEntity));
+    when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.of(responseEntity));
 
-    final SoamLoginEntity soamLoginEntity = this.service.getSoamLoginEntity("BCeId", "12345");
-    verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345");
+    final SoamLoginEntity soamLoginEntity = this.service.getSoamLoginEntity("BCeId", "12345", correlationID);
+    verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345", correlationID);
     assertNotNull(soamLoginEntity.getDigitalIdentityID());
     assertThat(soamLoginEntity.getDigitalIdentityID()).isEqualTo(digitalId);
     assertNull(soamLoginEntity.getServiceCard());
@@ -329,11 +330,11 @@ public class SoamServiceTest {
     final StudentEntity studentResponseEntity = this.createStudentResponseEntity(studentEntity);
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
     responseEntity.setStudentID(studentId.toString());
-    when(this.restUtils.getDigitalID(anyString(), anyString())).thenReturn(Optional.of(responseEntity));
-    when(this.restUtils.getStudentByStudentID(anyString())).thenReturn(studentResponseEntity);
-    final SoamLoginEntity soamLoginEntity = this.service.getSoamLoginEntity("BCeId", "12345");
-    verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345");
-    verify(this.restUtils, times(1)).getStudentByStudentID(studentId.toString());
+    when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.of(responseEntity));
+    when(this.restUtils.getStudentByStudentID(anyString(), anyString())).thenReturn(studentResponseEntity);
+    final SoamLoginEntity soamLoginEntity = this.service.getSoamLoginEntity("BCeId", "12345", correlationID);
+    verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345", correlationID);
+    verify(this.restUtils, times(1)).getStudentByStudentID(studentId.toString(), correlationID);
     assertNotNull(soamLoginEntity.getDigitalIdentityID());
     assertThat(soamLoginEntity.getDigitalIdentityID()).isEqualTo(digitalId);
     assertNull(soamLoginEntity.getServiceCard());
@@ -351,12 +352,12 @@ public class SoamServiceTest {
     entity.setStudentID(studentId.toString());
     final DigitalIDEntity responseEntity = this.createResponseEntity(entity);
     responseEntity.setStudentID(studentId.toString());
-    when(this.restUtils.getDigitalID(anyString(), anyString())).thenReturn(Optional.of(responseEntity));
-    doThrow(new SoamRuntimeException("Unexpected HTTP return code: 404 error message: NOT FOUND ")).when(this.restUtils).getStudentByStudentID(anyString());
+    when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.of(responseEntity));
+    doThrow(new SoamRuntimeException("Unexpected HTTP return code: 404 error message: NOT FOUND ")).when(this.restUtils).getStudentByStudentID(anyString(), anyString());
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
-    assertThrows(SoamRuntimeException.class, () -> this.service.getSoamLoginEntity("BCeId", "12345"));
-    verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345");
-    verify(this.restUtils, times(1)).getStudentByStudentID(studentId.toString());
+    assertThrows(SoamRuntimeException.class, () -> this.service.getSoamLoginEntity("BCeId", "12345", correlationID));
+    verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345", correlationID);
+    verify(this.restUtils, times(1)).getStudentByStudentID(studentId.toString(), correlationID);
   }
 
   @Test
@@ -370,12 +371,12 @@ public class SoamServiceTest {
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
 
 
-    when(this.restUtils.getDigitalID(anyString(), anyString())).thenReturn(Optional.of(responseEntity));
-    doThrow(new SoamRuntimeException("Unexpected HTTP return code: 503 error message: SERVICE UNAVAILABLE ")).when(this.restUtils).getStudentByStudentID(anyString());
+    when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.of(responseEntity));
+    doThrow(new SoamRuntimeException("Unexpected HTTP return code: 503 error message: SERVICE UNAVAILABLE ")).when(this.restUtils).getStudentByStudentID(anyString(), anyString());
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
-    assertThrows(SoamRuntimeException.class, () -> this.service.getSoamLoginEntity("BCeId", "12345"));
-    verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345");
-    verify(this.restUtils, times(1)).getStudentByStudentID(studentId.toString());
+    assertThrows(SoamRuntimeException.class, () -> this.service.getSoamLoginEntity("BCeId", "12345", correlationID));
+    verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345", correlationID);
+    verify(this.restUtils, times(1)).getStudentByStudentID(studentId.toString(), correlationID);
 
 
   }
@@ -395,13 +396,13 @@ public class SoamServiceTest {
     final ServicesCardEntity servicesCardResponseEntity = this.createServicesCardResponseEntity(servicesCardEntity);
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
     responseEntity.setStudentID(studentId.toString());
-    when(this.restUtils.getDigitalID(anyString(), anyString())).thenReturn(Optional.of(responseEntity));
-    when(this.restUtils.getStudentByStudentID(anyString())).thenReturn(studentResponseEntity);
-    when(this.restUtils.getServicesCard(anyString())).thenReturn(Optional.of(servicesCardResponseEntity));
-    final SoamLoginEntity soamLoginEntity = this.service.getSoamLoginEntity("BCSC", "12345");
-    verify(this.restUtils, times(1)).getDigitalID("BCSC", "12345");
-    verify(this.restUtils, times(1)).getStudentByStudentID(studentId.toString());
-    verify(this.restUtils, times(1)).getServicesCard("12345");
+    when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.of(responseEntity));
+    when(this.restUtils.getStudentByStudentID(anyString(), anyString())).thenReturn(studentResponseEntity);
+    when(this.restUtils.getServicesCard(anyString(), anyString())).thenReturn(Optional.of(servicesCardResponseEntity));
+    final SoamLoginEntity soamLoginEntity = this.service.getSoamLoginEntity("BCSC", "12345", correlationID);
+    verify(this.restUtils, times(1)).getDigitalID("BCSC", "12345", correlationID);
+    verify(this.restUtils, times(1)).getStudentByStudentID(studentId.toString(), correlationID);
+    verify(this.restUtils, times(1)).getServicesCard("12345", correlationID);
     assertNotNull(soamLoginEntity.getDigitalIdentityID());
     assertThat(digitalId).isEqualTo(soamLoginEntity.getDigitalIdentityID());
     assertNotNull(soamLoginEntity.getServiceCard());
@@ -422,13 +423,13 @@ public class SoamServiceTest {
     final StudentEntity studentEntity = this.createStudentEntity(studentId);
     final StudentEntity studentResponseEntity = this.createStudentResponseEntity(studentEntity);
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
-    when(this.restUtils.getDigitalID(anyString(), anyString())).thenReturn(Optional.of(responseEntity));
-    when(this.restUtils.getStudentByStudentID(anyString())).thenReturn(studentResponseEntity);
-    doThrow(new SoamRuntimeException("Unexpected HTTP return code: 503 error message: SERVICE UNAVAILABLE ")).when(this.restUtils).getServicesCard(anyString());
+    when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.of(responseEntity));
+    when(this.restUtils.getStudentByStudentID(anyString(), anyString())).thenReturn(studentResponseEntity);
+    doThrow(new SoamRuntimeException("Unexpected HTTP return code: 503 error message: SERVICE UNAVAILABLE ")).when(this.restUtils).getServicesCard(anyString(), anyString());
 
-    assertThrows(SoamRuntimeException.class, () -> this.service.getSoamLoginEntity("BCSC", "12345"));
-    verify(this.restUtils, times(1)).getDigitalID("BCSC", "12345");
-    verify(this.restUtils, times(1)).getServicesCard("12345");
+    assertThrows(SoamRuntimeException.class, () -> this.service.getSoamLoginEntity("BCSC", "12345", correlationID));
+    verify(this.restUtils, times(1)).getDigitalID("BCSC", "12345", correlationID);
+    verify(this.restUtils, times(1)).getServicesCard("12345", correlationID);
   }
 
   private ServicesCardEntity createServicesCardResponseEntity(final ServicesCardEntity servicesCardEntity) {

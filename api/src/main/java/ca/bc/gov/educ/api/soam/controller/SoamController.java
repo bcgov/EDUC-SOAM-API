@@ -25,7 +25,8 @@ public class SoamController implements SoamEndpoint {
     this.service = soamService;
   }
 
-  public ResponseEntity<Void> performLogin(MultiValueMap<String, String> formData) {
+  @Override
+  public ResponseEntity<Void> performLogin(final MultiValueMap<String, String> formData, final String correlationID) {
     ServicesCardEntity serviceCard = null;
     if (formData.getFirst("did") != null) {
       serviceCard = new ServicesCardEntity();
@@ -44,12 +45,13 @@ public class SoamController implements SoamEndpoint {
       serviceCard.setSurname(formData.getFirst("surname"));
       serviceCard.setUserDisplayName(formData.getFirst("userDisplayName"));
     }
-    service.performLogin(formData.getFirst("identifierType"), formData.getFirst("identifierValue"), serviceCard);
+    this.service.performLogin(formData.getFirst("identifierType"), formData.getFirst("identifierValue"), serviceCard, correlationID);
     return ResponseEntity.noContent().build();
   }
 
-  public ResponseEntity<SoamLoginEntity> getSoamLoginEntity(String typeCode, String typeValue) {
-    return ResponseEntity.ok(service.getSoamLoginEntity(typeCode, typeValue));
+  @Override
+  public ResponseEntity<SoamLoginEntity> getSoamLoginEntity(final String typeCode, final String typeValue, final String correlationID) {
+    return ResponseEntity.ok(this.service.getSoamLoginEntity(typeCode, typeValue, correlationID));
   }
 
 }

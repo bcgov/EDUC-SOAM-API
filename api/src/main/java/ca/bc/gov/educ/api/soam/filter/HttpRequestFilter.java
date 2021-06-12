@@ -26,7 +26,6 @@ public class HttpRequestFilter implements Filter {
     val mutableRequest = new MutableHttpServletRequest(req);
     if (StringUtils.isBlank(mutableRequest.getHeader("correlationID"))) {
       val correlationID = UUID.randomUUID().toString();
-      log.info("correlation id was not provided setting one {}", correlationID);
       mutableRequest.putHeader("correlationID", correlationID);
     }
     chain.doFilter(mutableRequest, response);

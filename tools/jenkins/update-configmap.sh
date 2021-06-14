@@ -208,6 +208,7 @@ $KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances -r $SOAM_KC_R
 echo Creating mappers for IDP...
 $KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/keycloak_bcdevexchange_bceid/mappers -r $SOAM_KC_REALM_ID --body "{\"name\" : \"account_type\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_bceid\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"account_type\",\"user.attribute\" : \"account_type\"}}"
 $KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/keycloak_bcdevexchange_bceid/mappers -r $SOAM_KC_REALM_ID --body "{\"name\" : \"BCeID GUID\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_bceid\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"bceid_userid\",\"user.attribute\" : \"bceid_guid\"}}"
+$KCADM_FILE_BIN_FOLDER/kcadm.sh create identity-provider/instances/keycloak_bcdevexchange_bceid/mappers -r $SOAM_KC_REALM_ID --body "{\"name\" : \"bceid_username\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_bceid\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"preferred_username\",\"user.attribute\" : \"lastName\"}}"
 
 echo Creating DevExchange IDP for BCSC
 echo Building IDP instance for BCSC...

@@ -207,14 +207,14 @@ curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authenticati
 
 echo
 echo Retrieving client ID for first login executor
-soamFirstLoginExecutorID=$(curl -vX GET "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/flows/SOAMFirstLogin/executions" \
+soamFirstLoginExecutorID=$(curl -sX GET "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/flows/SOAMFirstLogin/executions" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
   | jq -r '.[].id')
 
 echo
 echo Retrieving client ID for post login executor
-soamPostLoginExecutorID=$(curl -vX GET "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/flows/SOAMPostLogin/executions" \
+soamPostLoginExecutorID=$(curl -sX GET "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/flows/SOAMPostLogin/executions" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
   | jq -r '.[].id')
@@ -234,13 +234,13 @@ echo Creating executors
 curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/flows/SOAMPostLogin/executions/execution" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"provider\" : \"bcgov-soam-post-authenticator\",\"requirement\" : \"REQUIRED\"}"
+  -d "{\"provider\" : \"bcgov-soam-post-authenticator\"}"
 
 echo
 curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/flows/SOAMFirstLogin/executions/execution" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"provider\" : \"bcgov-soam-authenticator\",\"requirement\" : \"REQUIRED\"}"
+  -d "{\"provider\" : \"bcgov-soam-authenticator\"}"
 
 echo
 echo Retrieving client ID for first login executor
@@ -258,14 +258,14 @@ soamPostLoginExecutorID=$(curl -sX GET "https://$SOAM_KC/auth/admin/realms/$SOAM
 
 echo
 echo Updating first login executor to required
-curl -sX PUT "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/flows/SOAMFirstLogin/executions" \
+curl -vX PUT "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/flows/SOAMFirstLogin/executions" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
   -d "{$soamFirstLoginExecutorID \"configurable\": false,\"displayName\": \"SOAM Authenticator\",\"index\": 0,\"level\": 0,\"providerId\": \"bcgov-soam-authenticator\",\"requirement\": \"REQUIRED\",\"requirementChoices\": [\"ALTERNATIVE\", \"REQUIRED\", \"DISABLED\"]}"
 
 echo
 echo Updating post login executor to required
-curl -sX PUT "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/flows/SOAMPostLogin/executions" \
+curl -vX PUT "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/flows/SOAMPostLogin/executions" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
   -d "{$soamPostLoginExecutorID \"configurable\": false,\"displayName\": \"SOAM Authenticator\",\"index\": 0,\"level\": 0,\"providerId\": \"bcgov-soam-authenticator\",\"requirement\": \"REQUIRED\",\"requirementChoices\": [\"ALTERNATIVE\", \"REQUIRED\", \"DISABLED\"]}"

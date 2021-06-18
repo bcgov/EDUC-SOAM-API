@@ -234,13 +234,13 @@ echo Creating executors
 curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/flows/SOAMPostLogin/executions/execution" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"provider\" : \"bcgov-soam-post-authenticator\"}"
+  -d "{\"provider\" : \"bcgov-soam-post-authenticator\",\"requirement\" : \"REQUIRED\"}"
 
 echo
 curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/flows/SOAMFirstLogin/executions/execution" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"provider\" : \"bcgov-soam-authenticator\"}"
+  -d "{\"provider\" : \"bcgov-soam-authenticator\",\"requirement\" : \"REQUIRED\"}"
 
 echo
 echo Retrieving client ID for first login executor

@@ -221,12 +221,12 @@ soamPostLoginExecutorID=$(curl -vX GET "https://$SOAM_KC/auth/admin/realms/$SOAM
 
 echo
 echo Removing post login executor
-curl -vX DELETE "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/executions/$soamPostLoginExecutorID" \
+curl -sX DELETE "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/executions/$soamPostLoginExecutorID" \
   -H "Authorization: Bearer $TKN" \
 
 echo
 echo Removing first login executor
-curl -vX DELETE "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/executions/$soamFirstLoginExecutorID" \
+curl -sX DELETE "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/executions/$soamFirstLoginExecutorID" \
   -H "Authorization: Bearer $TKN" \
 
 echo

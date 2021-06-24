@@ -1,6 +1,9 @@
 package ca.bc.gov.educ.api.soam.exception;
 
 import ca.bc.gov.educ.api.soam.exception.errors.ApiError;
+import io.github.resilience4j.bulkhead.BulkheadFullException;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
+import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import lombok.val;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +19,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.*;
 
 /**
  * The type Rest exception handler.
@@ -80,6 +83,48 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
   @ExceptionHandler(InvalidParameterException.class)
   protected ResponseEntity<Object> handleInvalidParameter(final InvalidParameterException ex) {
     val apiError = new ApiError(BAD_REQUEST);
+    apiError.setMessage(ex.getMessage());
+    log.error("{} ", apiError.getMessage(), ex);
+    return this.buildResponseEntity(apiError);
+  }
+
+  /**
+   * Handles RequestNotPermitted
+   *
+   * @param ex the RequestNotPermitted
+   * @return the ApiError object
+   */
+  @ExceptionHandler(RequestNotPermitted.class)
+  protected ResponseEntity<Object> handleRequestNotPermitted(final RequestNotPermitted ex) {
+    val apiError = new ApiError(TOO_MANY_REQUESTS);
+    apiError.setMessage(ex.getMessage());
+    log.error("{} ", apiError.getMessage(), ex);
+    return this.buildResponseEntity(apiError);
+  }
+
+  /**
+   * Handles BulkheadFullException
+   *
+   * @param ex the BulkheadFullException
+   * @return the ApiError object
+   */
+  @ExceptionHandler(BulkheadFullException.class)
+  protected ResponseEntity<Object> handleBulkheadFullException(final BulkheadFullException ex) {
+    val apiError = new ApiError(BAD_GATEWAY);
+    apiError.setMessage(ex.getMessage());
+    log.error("{} ", apiError.getMessage(), ex);
+    return this.buildResponseEntity(apiError);
+  }
+
+  /**
+   * Handles CallNotPermittedException
+   *
+   * @param ex the CallNotPermittedException
+   * @return the ApiError object
+   */
+  @ExceptionHandler(CallNotPermittedException.class)
+  protected ResponseEntity<Object> handleCallNotPermittedException(final CallNotPermittedException ex) {
+    val apiError = new ApiError(BAD_GATEWAY);
     apiError.setMessage(ex.getMessage());
     log.error("{} ", apiError.getMessage(), ex);
     return this.buildResponseEntity(apiError);

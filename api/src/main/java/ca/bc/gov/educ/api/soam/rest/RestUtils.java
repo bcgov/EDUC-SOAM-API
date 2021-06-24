@@ -7,6 +7,9 @@ import ca.bc.gov.educ.api.soam.model.entity.ServicesCardEntity;
 import ca.bc.gov.educ.api.soam.model.entity.StudentEntity;
 import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
 import ca.bc.gov.educ.api.soam.util.SoamUtil;
+import io.github.resilience4j.bulkhead.annotation.Bulkhead;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.http.HttpStatus;
@@ -27,6 +30,10 @@ public class RestUtils {
 
   public static final String NULL_BODY_FROM = "null body from ";
   private static final String CORRELATION_ID = "correlationID";
+  private static final String DIGITAL_ID_API = "digitalIdApi";
+  private static final String SERVICES_CARD_API = "servicesCardApi";
+  private static final String STUDENT_API = "studentApi";
+
   private final WebClient webClient;
   private final ApplicationProperties props;
   private final SoamUtil soamUtil;
@@ -38,6 +45,9 @@ public class RestUtils {
     codeTableUtils.init();
   }
 
+  @Bulkhead(name = DIGITAL_ID_API)
+  @CircuitBreaker(name = DIGITAL_ID_API)
+  @Retry(name = DIGITAL_ID_API)
   public Optional<DigitalIDEntity> getDigitalID(@NonNull final String identifierType, @NonNull final String identifierValue, final String correlationID) {
     try {
       val response = this.webClient.get()
@@ -78,6 +88,9 @@ public class RestUtils {
     log.info("Entity not found :: {} {}", s, args);
   }
 
+  @Bulkhead(name = SERVICES_CARD_API)
+  @CircuitBreaker(name = SERVICES_CARD_API)
+  @Retry(name = SERVICES_CARD_API)
   public Optional<ServicesCardEntity> getServicesCard(@NonNull final String did, final String correlationID) {
     try {
       val response = this.webClient.get()
@@ -109,6 +122,8 @@ public class RestUtils {
     }
   }
 
+  @Bulkhead(name = SERVICES_CARD_API)
+  @CircuitBreaker(name = SERVICES_CARD_API)
   public void updateServicesCard(final ServicesCardEntity servicesCardEntity, final String correlationID) {
     try {
       servicesCardEntity.setCreateDate(null);
@@ -133,6 +148,8 @@ public class RestUtils {
     }
   }
 
+  @Bulkhead(name = DIGITAL_ID_API)
+  @CircuitBreaker(name = DIGITAL_ID_API)
   public void updateDigitalID(final DigitalIDEntity digitalIDEntity, final String correlationID) {
     val updatedDigitalID = this.soamUtil.getUpdatedDigitalId(digitalIDEntity);
     try {
@@ -156,6 +173,8 @@ public class RestUtils {
     }
   }
 
+  @Bulkhead(name = DIGITAL_ID_API)
+  @CircuitBreaker(name = DIGITAL_ID_API)
   public DigitalIDEntity createDigitalID(@NonNull final String identifierType, @NonNull final String identifierValue, final String correlationID) {
     val entity = this.soamUtil.createDigitalIdentity(identifierType, identifierValue.toUpperCase());
     try {
@@ -182,6 +201,8 @@ public class RestUtils {
     }
   }
 
+  @Bulkhead(name = SERVICES_CARD_API)
+  @CircuitBreaker(name = SERVICES_CARD_API)
   public void createServicesCard(@NonNull final ServicesCardEntity servicesCardEntity, final String correlationID) {
     try {
       this.webClient.post()
@@ -202,6 +223,9 @@ public class RestUtils {
     }
   }
 
+  @Bulkhead(name = STUDENT_API)
+  @CircuitBreaker(name = STUDENT_API)
+  @Retry(name = STUDENT_API)
   public StudentEntity getStudentByStudentID(final String studentID, final String correlationID) {
     try {
       val apiResponse = this.webClient.get()

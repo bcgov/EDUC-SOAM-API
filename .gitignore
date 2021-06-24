@@ -26,3 +26,8 @@ application-dev.properties
 hs_err_pid*
 api/src/main/resources/application-local.properties
 api/target
+
+.factorypath
+.idea/
+.settings/
+*.iml

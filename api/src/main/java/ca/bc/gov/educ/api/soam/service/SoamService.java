@@ -10,6 +10,7 @@ import ca.bc.gov.educ.api.soam.model.entity.StudentEntity;
 import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
 import ca.bc.gov.educ.api.soam.rest.RestUtils;
 import ca.bc.gov.educ.api.soam.util.SoamUtil;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,7 @@ public class SoamService {
     this.restUtils = restUtils;
   }
 
+  @RateLimiter(name = "performLogin")
   public void performLogin(final String identifierType, final String identifierValue, final ServicesCardEntity servicesCard, final String correlationID) {
     this.validateExtendedSearchParameters(identifierType, identifierValue);
     this.manageLogin(identifierType, identifierValue, servicesCard, correlationID);
@@ -77,6 +79,7 @@ public class SoamService {
     this.restUtils.updateServicesCard(servicesCardEntity, correlationID);
   }
 
+  @RateLimiter(name = "getSoamLoginEntity")
   public SoamLoginEntity getSoamLoginEntity(final String identifierType, final String identifierValue, final String correlationID) {
     this.validateSearchParameters(identifierType, identifierValue);
     val digitalIDEntity = this.getDigitalIDEntityForLogin(identifierType, identifierValue, correlationID);

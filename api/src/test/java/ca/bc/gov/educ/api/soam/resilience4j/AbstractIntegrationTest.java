@@ -141,6 +141,7 @@ public abstract class AbstractIntegrationTest {
         assertThat(metricsResponse.getBody()).isNotNull();
         String response = metricsResponse.getBody();
         assertThat(response).contains(getMetricName(kind, backend) + count);
+        assertThat(response).contains("resilience4j_circuitbreaker_calls_seconds_bucket");
     }
 
     protected static String getMetricName(String kind, String backend) {

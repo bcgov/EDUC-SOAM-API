@@ -68,6 +68,7 @@ public class RestWebClient {
     val oauthFilter = new ServerOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
     oauthFilter.setDefaultClientRegistrationId(this.props.getClientID());
     return builder
+      .defaultHeader("X-Client-Name", ApplicationProperties.API_NAME)
       .filter(this.log())
       .clientConnector(this.connector)
       .uriBuilderFactory(this.factory)

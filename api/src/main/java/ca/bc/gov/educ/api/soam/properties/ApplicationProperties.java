@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 public class ApplicationProperties {
 
   public static final String BCSC = "BCSC";
+  public static final String API_NAME="SOAM-API";
   @Value("${client.id}")
 	private String clientID;
   @Value("${client.secret}")

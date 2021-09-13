@@ -440,7 +440,7 @@ public class SoamServiceTest {
     final StudentEntity.StudentEntityBuilder builder = StudentEntity.builder();
     builder.studentID(Objects.requireNonNullElseGet(studentId, UUID::randomUUID));
     builder.dob(LocalDate.now().toString());
-    builder.legalFirstName("test").legalLastName("test").email("test@abc.com").genderCode('M').pen("123456789").sexCode('M').dataSourceCode("MYED");
+    builder.legalFirstName("test").legalLastName("test").email("test@abc.com").genderCode("M").pen("123456789").sexCode("M");
     return builder.build();
   }
 
@@ -546,16 +546,19 @@ public class SoamServiceTest {
 
       soamStudent.setCreateDate(student.getCreateDate());
       soamStudent.setCreateUser(student.getCreateUser());
-      soamStudent.setDataSourceCode(student.getDataSourceCode());
       soamStudent.setDeceasedDate(student.getDeceasedDate());
       soamStudent.setDob(student.getDob());
       soamStudent.setEmail(student.getEmail());
-      soamStudent.setGenderCode(student.getGenderCode());
+      if (student.getGenderCode() != null) {
+        soamStudent.setGenderCode(student.getGenderCode().charAt(0));
+      }
       soamStudent.setLegalFirstName(student.getLegalFirstName());
       soamStudent.setLegalLastName(student.getLegalLastName());
       soamStudent.setLegalMiddleNames(student.getLegalMiddleNames());
       soamStudent.setPen(student.getPen());
-      soamStudent.setSexCode(student.getSexCode());
+      if (student.getSexCode() != null) {
+        soamStudent.setSexCode(student.getSexCode().charAt(0));
+      }
       soamStudent.setStudentID(student.getStudentID());
       soamStudent.setUpdateDate(student.getUpdateDate());
       soamStudent.setUpdateUser(student.getUpdateUser());

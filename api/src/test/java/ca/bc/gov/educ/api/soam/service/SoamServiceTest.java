@@ -353,20 +353,18 @@ public class SoamServiceTest {
     entity.setStudentID(studentId.toString());
     final DigitalIDEntity responseEntity = this.createResponseEntity(entity);
     final StudentEntity studentEntity = this.createStudentEntity(studentId);
+    studentEntity.setStatusCode("M");
+    studentEntity.setTrueStudentID(trueStudentId);
 
-    final StudentEntity studentResponseEntity = this.createStudentResponseEntity(studentEntity);
-    studentResponseEntity.setStatusCode("M");
-    studentResponseEntity.setTrueStudentID(trueStudentId);
-
-    final StudentEntity trueStudentResponseEntity = this.createStudentResponseEntity(studentEntity);
-    trueStudentResponseEntity.setStudentID(trueStudentId);
-    trueStudentResponseEntity.setStatusCode("A");
+    final StudentEntity trueStudentEntity = this.createStudentEntity(trueStudentId);
+    trueStudentEntity.setStudentID(trueStudentId);
+    trueStudentEntity.setStatusCode("A");
 
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
     responseEntity.setStudentID(studentId.toString());
     when(this.restUtils.getDigitalID("BCeId", "12345", correlationID)).thenReturn(Optional.of(responseEntity));
-    when(this.restUtils.getStudentByStudentID(studentId.toString(), correlationID)).thenReturn(studentResponseEntity);
-    when(this.restUtils.getStudentByStudentID(trueStudentId.toString(), correlationID)).thenReturn(trueStudentResponseEntity);
+    when(this.restUtils.getStudentByStudentID(studentId.toString(), correlationID)).thenReturn(studentEntity);
+    when(this.restUtils.getStudentByStudentID(trueStudentId.toString(), correlationID)).thenReturn(trueStudentEntity);
     final SoamLoginEntity soamLoginEntity = this.service.getSoamLoginEntity("BCeId", "12345", correlationID);
     verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345", correlationID);
     verify(this.restUtils, times(1)).getStudentByStudentID(studentId.toString(), correlationID);

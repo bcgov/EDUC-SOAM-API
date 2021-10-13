@@ -26,6 +26,8 @@ DEVEXCHANGE_KC_LOAD_USER_ADMIN=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o jso
 DEVEXCHANGE_KC_REALM_ID=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get secret devexchange-keycloak-secrets-${envValue} | sed -n 's/.*"realm": "\(.*\)",/\1/p' | base64 --decode)
 SPLUNK_TOKEN=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get configmaps ${APP_NAME}-${envValue}-setup-config | sed -n "s/.*\"SPLUNK_TOKEN_${APP_NAME_UPPER}\": \"\(.*\)\"/\1/p")
 SERVICES_CARD_DNS=id.gov.bc.ca
+SFS_URL=https://sfs7.gov.bc.ca/affwebservices/public/saml2sso
+SAML_CERT=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get secret wam-saml-certs-${envValue} | sed -n 's/.*"certificate": "\(.*\)"/\1/p' | base64 --decode)
 
 SPLUNK_URL="gww.splunk.educ.gov.bc.ca"
 FLB_CONFIG="[SERVICE]
@@ -67,6 +69,7 @@ PARSER_CONFIG="
 
 if [ "$envValue" != "prod" ]; then
   SSO_ENV=$TARGET_ENV.oidc.gov.bc.ca
+  SFS_URL=https://sfstest7.gov.bc.ca/affwebservices/public/saml2sso
   SOAM_KC=soam-$envValue.apps.silver.devops.gov.bc.ca
   SERVICES_CARD_DNS=idtest.gov.bc.ca
 fi
@@ -447,6 +450,22 @@ curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-pro
   -H "Authorization: Bearer $TKN" \
   -d "{\"name\" : \"IDIR GUID\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_idir\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"idir_guid\",\"user.attribute\" : \"idir_guid\"}}"
 
+# New SAML Identity Providers
+echo
+echo Building IDP instance for SAML BCeID...
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TKN" \
+  -d "{\"alias\" : \"bceidbasic\",\"displayName\" : \"BCeID Basic\",\"providerId\" : \"saml\",\"enabled\" : true,\"updateProfileFirstLoginMode\": \"on\",\"trustEmail\": false,\"storeToken\": false,\"addReadTokenRoleOnCreate\": false,\"authenticateByDefault\": false,\"linkOnly\": false,\"firstBrokerLoginFlowAlias\": \"SOAMFirstLoginSAML\",\"postBrokerLoginFlowAlias\": \"SOAMPostLoginSAML\",\"config\": {  \"validateSignature\": \"true\",  \"hideOnLoginPage\": \"true\",  \"samlXmlKeyNameTranformer\": \"KEY_ID\",  \"postBindingLogout\": \"false\",  \"nameIDPolicyFormat\": \"urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified\",  \"postBindingResponse\": \"true\",  \"signatureAlgorithm\": \"RSA_SHA256\",  \"useJwksUrl\": \"true\",  \"wantAssertionsSigned\": \"false\",  \"postBindingAuthnRequest\": \"true\",  \"forceAuthn\": \"true\",  \"wantAuthnRequestsSigned\": \"false\",  \"singleSignOnServiceUrl\": \"$SFS_URL\",\"signingCertificate\":\"$SAML_CERT\",\"addExtensionsElementWithKeyInfo\": \"false\",  \"principalType\": \"SUBJECT\"}}"
+
+echo
+echo Creating mappers for IDP...
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_bceid/mappers" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TKN" \
+  -d "{\"name\" : \"account_type\",\"identityProviderAlias\" : \"bceidbasic\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"account_type\",\"user.attribute\" : \"account_type\"}}"
+
+# Retrieving client IDs and Secrets
 echo
 echo Retrieving client ID for soam-kc-service
 soamKCServiceClientID=$(curl -sX GET "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/clients" \

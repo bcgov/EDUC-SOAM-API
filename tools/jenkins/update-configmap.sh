@@ -541,7 +541,7 @@ echo Creating mappers for SAML BCeID IDP...
 curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/bceidbasic/mappers" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"name\" : \"account_type\",\"identityProviderAlias\" : \"bceidbasic\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"account_type\",\"user.attribute\" : \"account_type\"}}"
+  -d "{\"name\":\"account_type\",\"identityProviderAlias\":\"bceidbasic\",\"identityProviderMapper\":\"hardcoded-attribute-idp-mapper\",\"config\":{\"attribute.value\":\"bceid\",\"attribute\":\"account_type\"}}"
 
 echo
 echo Building IDP instance for SAML IDIR...
@@ -555,7 +555,7 @@ echo Creating mappers for SAML IDIR IDP...
 curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/IDIR/mappers" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"name\" : \"account_type\",\"identityProviderAlias\" : \"IDIR\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"account_type\",\"user.attribute\" : \"account_type\"}}"
+  -d "{\"name\":\"account_type\",\"identityProviderAlias\":\"IDIR\",\"identityProviderMapper\":\"hardcoded-attribute-idp-mapper\",\"config\":{\"attribute.value\":\"idir\",\"attribute\":\"account_type\"}}"
 
 # Retrieving client IDs and Secrets
 echo

@@ -541,7 +541,28 @@ echo Creating mappers for SAML BCeID IDP...
 curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/bceidbasic/mappers" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
+  -d "{\"name\":\"email\",\"identityProviderAlias\":\"bceidbasic\",\"identityProviderMapper\":\"saml-user-attribute-idp-mapper\",\"config\":{\"user.attribute\":\"Email\",\"attribute.name\":\"Email\"}}"
+
+echo
+echo Creating mappers for SAML BCeID IDP...
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/bceidbasic/mappers" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TKN" \
   -d "{\"name\":\"account_type\",\"identityProviderAlias\":\"bceidbasic\",\"identityProviderMapper\":\"hardcoded-attribute-idp-mapper\",\"config\":{\"attribute.value\":\"bceid\",\"attribute\":\"account_type\"}}"
+
+echo
+echo Creating mappers for SAML BCeID IDP...
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/bceidbasic/mappers" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TKN" \
+  -d "{\"name\":\"username\",\"identityProviderAlias\":\"bceidbasic\",\"identityProviderMapper\":\"saml-username-idp-mapper\",\"config\":{\"template\":\"${ATTRIBUTE.user_name}@bceid_basic\"}}"
+
+echo
+echo Creating mappers for SAML BCeID IDP...
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/bceidbasic/mappers" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TKN" \
+  -d "{\"name\":\"user_guid\",\"identityProviderAlias\":\"bceidbasic\",\"identityProviderMapper\":\"saml-user-attribute-idp-mapper\",\"config\":{\"user.attribute\":\"user_guid\",\"attribute.name\":\"useridentifier\"}}"
 
 echo
 echo Building IDP instance for SAML IDIR...

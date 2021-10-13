@@ -209,6 +209,19 @@ curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authenticati
   -H "Authorization: Bearer $TKN" \
   -d "{\"alias\" : \"SOAMPostLogin\",\"providerId\" : \"basic-flow\",\"topLevel\" : true,\"builtIn\" : false}"
 
+#SAML Authenticators
+echo
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/flows" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TKN" \
+  -d "{\"alias\" : \"SOAMFirstLoginSAML\",\"providerId\" : \"basic-flow\",\"topLevel\" : true,\"builtIn\" : false}"
+
+echo
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/flows" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TKN" \
+  -d "{\"alias\" : \"SOAMPostLoginSAML\",\"providerId\" : \"basic-flow\",\"topLevel\" : true,\"builtIn\" : false}"
+
 echo
 echo Retrieving client ID for first login executor
 soamFirstLoginExecutorID=$(curl -sX GET "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/flows/SOAMFirstLogin/executions" \
@@ -456,7 +469,7 @@ echo Building IDP instance for SAML BCeID...
 curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"alias\" : \"bceidbasic\",\"displayName\" : \"BCeID Basic\",\"providerId\" : \"saml\",\"enabled\" : true,\"updateProfileFirstLoginMode\": \"on\",\"trustEmail\": false,\"storeToken\": false,\"addReadTokenRoleOnCreate\": false,\"authenticateByDefault\": false,\"linkOnly\": false,\"firstBrokerLoginFlowAlias\": \"SOAMFirstLoginSAML\",\"postBrokerLoginFlowAlias\": \"SOAMPostLoginSAML\",\"config\": {  \"validateSignature\": \"true\",  \"hideOnLoginPage\": \"true\",  \"samlXmlKeyNameTranformer\": \"KEY_ID\",  \"postBindingLogout\": \"false\",  \"nameIDPolicyFormat\": \"urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified\",  \"postBindingResponse\": \"true\",  \"signatureAlgorithm\": \"RSA_SHA256\",  \"useJwksUrl\": \"true\",  \"wantAssertionsSigned\": \"false\",  \"postBindingAuthnRequest\": \"true\",  \"forceAuthn\": \"true\",  \"wantAuthnRequestsSigned\": \"false\",  \"singleSignOnServiceUrl\": \"$SFS_URL\",\"signingCertificate\":\"$SAML_CERT\",\"addExtensionsElementWithKeyInfo\": \"false\",  \"principalType\": \"SUBJECT\"}}"
+  -d "{\"alias\" : \"bceidbasic\",\"displayName\" : \"BCeID Basic\",\"providerId\" : \"saml\",\"enabled\" : true,\"updateProfileFirstLoginMode\": \"on\",\"trustEmail\": false,\"storeToken\": false,\"addReadTokenRoleOnCreate\": false,\"authenticateByDefault\": false,\"linkOnly\": false,\"firstBrokerLoginFlowAlias\": \"SOAMFirstLoginSAML\",\"postBrokerLoginFlowAlias\": \"SOAMPostLoginSAML\",\"config\": {  \"validateSignature\": \"true\",  \"hideOnLoginPage\": \"true\",  \"samlXmlKeyNameTranformer\": \"KEY_ID\",\"entityId\": \"https://$SSO_ENV/auth/realms/master\", \"postBindingLogout\": \"false\",  \"nameIDPolicyFormat\": \"urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified\",  \"postBindingResponse\": \"true\",  \"signatureAlgorithm\": \"RSA_SHA256\",  \"useJwksUrl\": \"true\",  \"wantAssertionsSigned\": \"false\",  \"postBindingAuthnRequest\": \"true\",  \"forceAuthn\": \"true\",  \"wantAuthnRequestsSigned\": \"false\",  \"singleSignOnServiceUrl\": \"$SFS_URL\",\"signingCertificate\":\"$SAML_CERT\",\"addExtensionsElementWithKeyInfo\": \"false\",  \"principalType\": \"SUBJECT\"}}"
 
 echo
 echo Creating mappers for SAML BCeID IDP...
@@ -470,7 +483,7 @@ echo Building IDP instance for SAML IDIR...
 curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"alias\" : \"IDIR\",\"displayName\" : \"IDIR\",\"providerId\" : \"saml\",\"enabled\" : true,\"updateProfileFirstLoginMode\": \"on\",\"trustEmail\": false,\"storeToken\": false,\"addReadTokenRoleOnCreate\": false,\"authenticateByDefault\": false,\"linkOnly\": false,\"config\": {  \"validateSignature\": \"true\",  \"hideOnLoginPage\": \"true\",  \"samlXmlKeyNameTranformer\": \"KEY_ID\",  \"postBindingLogout\": \"false\",  \"nameIDPolicyFormat\": \"urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified\",  \"postBindingResponse\": \"true\",  \"signatureAlgorithm\": \"RSA_SHA256\",  \"useJwksUrl\": \"true\",  \"wantAssertionsSigned\": \"false\",  \"postBindingAuthnRequest\": \"true\",  \"forceAuthn\": \"true\",  \"wantAuthnRequestsSigned\": \"false\",  \"singleSignOnServiceUrl\": \"$SFS_URL\",\"signingCertificate\":\"$SAML_CERT\",\"addExtensionsElementWithKeyInfo\": \"false\",  \"principalType\": \"SUBJECT\"}}"
+  -d "{\"alias\" : \"IDIR\",\"displayName\" : \"IDIR\",\"providerId\" : \"saml\",\"enabled\" : true,\"updateProfileFirstLoginMode\": \"on\",\"trustEmail\": false,\"storeToken\": false,\"addReadTokenRoleOnCreate\": false,\"authenticateByDefault\": false,\"linkOnly\": false,\"config\": {  \"validateSignature\": \"true\",  \"hideOnLoginPage\": \"true\",  \"samlXmlKeyNameTranformer\": \"KEY_ID\",  \"postBindingLogout\": \"false\",  \"nameIDPolicyFormat\": \"urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified\",  \"postBindingResponse\": \"true\",\"entityId\": \"https://$SSO_ENV/auth/realms/master/idir\",  \"signatureAlgorithm\": \"RSA_SHA256\",  \"useJwksUrl\": \"true\",  \"wantAssertionsSigned\": \"false\",  \"postBindingAuthnRequest\": \"true\",  \"forceAuthn\": \"true\",  \"wantAuthnRequestsSigned\": \"false\",  \"singleSignOnServiceUrl\": \"$SFS_URL\",\"signingCertificate\":\"$SAML_CERT\",\"addExtensionsElementWithKeyInfo\": \"false\",  \"principalType\": \"SUBJECT\"}}"
 
 echo
 echo Creating mappers for SAML IDIR IDP...

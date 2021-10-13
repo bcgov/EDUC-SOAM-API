@@ -451,7 +451,8 @@ curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-pro
   -d "{\"name\" : \"IDIR GUID\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_idir\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"idir_guid\",\"user.attribute\" : \"idir_guid\"}}"
 
 # New SAML Identity Providers
-echo
+echo $SAML_CERT
+echo $SFS_URL
 echo Building IDP instance for SAML BCeID...
 curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances" \
   -H "Content-Type: application/json" \
@@ -460,7 +461,7 @@ curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-pro
 
 echo
 echo Creating mappers for IDP...
-curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_bceid/mappers" \
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/bceidbasic/mappers" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
   -d "{\"name\" : \"account_type\",\"identityProviderAlias\" : \"bceidbasic\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"account_type\",\"user.attribute\" : \"account_type\"}}"
@@ -473,7 +474,7 @@ curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-pro
 
 echo
 echo Creating mappers for IDP...
-curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_bceid/mappers" \
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/IDIR/mappers" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
   -d "{\"name\" : \"account_type\",\"identityProviderAlias\" : \"IDIR\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"account_type\",\"user.attribute\" : \"account_type\"}}"

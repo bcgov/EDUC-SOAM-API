@@ -451,6 +451,7 @@ curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-pro
   -d "{\"name\" : \"IDIR GUID\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_idir\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"idir_guid\",\"user.attribute\" : \"idir_guid\"}}"
 
 # New SAML Identity Providers
+echo
 echo Building IDP instance for SAML BCeID...
 curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances" \
   -H "Content-Type: application/json" \
@@ -458,12 +459,13 @@ curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-pro
   -d "{\"alias\" : \"bceidbasic\",\"displayName\" : \"BCeID Basic\",\"providerId\" : \"saml\",\"enabled\" : true,\"updateProfileFirstLoginMode\": \"on\",\"trustEmail\": false,\"storeToken\": false,\"addReadTokenRoleOnCreate\": false,\"authenticateByDefault\": false,\"linkOnly\": false,\"firstBrokerLoginFlowAlias\": \"SOAMFirstLoginSAML\",\"postBrokerLoginFlowAlias\": \"SOAMPostLoginSAML\",\"config\": {  \"validateSignature\": \"true\",  \"hideOnLoginPage\": \"true\",  \"samlXmlKeyNameTranformer\": \"KEY_ID\",  \"postBindingLogout\": \"false\",  \"nameIDPolicyFormat\": \"urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified\",  \"postBindingResponse\": \"true\",  \"signatureAlgorithm\": \"RSA_SHA256\",  \"useJwksUrl\": \"true\",  \"wantAssertionsSigned\": \"false\",  \"postBindingAuthnRequest\": \"true\",  \"forceAuthn\": \"true\",  \"wantAuthnRequestsSigned\": \"false\",  \"singleSignOnServiceUrl\": \"$SFS_URL\",\"signingCertificate\":\"$SAML_CERT\",\"addExtensionsElementWithKeyInfo\": \"false\",  \"principalType\": \"SUBJECT\"}}"
 
 echo
-echo Creating mappers for IDP...
+echo Creating mappers for IDIR IDP...
 curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/bceidbasic/mappers" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
   -d "{\"name\" : \"account_type\",\"identityProviderAlias\" : \"bceidbasic\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"account_type\",\"user.attribute\" : \"account_type\"}}"
 
+echo
 echo Building IDP instance for SAML IDIR...
 curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances" \
   -H "Content-Type: application/json" \
@@ -471,7 +473,7 @@ curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-pro
   -d "{\"alias\" : \"IDIR\",\"displayName\" : \"IDIR\",\"providerId\" : \"saml\",\"enabled\" : true,\"updateProfileFirstLoginMode\": \"on\",\"trustEmail\": false,\"storeToken\": false,\"addReadTokenRoleOnCreate\": false,\"authenticateByDefault\": false,\"linkOnly\": false,\"firstBrokerLoginFlowAlias\": \"SOAMFirstLoginSAML\",\"postBrokerLoginFlowAlias\": \"SOAMPostLoginSAML\",\"config\": {  \"validateSignature\": \"true\",  \"hideOnLoginPage\": \"true\",  \"samlXmlKeyNameTranformer\": \"KEY_ID\",  \"postBindingLogout\": \"false\",  \"nameIDPolicyFormat\": \"urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified\",  \"postBindingResponse\": \"true\",  \"signatureAlgorithm\": \"RSA_SHA256\",  \"useJwksUrl\": \"true\",  \"wantAssertionsSigned\": \"false\",  \"postBindingAuthnRequest\": \"true\",  \"forceAuthn\": \"true\",  \"wantAuthnRequestsSigned\": \"false\",  \"singleSignOnServiceUrl\": \"$SFS_URL\",\"signingCertificate\":\"$SAML_CERT\",\"addExtensionsElementWithKeyInfo\": \"false\",  \"principalType\": \"SUBJECT\"}}"
 
 echo
-echo Creating mappers for IDP...
+echo Creating mappers for IDIR IDP...
 curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/IDIR/mappers" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \

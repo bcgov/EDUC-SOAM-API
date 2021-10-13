@@ -555,7 +555,7 @@ echo Creating mappers for SAML BCeID IDP...
 curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/bceidbasic/mappers" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"name\":\"username\",\"identityProviderAlias\":\"bceidbasic\",\"identityProviderMapper\":\"saml-username-idp-mapper\",\"config\":{\"template\":\"${ATTRIBUTE.user_name}@bceid_basic\"}}"
+  -d "{\"name\":\"username\",\"identityProviderAlias\":\"bceidbasic\",\"identityProviderMapper\":\"saml-username-idp-mapper\",\"config\":{\"template\":\"\${ATTRIBUTE.user_name}@bceid_basic\"}}"
 
 echo
 echo Creating mappers for SAML BCeID IDP...

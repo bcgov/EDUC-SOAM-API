@@ -86,7 +86,8 @@ public class RestUtils {
   public Optional<DigitalIDEntity> getDigitalID(@NonNull final String digitalIdentityID, final String correlationID) {
     try {
       val response = this.webClient.get()
-              .uri(this.props.getDigitalIdentifierApiURL() + "/" + digitalIdentityID)
+              .uri(this.props.getDigitalIdentifierApiURL(),
+                      uri -> uri.path(digitalIdentityID).build())
               .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
               .header(CORRELATION_ID, correlationID)
               .retrieve()

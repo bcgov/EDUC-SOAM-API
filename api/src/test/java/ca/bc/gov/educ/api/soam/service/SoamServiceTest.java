@@ -290,6 +290,14 @@ public class SoamServiceTest {
 
   }
 
+  @Test
+  public void testGetSoamLoginEntity_GivenDigitalIdGetCallReturnsBlankResponseDID_ShouldThrowSoamRuntimeException() {
+    when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
+    doThrow(new SoamRuntimeException("Unexpected HTTP return code: 500 error message: null body from digitalID get " +
+            "call.")).when(this.restUtils).getDigitalID(anyString(), anyString(), anyString());
+    assertThrows(InvalidParameterException.class, () -> this.service.getSoamLoginEntity(null, correlationID));
+  }
+
 
   @Test
   public void testGetSoamLoginEntity_GivenDigitalIdGetCallFailed_ShouldThrowSoamRuntimeException() {

@@ -25,4 +25,9 @@ public interface SoamEndpoint {
   @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK"), @ApiResponse(responseCode = "404", description = "NOT FOUND.")})
   ResponseEntity<SoamLoginEntity> getSoamLoginEntity(@PathVariable String typeCode, @PathVariable String typeValue, @RequestHeader String correlationID);
 
+  @GetMapping("/{digitalIdentityID}")
+  @PreAuthorize("hasAuthority('SCOPE_SOAM_USER_INFO')")
+  @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK"), @ApiResponse(responseCode = "404", description = "NOT FOUND.")})
+  ResponseEntity<SoamLoginEntity> getSoamLoginEntity(@PathVariable String digitalIdentityID, @RequestHeader String correlationID);
+
 }

@@ -54,4 +54,8 @@ public class SoamController implements SoamEndpoint {
     return ResponseEntity.ok(this.service.getSoamLoginEntity(typeCode, typeValue, correlationID));
   }
 
+  @Override
+  public ResponseEntity<SoamLoginEntity> getSoamLoginEntity(final String digitalIdentityID, final String correlationID) {
+    return ResponseEntity.ok(this.service.getSoamLoginEntity(digitalIdentityID, correlationID));
+  }
 }

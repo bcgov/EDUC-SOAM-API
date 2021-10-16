@@ -412,6 +412,37 @@ public class SoamServiceTest {
   }
 
   @Test
+  public void testGetSoamLoginEntity_GivenBCSCAssociatedToStudent_ShouldReturnEntityWithStudentAndServiceCardViaDigitalID() {
+    final UUID digitalId = UUID.randomUUID();
+    final UUID studentId = UUID.randomUUID();
+    final DigitalIDEntity entity = this.createDigitalIdentity();
+    entity.setDigitalID(digitalId);
+    entity.setStudentID(studentId.toString());
+    entity.setIdentityTypeCode("BCSC");
+    final DigitalIDEntity responseEntity = this.createResponseEntity(entity);
+    final StudentEntity studentEntity = this.createStudentEntity(studentId);
+    final StudentEntity studentResponseEntity = this.createStudentResponseEntity(studentEntity);
+    final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
+    final ServicesCardEntity servicesCardResponseEntity = this.createServicesCardResponseEntity(servicesCardEntity);
+    when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
+    responseEntity.setStudentID(studentId.toString());
+    when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.of(responseEntity));
+    when(this.restUtils.getDigitalID(anyString(), anyString())).thenReturn(Optional.of(responseEntity));
+    when(this.restUtils.getStudentByStudentID(anyString(), anyString())).thenReturn(studentResponseEntity);
+    when(this.restUtils.getServicesCard(anyString(), anyString())).thenReturn(Optional.of(servicesCardResponseEntity));
+    final SoamLoginEntity soamLoginEntity = this.service.getSoamLoginEntity(entity.getDigitalID().toString(), correlationID);
+    verify(this.restUtils, times(1)).getDigitalID(entity.getDigitalID().toString(), correlationID);
+    verify(this.restUtils, times(1)).getStudentByStudentID(studentId.toString(), correlationID);
+    verify(this.restUtils, times(1)).getServicesCard(entity.getIdentityValue(), correlationID);
+    assertNotNull(soamLoginEntity.getDigitalIdentityID());
+    assertThat(digitalId).isEqualTo(soamLoginEntity.getDigitalIdentityID());
+    assertNotNull(soamLoginEntity.getServiceCard());
+    assertNotNull(soamLoginEntity.getStudent());
+    assertNotNull(soamLoginEntity.getStudent().getDob());
+    assertThat(soamLoginEntity.getStudent().getLegalLastName()).isEqualTo("test");
+  }
+
+  @Test
   public void testGetSoamLoginEntity_GivenServicesCardAPICallFailed_ShouldThrowSoamRuntimeException() {
     final UUID digitalId = UUID.randomUUID();
     final UUID studentId = UUID.randomUUID();

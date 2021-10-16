@@ -140,6 +140,19 @@ public class RestUtilsTest {
   }
 
   @Test
+  public void testGetDigitalID_givenAPICall404Did_shouldReturnOptionalEmpty() {
+    when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
+    when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
+            .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.header(any(), any()))
+            .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.retrieve())
+            .thenThrow(new WebClientResponseException(404, "NOT FOUND", null, null, null));
+    val response = this.restUtils.getDigitalID("ABC", correlationID);
+    assertThat(response).isEmpty();
+  }
+
+  @Test
   public void testGetDigitalID_givenAPICallError_shouldThrowException() {
     when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
     when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))

@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,9 +27,9 @@ public interface SoamEndpoint {
   @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK"), @ApiResponse(responseCode = "404", description = "NOT FOUND.")})
   ResponseEntity<SoamLoginEntity> getSoamLoginEntity(@PathVariable String typeCode, @PathVariable String typeValue, @RequestHeader String correlationID);
 
-  @GetMapping("/{digitalIdentityID}")
+  @GetMapping("/userInfo")
   @PreAuthorize("hasAuthority('SCOPE_SOAM_USER_INFO')")
   @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK"), @ApiResponse(responseCode = "404", description = "NOT FOUND.")})
-  ResponseEntity<SoamLoginEntity> getSoamLoginEntity(@PathVariable String digitalIdentityID, @RequestHeader String correlationID);
+  ResponseEntity<SoamLoginEntity> getSoamLoginEntity(@AuthenticationPrincipal Jwt token, @RequestHeader String correlationID);
 
 }

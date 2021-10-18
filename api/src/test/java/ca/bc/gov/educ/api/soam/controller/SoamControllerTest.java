@@ -260,9 +260,9 @@ public class SoamControllerTest {
     when(this.responseMock.bodyToMono(DigitalIDEntity.class))
             .thenReturn(Mono.just(this.getDigitalIdentity()));
 
-
-    this.mockMvc.perform(get("/" + this.getDigitalIdentity().getDigitalID().toString())
-                    .with(jwt().jwt((jwt) -> jwt.claim("scope", "SOAM_USER_INFO")))
+    this.mockMvc.perform(get("/userInfo")
+                    .with(jwt().jwt((jwt) -> jwt.claim("scope", "SOAM_USER_INFO")
+                            .claim("digitalIdentityID", this.getDigitalIdentity().getDigitalID().toString())))
                     .contentType(MediaType.APPLICATION_JSON)
                     .header("correlationID", this.guid)
                     .accept(MediaType.APPLICATION_JSON))

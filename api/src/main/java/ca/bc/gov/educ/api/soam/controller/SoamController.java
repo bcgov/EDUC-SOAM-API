@@ -6,6 +6,8 @@ import ca.bc.gov.educ.api.soam.model.entity.SoamLoginEntity;
 import ca.bc.gov.educ.api.soam.service.SoamService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -55,7 +57,7 @@ public class SoamController implements SoamEndpoint {
   }
 
   @Override
-  public ResponseEntity<SoamLoginEntity> getSoamLoginEntity(final String digitalIdentityID, final String correlationID) {
-    return ResponseEntity.ok(this.service.getSoamLoginEntity(digitalIdentityID, correlationID));
+  public ResponseEntity<SoamLoginEntity> getSoamLoginEntity(@AuthenticationPrincipal Jwt token, final String correlationID) {
+    return ResponseEntity.ok(this.service.getSoamLoginEntity(token.getClaimAsString("digitalIdentityID"), correlationID));
   }
 }

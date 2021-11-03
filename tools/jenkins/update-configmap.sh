@@ -572,6 +572,13 @@ curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-pro
   -d "{\"name\":\"user_guid\",\"identityProviderAlias\":\"bceidbasic\",\"identityProviderMapper\":\"saml-user-attribute-idp-mapper\",\"config\":{\"user.attribute\":\"user_guid\",\"attribute.name\":\"useridentifier\"}}"
 
 echo
+echo Creating mappers for SAML BCeID IDP...
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/bceidbasic/mappers" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TKN" \
+  -d "{\"name\":\"user_guid\",\"identityProviderAlias\":\"bceidbasic\",\"identityProviderMapper\":\"saml-user-attribute-idp-mapper\",\"config\":{\"user.attribute\":\"display_name\",\"attribute.name\":\"SMGOV_USERDISPLAYNAME\"}}"
+
+echo
 echo Building IDP instance for SAML IDIR...
 curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances" \
   -H "Content-Type: application/json" \
@@ -584,6 +591,27 @@ curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-pro
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
   -d "{\"name\":\"account_type\",\"identityProviderAlias\":\"IDIR\",\"identityProviderMapper\":\"hardcoded-attribute-idp-mapper\",\"config\":{\"attribute.value\":\"idir\",\"attribute\":\"account_type\"}}"
+
+echo
+echo Creating mappers for SAML IDIR IDP...
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/IDIR/mappers" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TKN" \
+  -d "{\"name\":\"username\",\"identityProviderAlias\":\"IDIR\",\"identityProviderMapper\":\"saml-username-idp-mapper\",\"config\":{\"template\":\"\${ATTRIBUTE.user_name}@idir\"}}"
+
+echo
+echo Creating mappers for SAML IDIR IDP...
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/IDIR/mappers" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TKN" \
+  -d "{\"name\":\"email\",\"identityProviderAlias\":\"IDIR\",\"identityProviderMapper\":\"saml-user-attribute-idp-mapper\",\"config\":{\"user.attribute\":\"Email\",\"attribute.name\":\"Email\"}}"
+
+echo
+echo Creating mappers for SAML IDIR IDP...
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/IDIR/mappers" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TKN" \
+  -d "{\"name\":\"email\",\"identityProviderAlias\":\"IDIR\",\"identityProviderMapper\":\"saml-user-attribute-idp-mapper\",\"config\":{\"user.attribute\":\"display_name\",\"attribute.name\":\"SMGOV_USERDISPLAYNAME\"}}"
 
 # Retrieving client IDs and Secrets
 echo

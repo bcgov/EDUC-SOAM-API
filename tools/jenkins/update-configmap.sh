@@ -535,6 +535,12 @@ curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-pro
   -H "Authorization: Bearer $TKN" \
   -d "{\"name\" : \"IDIR GUID\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_idir\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"idir_guid\",\"user.attribute\" : \"idir_guid\"}}"
 
+echo
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_idir/mappers" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TKN" \
+  -d "{\"name\" : \"username\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_idir\",\"identityProviderMapper\" : \"oidc-username-idp-mapper\",\"config\" : {\"template\" : \"\${CLAIM.idir_guid}\"}}"
+
 # New SAML Identity Providers
 echo
 echo Building IDP instance for SAML BCeID...
@@ -597,7 +603,7 @@ echo Creating mappers for SAML IDIR IDP...
 curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/IDIR/mappers" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"name\":\"username\",\"identityProviderAlias\":\"IDIR\",\"identityProviderMapper\":\"saml-username-idp-mapper\",\"config\":{\"template\":\"\${ATTRIBUTE.user_name}@idir\"}}"
+  -d "{\"name\":\"username\",\"identityProviderAlias\":\"IDIR\",\"identityProviderMapper\":\"saml-username-idp-mapper\",\"config\":{\"template\":\"\${ATTRIBUTE.useridentifier}\"}}"
 
 echo
 echo Creating mappers for SAML IDIR IDP...

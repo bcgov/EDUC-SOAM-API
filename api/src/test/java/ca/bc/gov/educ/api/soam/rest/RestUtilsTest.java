@@ -384,7 +384,7 @@ public class RestUtilsTest {
     final StudentEntity.StudentEntityBuilder builder = StudentEntity.builder();
     builder.studentID(Objects.requireNonNullElseGet(studentId, UUID::randomUUID));
     builder.dob(LocalDate.now().toString());
-    builder.legalFirstName("test").legalLastName("test").email("test@abc.com").genderCode('M').pen("123456789").sexCode('M').dataSourceCode("MYED");
+    builder.legalFirstName("test").legalLastName("test").email("test@abc.com").genderCode("M").pen("123456789").sexCode("M");
     return builder.build();
   }
 

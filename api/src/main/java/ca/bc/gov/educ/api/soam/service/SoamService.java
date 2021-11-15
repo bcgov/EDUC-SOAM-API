@@ -110,8 +110,14 @@ public class SoamService {
 
   private SoamLoginEntity populateAndReturnLoginEntity(final DigitalIDEntity digitalIDEntity,final ServicesCardEntity serviceCardEntity, final String correlationID){
     if (digitalIDEntity.getStudentID() != null) {
-      final StudentEntity studentResponse;
-      studentResponse = this.restUtils.getStudentByStudentID(digitalIDEntity.getStudentID(), correlationID);
+      StudentEntity studentResponse;
+      String studentID = digitalIDEntity.getStudentID();
+      do{// recursion to find the true student.
+        studentResponse = this.restUtils.getStudentByStudentID(studentID, correlationID);
+        if("M".equals(studentResponse.getStatusCode())){
+          studentID = studentResponse.getTrueStudentID().toString();
+        }
+      }while ("M".equalsIgnoreCase(studentResponse.getStatusCode())); // go up the ladder to find true student.
       return this.soamUtil.createSoamLoginEntity(studentResponse, digitalIDEntity.getDigitalID(), serviceCardEntity);
     } else {
       return this.soamUtil.createSoamLoginEntity(null, digitalIDEntity.getDigitalID(), serviceCardEntity);

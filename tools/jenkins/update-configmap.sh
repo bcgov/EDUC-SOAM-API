@@ -381,6 +381,12 @@ curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-pro
   -d "{\"name\" : \"bceid_username\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_bceid\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"preferred_username\",\"user.attribute\" : \"lastName\"}}"
 
 echo
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_bceid/mappers" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TKN" \
+  -d "{\"name\":\"email\",\"identityProviderAlias\":\"keycloak_bcdevexchange_bceid\",\"identityProviderMapper\":\"hardcoded-attribute-idp-mapper\",\"config\":{\"attribute.value\":\"\",\"attribute\":\"email\"}}"
+
+echo
 echo Building IDP instance for BCSC...
 curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances" \
   -H "Content-Type: application/json" \

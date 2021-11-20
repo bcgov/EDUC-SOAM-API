@@ -80,6 +80,39 @@ public class RestUtils {
     }
   }
 
+  @Bulkhead(name = DIGITAL_ID_API)
+  @CircuitBreaker(name = DIGITAL_ID_API)
+  @Retry(name = DIGITAL_ID_API)
+  public Optional<DigitalIDEntity> getDigitalID(@NonNull final String digitalIdentityID, final String correlationID) {
+    try {
+      val response = this.webClient.get()
+              .uri(this.props.getDigitalIdentifierApiURL(),
+                      uri -> uri.path(digitalIdentityID).build())
+              .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+              .header(CORRELATION_ID, correlationID)
+              .retrieve()
+              .bodyToMono(DigitalIDEntity.class)
+              .doOnSuccess(entity -> {
+                if (entity != null) {
+                  this.logSuccess(entity.toString(), digitalIdentityID, correlationID);
+                }
+              })
+              .block();
+      if (response == null) {
+        throw new SoamRuntimeException(this.getErrorMessageString(HttpStatus.INTERNAL_SERVER_ERROR, NULL_BODY_FROM +
+                "digitalID get call."));
+      }
+      return Optional.of(response);
+    } catch (final WebClientResponseException e) {
+      if (e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+        this.logNotFound(e.getStatusCode().toString(), digitalIdentityID);
+        return Optional.empty();
+      } else {
+        throw new SoamRuntimeException(this.getErrorMessageString(e.getStatusCode(), e.getResponseBodyAsString()));
+      }
+    }
+  }
+
   private void logSuccess(final String s, final String... args) {
     log.info("API call success :: {} {}", s, args);
   }

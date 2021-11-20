@@ -89,16 +89,40 @@ public class SoamService {
       serviceCardEntity =
         this.restUtils.getServicesCard(identifierValue, correlationID).orElseThrow();
     }
+    return populateAndReturnLoginEntity(digitalIDEntity, serviceCardEntity, correlationID);
+  }
+
+  @RateLimiter(name = "getSoamLoginEntityDID")
+  public SoamLoginEntity getSoamLoginEntity(final String digitalIdentityID, final String correlationID) {
+    if (digitalIdentityID == null) {
+      log.error("Invalid digital identity ID - null");
+      throw new InvalidParameterException("digitalIdentityID");
+    }
+    val digitalIDEntity = this.getDigitalIDEntityForLogin(digitalIdentityID, correlationID);
+    //If we've reached here we do have a digital identity for this user, if they have a student ID in the digital ID record then we fetch the student
+    ServicesCardEntity serviceCardEntity = null;
+    if (digitalIDEntity.getIdentityTypeCode().equals(ApplicationProperties.BCSC)) {
+      serviceCardEntity =
+              this.restUtils.getServicesCard(digitalIDEntity.getIdentityValue(), correlationID).orElseThrow();
+    }
+    return populateAndReturnLoginEntity(digitalIDEntity, serviceCardEntity, correlationID);
+  }
+
+  private SoamLoginEntity populateAndReturnLoginEntity(final DigitalIDEntity digitalIDEntity,final ServicesCardEntity serviceCardEntity, final String correlationID){
     if (digitalIDEntity.getStudentID() != null) {
-      final StudentEntity studentResponse;
-      studentResponse = this.restUtils.getStudentByStudentID(digitalIDEntity.getStudentID(), correlationID);
+      StudentEntity studentResponse;
+      String studentID = digitalIDEntity.getStudentID();
+      do{// recursion to find the true student.
+        studentResponse = this.restUtils.getStudentByStudentID(studentID, correlationID);
+        if("M".equals(studentResponse.getStatusCode())){
+          studentID = studentResponse.getTrueStudentID().toString();
+        }
+      }while ("M".equalsIgnoreCase(studentResponse.getStatusCode())); // go up the ladder to find true student.
       return this.soamUtil.createSoamLoginEntity(studentResponse, digitalIDEntity.getDigitalID(), serviceCardEntity);
     } else {
       return this.soamUtil.createSoamLoginEntity(null, digitalIDEntity.getDigitalID(), serviceCardEntity);
     }
-
   }
-
 
   private DigitalIDEntity getDigitalIDEntityForLogin(final String identifierType, final String identifierValue, final String correlationID) {
     //This is the initial call to determine if we have this digital identity
@@ -109,6 +133,14 @@ public class SoamService {
     return response.get();
   }
 
+  private DigitalIDEntity getDigitalIDEntityForLogin(final String digitalIdentityID, final String correlationID) {
+    //This is the initial call to determine if we have this digital identity
+    val response = this.restUtils.getDigitalID(digitalIdentityID, correlationID);
+    if (response.isEmpty()) {
+      throw new SoamRuntimeException("Digital ID was null - unexpected error");
+    }
+    return response.get();
+  }
 
   private void validateExtendedSearchParameters(final String identifierType, final String identifierValue) {
     this.validateSearchParameters(identifierType, identifierValue);

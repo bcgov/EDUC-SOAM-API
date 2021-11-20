@@ -94,6 +94,24 @@ public class RestUtilsTest {
   }
 
   @Test
+  public void testGetDigitalID_givenAPICallSuccess_shouldReturnDigitalIDDID() {
+    final DigitalIDEntity entity = this.createDigitalIdentity();
+    final DigitalIDEntity responseEntity = this.createResponseEntity(entity);
+    when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
+    when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
+            .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.header(any(), any()))
+            .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.retrieve())
+            .thenReturn(this.responseMock);
+    when(this.responseMock.bodyToMono(DigitalIDEntity.class))
+            .thenReturn(Mono.just(responseEntity));
+    val response = this.restUtils.getDigitalID(responseEntity.getDigitalID().toString(), correlationID);
+    assertThat(response).isPresent();
+    assertThat(response.get().getDigitalID()).isNotNull();
+  }
+
+  @Test
   public void testGetDigitalID_givenAPICallSuccessButBlankBody_shouldThrowException() {
     final DigitalIDEntity entity = this.createDigitalIdentity();
     when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
@@ -118,6 +136,19 @@ public class RestUtilsTest {
     when(this.requestHeadersMock.retrieve())
       .thenThrow(new WebClientResponseException(404, "NOT FOUND", null, null, null));
     val response = this.restUtils.getDigitalID("BCeId", "12345", correlationID);
+    assertThat(response).isEmpty();
+  }
+
+  @Test
+  public void testGetDigitalID_givenAPICall404Did_shouldReturnOptionalEmpty() {
+    when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
+    when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
+            .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.header(any(), any()))
+            .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.retrieve())
+            .thenThrow(new WebClientResponseException(404, "NOT FOUND", null, null, null));
+    val response = this.restUtils.getDigitalID("ABC", correlationID);
     assertThat(response).isEmpty();
   }
 
@@ -353,7 +384,7 @@ public class RestUtilsTest {
     final StudentEntity.StudentEntityBuilder builder = StudentEntity.builder();
     builder.studentID(Objects.requireNonNullElseGet(studentId, UUID::randomUUID));
     builder.dob(LocalDate.now().toString());
-    builder.legalFirstName("test").legalLastName("test").email("test@abc.com").genderCode('M').pen("123456789").sexCode('M').dataSourceCode("MYED");
+    builder.legalFirstName("test").legalLastName("test").email("test@abc.com").genderCode("M").pen("123456789").sexCode("M");
     return builder.build();
   }
 

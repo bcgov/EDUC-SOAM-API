@@ -290,6 +290,14 @@ public class SoamServiceTest {
 
   }
 
+  @Test
+  public void testGetSoamLoginEntity_GivenDigitalIdGetCallReturnsBlankResponseDID_ShouldThrowSoamRuntimeException() {
+    when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
+    doThrow(new SoamRuntimeException("Unexpected HTTP return code: 500 error message: null body from digitalID get " +
+            "call.")).when(this.restUtils).getDigitalID(anyString(), anyString(), anyString());
+    assertThrows(InvalidParameterException.class, () -> this.service.getSoamLoginEntity(null, correlationID));
+  }
+
 
   @Test
   public void testGetSoamLoginEntity_GivenDigitalIdGetCallFailed_ShouldThrowSoamRuntimeException() {
@@ -332,6 +340,39 @@ public class SoamServiceTest {
     responseEntity.setStudentID(studentId.toString());
     when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.of(responseEntity));
     when(this.restUtils.getStudentByStudentID(anyString(), anyString())).thenReturn(studentResponseEntity);
+    final SoamLoginEntity soamLoginEntity = this.service.getSoamLoginEntity("BCeId", "12345", correlationID);
+    verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345", correlationID);
+    verify(this.restUtils, times(1)).getStudentByStudentID(studentId.toString(), correlationID);
+    assertNotNull(soamLoginEntity.getDigitalIdentityID());
+    assertThat(soamLoginEntity.getDigitalIdentityID()).isEqualTo(digitalId);
+    assertNull(soamLoginEntity.getServiceCard());
+    assertNotNull(soamLoginEntity.getStudent());
+    assertNotNull(soamLoginEntity.getStudent().getDob());
+    assertThat(soamLoginEntity.getStudent().getLegalLastName()).isEqualTo("test");
+  }
+
+  @Test
+  public void testGetSoamLoginEntity_GivenBCeIdAssociatedToMergedStudent_ShouldReturnEntityWithTrueStudent() {
+    final UUID digitalId = UUID.randomUUID();
+    final UUID studentId = UUID.randomUUID();
+    final UUID trueStudentId = UUID.randomUUID();
+    final DigitalIDEntity entity = this.createDigitalIdentity();
+    entity.setDigitalID(digitalId);
+    entity.setStudentID(studentId.toString());
+    final DigitalIDEntity responseEntity = this.createResponseEntity(entity);
+    final StudentEntity studentEntity = this.createStudentEntity(studentId);
+    studentEntity.setStatusCode("M");
+    studentEntity.setTrueStudentID(trueStudentId);
+
+    final StudentEntity trueStudentEntity = this.createStudentEntity(trueStudentId);
+    trueStudentEntity.setStudentID(trueStudentId);
+    trueStudentEntity.setStatusCode("A");
+
+    when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
+    responseEntity.setStudentID(studentId.toString());
+    when(this.restUtils.getDigitalID("BCeId", "12345", correlationID)).thenReturn(Optional.of(responseEntity));
+    when(this.restUtils.getStudentByStudentID(studentId.toString(), correlationID)).thenReturn(studentEntity);
+    when(this.restUtils.getStudentByStudentID(trueStudentId.toString(), correlationID)).thenReturn(trueStudentEntity);
     final SoamLoginEntity soamLoginEntity = this.service.getSoamLoginEntity("BCeId", "12345", correlationID);
     verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345", correlationID);
     verify(this.restUtils, times(1)).getStudentByStudentID(studentId.toString(), correlationID);
@@ -412,6 +453,37 @@ public class SoamServiceTest {
   }
 
   @Test
+  public void testGetSoamLoginEntity_GivenBCSCAssociatedToStudent_ShouldReturnEntityWithStudentAndServiceCardViaDigitalID() {
+    final UUID digitalId = UUID.randomUUID();
+    final UUID studentId = UUID.randomUUID();
+    final DigitalIDEntity entity = this.createDigitalIdentity();
+    entity.setDigitalID(digitalId);
+    entity.setStudentID(studentId.toString());
+    entity.setIdentityTypeCode("BCSC");
+    final DigitalIDEntity responseEntity = this.createResponseEntity(entity);
+    final StudentEntity studentEntity = this.createStudentEntity(studentId);
+    final StudentEntity studentResponseEntity = this.createStudentResponseEntity(studentEntity);
+    final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
+    final ServicesCardEntity servicesCardResponseEntity = this.createServicesCardResponseEntity(servicesCardEntity);
+    when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
+    responseEntity.setStudentID(studentId.toString());
+    when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.of(responseEntity));
+    when(this.restUtils.getDigitalID(anyString(), anyString())).thenReturn(Optional.of(responseEntity));
+    when(this.restUtils.getStudentByStudentID(anyString(), anyString())).thenReturn(studentResponseEntity);
+    when(this.restUtils.getServicesCard(anyString(), anyString())).thenReturn(Optional.of(servicesCardResponseEntity));
+    final SoamLoginEntity soamLoginEntity = this.service.getSoamLoginEntity(entity.getDigitalID().toString(), correlationID);
+    verify(this.restUtils, times(1)).getDigitalID(entity.getDigitalID().toString(), correlationID);
+    verify(this.restUtils, times(1)).getStudentByStudentID(studentId.toString(), correlationID);
+    verify(this.restUtils, times(1)).getServicesCard(entity.getIdentityValue(), correlationID);
+    assertNotNull(soamLoginEntity.getDigitalIdentityID());
+    assertThat(digitalId).isEqualTo(soamLoginEntity.getDigitalIdentityID());
+    assertNotNull(soamLoginEntity.getServiceCard());
+    assertNotNull(soamLoginEntity.getStudent());
+    assertNotNull(soamLoginEntity.getStudent().getDob());
+    assertThat(soamLoginEntity.getStudent().getLegalLastName()).isEqualTo("test");
+  }
+
+  @Test
   public void testGetSoamLoginEntity_GivenServicesCardAPICallFailed_ShouldThrowSoamRuntimeException() {
     final UUID digitalId = UUID.randomUUID();
     final UUID studentId = UUID.randomUUID();
@@ -440,7 +512,7 @@ public class SoamServiceTest {
     final StudentEntity.StudentEntityBuilder builder = StudentEntity.builder();
     builder.studentID(Objects.requireNonNullElseGet(studentId, UUID::randomUUID));
     builder.dob(LocalDate.now().toString());
-    builder.legalFirstName("test").legalLastName("test").email("test@abc.com").genderCode('M').pen("123456789").sexCode('M').dataSourceCode("MYED");
+    builder.legalFirstName("test").legalLastName("test").email("test@abc.com").genderCode("M").pen("123456789").sexCode("M");
     return builder.build();
   }
 
@@ -546,16 +618,19 @@ public class SoamServiceTest {
 
       soamStudent.setCreateDate(student.getCreateDate());
       soamStudent.setCreateUser(student.getCreateUser());
-      soamStudent.setDataSourceCode(student.getDataSourceCode());
       soamStudent.setDeceasedDate(student.getDeceasedDate());
       soamStudent.setDob(student.getDob());
       soamStudent.setEmail(student.getEmail());
-      soamStudent.setGenderCode(student.getGenderCode());
+      if (student.getGenderCode() != null) {
+        soamStudent.setGenderCode(student.getGenderCode().charAt(0));
+      }
       soamStudent.setLegalFirstName(student.getLegalFirstName());
       soamStudent.setLegalLastName(student.getLegalLastName());
       soamStudent.setLegalMiddleNames(student.getLegalMiddleNames());
       soamStudent.setPen(student.getPen());
-      soamStudent.setSexCode(student.getSexCode());
+      if (student.getSexCode() != null) {
+        soamStudent.setSexCode(student.getSexCode().charAt(0));
+      }
       soamStudent.setStudentID(student.getStudentID());
       soamStudent.setUpdateDate(student.getUpdateDate());
       soamStudent.setUpdateUser(student.getUpdateUser());

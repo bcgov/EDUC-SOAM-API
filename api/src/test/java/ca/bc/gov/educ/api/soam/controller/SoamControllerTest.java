@@ -226,8 +226,53 @@ public class SoamControllerTest {
     verify(this.webClient, atMost(invocations + 2)).put();
   }
 
+  @Test
+  public void getSoamLoginEntity_givenValidPayloadWithServicesCardViaDid_shouldReturnOk() throws Exception {
+    final var invocations = mockingDetails(this.webClient).getInvocations().size();
+    final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
+    when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
+    when(this.requestHeadersUriMock.uri(eq(this.props.getServicesCardApiURL()), any(Function.class)))
+            .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
+            .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.header(any(), any()))
+            .thenReturn(this.requestHeadersMock);
+    when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class)))
+            .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.retrieve())
+            .thenReturn(this.responseMock);
+    when(this.responseMock.bodyToMono(ServicesCardEntity.class))
+            .thenReturn(Mono.just(servicesCardEntity));
+    when(this.responseMock.bodyToMono(DigitalIDEntity.class))
+            .thenReturn(Mono.just(this.getDigitalIdentity()));
+
+    when(this.webClient.put()).thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.uri(this.props.getServicesCardApiURL()))
+            .thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.uri(this.props.getDigitalIdentifierApiURL()))
+            .thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.header(any(), any()))
+            .thenReturn(this.returnMockBodySpec());
+    when(this.requestHeadersMock.retrieve())
+            .thenReturn(this.responseMock);
+    when(this.responseMock.bodyToMono(ServicesCardEntity.class))
+            .thenReturn(Mono.just(servicesCardEntity));
+    when(this.responseMock.bodyToMono(DigitalIDEntity.class))
+            .thenReturn(Mono.just(this.getDigitalIdentity()));
+
+    this.mockMvc.perform(get("/userInfo")
+                    .with(jwt().jwt((jwt) -> jwt.claim("scope", "SOAM_USER_INFO")
+                            .claim("digitalIdentityID", this.getDigitalIdentity().getDigitalID().toString())))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header("correlationID", this.guid)
+                    .accept(MediaType.APPLICATION_JSON))
+            .andDo(print()).andExpect(status().isOk());
+    verify(this.webClient, atMost(invocations + 2)).put();
+  }
+
   private DigitalIDEntity getDigitalIdentity() {
     final DigitalIDEntity entity = DigitalIDEntity.builder()
+      .digitalID(UUID.randomUUID())
       .identityTypeCode("BASIC")
       .identityValue(this.guid)
       .lastAccessChannelCode("OSPR")

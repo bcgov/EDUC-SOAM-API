@@ -3,10 +3,7 @@ package ca.bc.gov.educ.api.soam.service;
 import ca.bc.gov.educ.api.soam.codetable.CodeTableUtils;
 import ca.bc.gov.educ.api.soam.exception.InvalidParameterException;
 import ca.bc.gov.educ.api.soam.exception.SoamRuntimeException;
-import ca.bc.gov.educ.api.soam.model.entity.DigitalIDEntity;
-import ca.bc.gov.educ.api.soam.model.entity.ServicesCardEntity;
-import ca.bc.gov.educ.api.soam.model.entity.SoamLoginEntity;
-import ca.bc.gov.educ.api.soam.model.entity.StudentEntity;
+import ca.bc.gov.educ.api.soam.model.entity.*;
 import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
 import ca.bc.gov.educ.api.soam.rest.RestUtils;
 import ca.bc.gov.educ.api.soam.util.SoamUtil;
@@ -16,7 +13,10 @@ import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -103,21 +103,21 @@ public class SoamService {
     ServicesCardEntity serviceCardEntity = null;
     if (digitalIDEntity.getIdentityTypeCode().equals(ApplicationProperties.BCSC)) {
       serviceCardEntity =
-              this.restUtils.getServicesCard(digitalIDEntity.getIdentityValue(), correlationID).orElseThrow();
+        this.restUtils.getServicesCard(digitalIDEntity.getIdentityValue(), correlationID).orElseThrow();
     }
     return populateAndReturnLoginEntity(digitalIDEntity, serviceCardEntity, correlationID);
   }
 
-  private SoamLoginEntity populateAndReturnLoginEntity(final DigitalIDEntity digitalIDEntity,final ServicesCardEntity serviceCardEntity, final String correlationID){
+  private SoamLoginEntity populateAndReturnLoginEntity(final DigitalIDEntity digitalIDEntity, final ServicesCardEntity serviceCardEntity, final String correlationID) {
     if (digitalIDEntity.getStudentID() != null) {
       StudentEntity studentResponse;
       String studentID = digitalIDEntity.getStudentID();
-      do{// recursion to find the true student.
+      do {// recursion to find the true student.
         studentResponse = this.restUtils.getStudentByStudentID(studentID, correlationID);
-        if("M".equals(studentResponse.getStatusCode())){
+        if ("M".equals(studentResponse.getStatusCode())) {
           studentID = studentResponse.getTrueStudentID().toString();
         }
-      }while ("M".equalsIgnoreCase(studentResponse.getStatusCode())); // go up the ladder to find true student.
+      } while ("M".equalsIgnoreCase(studentResponse.getStatusCode())); // go up the ladder to find true student.
       return this.soamUtil.createSoamLoginEntity(studentResponse, digitalIDEntity.getDigitalID(), serviceCardEntity);
     } else {
       return this.soamUtil.createSoamLoginEntity(null, digitalIDEntity.getDigitalID(), serviceCardEntity);
@@ -152,6 +152,15 @@ public class SoamService {
       throw new InvalidParameterException("identifierType");
     } else if (identifierValue == null || identifierValue.length() < 1) {
       throw new InvalidParameterException("identifierValue");
+    }
+  }
+
+  public List<String> getStsRolesBySSoGuid(final String ssoGuid, final String correlationID) {
+    val stsPrincipalEntityOptional = this.restUtils.getStsLoginPrincipal(ssoGuid, correlationID);
+    if (stsPrincipalEntityOptional.isEmpty()) {
+      return Collections.emptyList();
+    } else {
+      return stsPrincipalEntityOptional.map(stsLoginPrincipalEntity -> stsLoginPrincipalEntity.getIsdRoles().stream().map(StsRolesEntity::getRole).collect(Collectors.toList())).orElse(Collections.emptyList());
     }
   }
 }

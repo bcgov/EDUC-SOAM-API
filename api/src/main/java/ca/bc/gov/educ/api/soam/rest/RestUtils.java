@@ -4,6 +4,7 @@ import ca.bc.gov.educ.api.soam.codetable.CodeTableUtils;
 import ca.bc.gov.educ.api.soam.exception.SoamRuntimeException;
 import ca.bc.gov.educ.api.soam.model.entity.DigitalIDEntity;
 import ca.bc.gov.educ.api.soam.model.entity.ServicesCardEntity;
+import ca.bc.gov.educ.api.soam.model.entity.StsLoginPrincipalEntity;
 import ca.bc.gov.educ.api.soam.model.entity.StudentEntity;
 import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
 import ca.bc.gov.educ.api.soam.util.SoamUtil;
@@ -33,6 +34,7 @@ public class RestUtils {
   private static final String DIGITAL_ID_API = "digitalIdApi";
   private static final String SERVICES_CARD_API = "servicesCardApi";
   private static final String STUDENT_API = "studentApi";
+  private static final String STS_API = "stsAPI";
 
   private final WebClient webClient;
   private final ApplicationProperties props;
@@ -80,27 +82,54 @@ public class RestUtils {
     }
   }
 
+  @Bulkhead(name = STS_API)
+  @CircuitBreaker(name = STS_API)
+  @Retry(name = STS_API)
+  public Optional<StsLoginPrincipalEntity> getStsLoginPrincipal(@NonNull final String ssoGuid, final String correlationID) {
+    try {
+      return Optional.ofNullable(this.webClient.get()
+        .uri(this.props.getDigitalIdentifierApiURL(),
+          uri -> uri.path(ssoGuid).build())
+        .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .header(CORRELATION_ID, correlationID)
+        .retrieve()
+        .bodyToMono(StsLoginPrincipalEntity.class)
+        .doOnSuccess(entity -> {
+          if (entity != null) {
+            this.logSuccess(entity.toString(), ssoGuid, correlationID);
+          }
+        }).block());
+    } catch (final WebClientResponseException e) {
+      if (e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+        this.logNotFound(e.getStatusCode().toString(), ssoGuid);
+        return Optional.empty();
+      } else {
+        throw new SoamRuntimeException(this.getErrorMessageString(e.getStatusCode(), e.getResponseBodyAsString()));
+      }
+    }
+  }
+
   @Bulkhead(name = DIGITAL_ID_API)
   @CircuitBreaker(name = DIGITAL_ID_API)
   @Retry(name = DIGITAL_ID_API)
   public Optional<DigitalIDEntity> getDigitalID(@NonNull final String digitalIdentityID, final String correlationID) {
     try {
       val response = this.webClient.get()
-              .uri(this.props.getDigitalIdentifierApiURL(),
-                      uri -> uri.path(digitalIdentityID).build())
-              .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-              .header(CORRELATION_ID, correlationID)
-              .retrieve()
-              .bodyToMono(DigitalIDEntity.class)
-              .doOnSuccess(entity -> {
-                if (entity != null) {
-                  this.logSuccess(entity.toString(), digitalIdentityID, correlationID);
-                }
-              })
-              .block();
+        .uri(this.props.getDigitalIdentifierApiURL(),
+          uri -> uri.path(digitalIdentityID).build())
+        .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .header(CORRELATION_ID, correlationID)
+        .retrieve()
+        .bodyToMono(DigitalIDEntity.class)
+        .doOnSuccess(entity -> {
+          if (entity != null) {
+            this.logSuccess(entity.toString(), digitalIdentityID, correlationID);
+          }
+        })
+        .block();
       if (response == null) {
         throw new SoamRuntimeException(this.getErrorMessageString(HttpStatus.INTERNAL_SERVER_ERROR, NULL_BODY_FROM +
-                "digitalID get call."));
+          "digitalID get call."));
       }
       return Optional.of(response);
     } catch (final WebClientResponseException e) {

@@ -1,10 +1,8 @@
 package ca.bc.gov.educ.api.soam.controller;
 
-import ca.bc.gov.educ.api.soam.model.entity.AccessChannelCodeEntity;
-import ca.bc.gov.educ.api.soam.model.entity.DigitalIDEntity;
-import ca.bc.gov.educ.api.soam.model.entity.IdentityTypeCodeEntity;
-import ca.bc.gov.educ.api.soam.model.entity.ServicesCardEntity;
+import ca.bc.gov.educ.api.soam.model.entity.*;
 import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
+import lombok.val;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -218,12 +216,74 @@ public class SoamControllerTest {
 
 
     this.mockMvc.perform(get("/BASIC/" + this.guid)
-      .with(jwt().jwt((jwt) -> jwt.claim("scope", "SOAM_LOGIN")))
-      .contentType(MediaType.APPLICATION_JSON)
-      .header("correlationID", this.guid)
-      .accept(MediaType.APPLICATION_JSON))
+        .with(jwt().jwt((jwt) -> jwt.claim("scope", "SOAM_LOGIN")))
+        .contentType(MediaType.APPLICATION_JSON)
+        .header("correlationID", this.guid)
+        .accept(MediaType.APPLICATION_JSON))
       .andDo(print()).andExpect(status().isOk());
     verify(this.webClient, atMost(invocations + 2)).put();
+  }
+
+  @Test
+  public void getStsRolesBySsoGuid_givenSsoGuid_shouldReturnOk() throws Exception {
+    final var invocations = mockingDetails(this.webClient).getInvocations().size();
+    val entity = this.createStsLoginPrincipalEntity();
+    when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
+    when(this.requestHeadersUriMock.uri(eq(this.props.getStsApiURL()), any(Function.class)))
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.header(any(), any()))
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class)))
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.retrieve())
+      .thenReturn(this.responseMock);
+    when(this.responseMock.bodyToMono(StsLoginPrincipalEntity.class))
+      .thenReturn(Mono.just(entity));
+
+    this.mockMvc.perform(get("/123/sts-user-roles")
+        .with(jwt().jwt((jwt) -> jwt.claim("scope", "STS_ROLES")))
+        .contentType(MediaType.APPLICATION_JSON)
+        .header("correlationID", this.guid)
+        .accept(MediaType.APPLICATION_JSON))
+      .andDo(print()).andExpect(status().isOk());
+    verify(this.webClient, atMost(invocations + 1)).get();
+  }
+
+  @Test
+  public void getStsRolesBySsoGuid_givenSsoGuidNotPresent_shouldReturnOk() throws Exception {
+    final var invocations = mockingDetails(this.webClient).getInvocations().size();
+    when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
+    when(this.requestHeadersUriMock.uri(eq(this.props.getStsApiURL()), any(Function.class)))
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.header(any(), any()))
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class)))
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.retrieve())
+      .thenReturn(this.responseMock);
+    when(this.responseMock.bodyToMono(StsLoginPrincipalEntity.class))
+      .thenReturn(Mono.empty());
+
+    this.mockMvc.perform(get("/123/sts-user-roles")
+        .with(jwt().jwt((jwt) -> jwt.claim("scope", "STS_ROLES")))
+        .contentType(MediaType.APPLICATION_JSON)
+        .header("correlationID", this.guid)
+        .accept(MediaType.APPLICATION_JSON))
+      .andDo(print()).andExpect(status().isNotFound());
+    verify(this.webClient, atMost(invocations + 1)).get();
+  }
+
+  private StsLoginPrincipalEntity createStsLoginPrincipalEntity() {
+    val isdRoles = new ArrayList<StsRolesEntity>();
+    isdRoles.add(new StsRolesEntity("123", "ROLE_1", "ROLE_1"));
+    val stsLoginPrincipalEntity = new StsLoginPrincipalEntity();
+    stsLoginPrincipalEntity.setPrincipalID("123");
+    stsLoginPrincipalEntity.setIsdRoles(isdRoles);
+    return stsLoginPrincipalEntity;
   }
 
   @Test
@@ -232,41 +292,41 @@ public class SoamControllerTest {
     final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
     when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
     when(this.requestHeadersUriMock.uri(eq(this.props.getServicesCardApiURL()), any(Function.class)))
-            .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
-            .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.header(any(), any()))
-            .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class)))
-            .thenReturn(this.requestHeadersMock);
+      .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.retrieve())
-            .thenReturn(this.responseMock);
+      .thenReturn(this.responseMock);
     when(this.responseMock.bodyToMono(ServicesCardEntity.class))
-            .thenReturn(Mono.just(servicesCardEntity));
+      .thenReturn(Mono.just(servicesCardEntity));
     when(this.responseMock.bodyToMono(DigitalIDEntity.class))
-            .thenReturn(Mono.just(this.getDigitalIdentity()));
+      .thenReturn(Mono.just(this.getDigitalIdentity()));
 
     when(this.webClient.put()).thenReturn(this.requestBodyUriMock);
     when(this.requestBodyUriMock.uri(this.props.getServicesCardApiURL()))
-            .thenReturn(this.requestBodyUriMock);
+      .thenReturn(this.requestBodyUriMock);
     when(this.requestBodyUriMock.uri(this.props.getDigitalIdentifierApiURL()))
-            .thenReturn(this.requestBodyUriMock);
+      .thenReturn(this.requestBodyUriMock);
     when(this.requestBodyUriMock.header(any(), any()))
-            .thenReturn(this.returnMockBodySpec());
+      .thenReturn(this.returnMockBodySpec());
     when(this.requestHeadersMock.retrieve())
-            .thenReturn(this.responseMock);
+      .thenReturn(this.responseMock);
     when(this.responseMock.bodyToMono(ServicesCardEntity.class))
-            .thenReturn(Mono.just(servicesCardEntity));
+      .thenReturn(Mono.just(servicesCardEntity));
     when(this.responseMock.bodyToMono(DigitalIDEntity.class))
-            .thenReturn(Mono.just(this.getDigitalIdentity()));
+      .thenReturn(Mono.just(this.getDigitalIdentity()));
 
     this.mockMvc.perform(get("/userInfo")
-                    .with(jwt().jwt((jwt) -> jwt.claim("scope", "SOAM_USER_INFO")
-                            .claim("digitalIdentityID", this.getDigitalIdentity().getDigitalID().toString())))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .header("correlationID", this.guid)
-                    .accept(MediaType.APPLICATION_JSON))
-            .andDo(print()).andExpect(status().isOk());
+        .with(jwt().jwt((jwt) -> jwt.claim("scope", "SOAM_USER_INFO")
+          .claim("digitalIdentityID", this.getDigitalIdentity().getDigitalID().toString())))
+        .contentType(MediaType.APPLICATION_JSON)
+        .header("correlationID", this.guid)
+        .accept(MediaType.APPLICATION_JSON))
+      .andDo(print()).andExpect(status().isOk());
     verify(this.webClient, atMost(invocations + 2)).put();
   }
 

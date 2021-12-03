@@ -4,12 +4,15 @@ import ca.bc.gov.educ.api.soam.endpoint.SoamEndpoint;
 import ca.bc.gov.educ.api.soam.model.entity.ServicesCardEntity;
 import ca.bc.gov.educ.api.soam.model.entity.SoamLoginEntity;
 import ca.bc.gov.educ.api.soam.service.SoamService;
+import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * Soam API controller
@@ -57,7 +60,16 @@ public class SoamController implements SoamEndpoint {
   }
 
   @Override
-  public ResponseEntity<SoamLoginEntity> getSoamLoginEntity(@AuthenticationPrincipal Jwt token, final String correlationID) {
+  public ResponseEntity<SoamLoginEntity> getSoamLoginEntity(@AuthenticationPrincipal final Jwt token, final String correlationID) {
     return ResponseEntity.ok(this.service.getSoamLoginEntity(token.getClaimAsString("digitalIdentityID"), correlationID));
+  }
+
+  @Override
+  public ResponseEntity<List<String>> getStsUserRolesByGuid(final String ssoGuid, final String correlationID) {
+    val roles = this.service.getStsRolesBySSoGuid(ssoGuid, correlationID);
+    if (roles.isEmpty()) {
+      return ResponseEntity.notFound().build();
+    }
+    return ResponseEntity.ok(roles);
   }
 }

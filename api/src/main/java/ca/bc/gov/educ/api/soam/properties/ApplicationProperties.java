@@ -29,5 +29,7 @@ public class ApplicationProperties {
   private String servicesCardApiURL;
   @Value("${ramp.up.http.startup}")
   private Boolean isHttpRampUp;
+  @Value("${sts.api.url}")
+  private String stsApiURL;
 
 }

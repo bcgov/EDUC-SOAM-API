@@ -380,6 +380,31 @@ public class RestUtilsTest {
     assertThrows(SoamRuntimeException.class, () -> this.restUtils.updateServicesCard(entity, correlationID));
   }
 
+  @Test
+  public void testGetStsLoginPrincipal_givenAPICall404_shouldReturnOptionalEmpty() {
+    when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
+    when(this.requestHeadersUriMock.uri(eq(this.props.getStsApiURL()), any(Function.class)))
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.header(any(), any()))
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.retrieve())
+      .thenThrow(new WebClientResponseException(404, "NOT FOUND", null, null, null));
+    val response = this.restUtils.getStsLoginPrincipal("ABC", correlationID);
+    assertThat(response).isEmpty();
+  }
+
+  @Test
+  public void testGetStsLoginPrincipal_givenAPICallError_shouldThrowException() {
+    when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
+    when(this.requestHeadersUriMock.uri(eq(this.props.getStsApiURL()), any(Function.class)))
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.header(any(), any()))
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.retrieve())
+      .thenThrow(new WebClientResponseException(503, "SERVICE UNAVAILABLE", null, null, null));
+    assertThrows(SoamRuntimeException.class, () -> this.restUtils.getStsLoginPrincipal("ABC", correlationID));
+  }
+
   private StudentEntity createStudentEntity(final UUID studentId) {
     final StudentEntity.StudentEntityBuilder builder = StudentEntity.builder();
     builder.studentID(Objects.requireNonNullElseGet(studentId, UUID::randomUUID));

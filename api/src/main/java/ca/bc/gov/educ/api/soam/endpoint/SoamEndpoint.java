@@ -14,6 +14,8 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RequestMapping("/")
 @OpenAPIDefinition(info = @Info(title = "API for SOAM.", description = "The SOAM API is used to support login functionality for the SOAM Keycloak Instance.", version = "1"), security = {@SecurityRequirement(name = "OAUTH2", scopes = {"SOAM_LOGIN"})})
 public interface SoamEndpoint {
@@ -31,5 +33,10 @@ public interface SoamEndpoint {
   @PreAuthorize("hasAuthority('SCOPE_SOAM_USER_INFO')")
   @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK"), @ApiResponse(responseCode = "404", description = "NOT FOUND.")})
   ResponseEntity<SoamLoginEntity> getSoamLoginEntity(@AuthenticationPrincipal Jwt token, @RequestHeader String correlationID);
+
+  @GetMapping("/{ssoGuid}/sts-user-roles")
+  @PreAuthorize("hasAuthority('SCOPE_STS_ROLES')")
+  @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK"), @ApiResponse(responseCode = "404", description = "NOT FOUND.")})
+  ResponseEntity<List<String>> getStsUserRolesByGuid(@PathVariable String ssoGuid, @RequestHeader String correlationID);
 
 }

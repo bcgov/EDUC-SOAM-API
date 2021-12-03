@@ -37,6 +37,6 @@ public interface SoamEndpoint {
   @GetMapping("/{ssoGuid}/sts-user-roles")
   @PreAuthorize("hasAuthority('SCOPE_STS_ROLES')")
   @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK"), @ApiResponse(responseCode = "404", description = "NOT FOUND.")})
-  ResponseEntity<List<String>> getStsUerRolesByGuid(@PathVariable String ssoGuid, @RequestHeader String correlationID);
+  ResponseEntity<List<String>> getStsUserRolesByGuid(@PathVariable String ssoGuid, @RequestHeader String correlationID);
 
 }

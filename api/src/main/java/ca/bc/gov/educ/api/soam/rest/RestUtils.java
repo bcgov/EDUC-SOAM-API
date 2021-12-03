@@ -88,7 +88,7 @@ public class RestUtils {
   public Optional<StsLoginPrincipalEntity> getStsLoginPrincipal(@NonNull final String ssoGuid, final String correlationID) {
     try {
       return Optional.ofNullable(this.webClient.get()
-        .uri(this.props.getStsApiURL(),
+        .uri(this.props.getStsApiURL() + "/",
           uri -> uri.path(ssoGuid).build())
         .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         .header(CORRELATION_ID, correlationID)

@@ -27,6 +27,7 @@
     <lombok.version>1.18.12</lombok.version>
     <resilience4j.version>1.7.0</resilience4j.version>
     <mock-oauth2-server.version>0.3.3</mock-oauth2-server.version>
+    <log4j.version>2.15.0</log4j.version>
   </properties>
 
   <parent>
@@ -69,10 +70,17 @@
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-api</artifactId>
+      <version>${log4j.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-core</artifactId>
+      <version>${log4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-to-slf4j</artifactId>
+      <version>${log4j.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>

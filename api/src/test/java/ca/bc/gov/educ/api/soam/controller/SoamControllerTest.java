@@ -229,7 +229,7 @@ public class SoamControllerTest {
     final var invocations = mockingDetails(this.webClient).getInvocations().size();
     val entity = this.createStsLoginPrincipalEntity();
     when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
-    when(this.requestHeadersUriMock.uri(eq(this.props.getStsApiURL()), any(Function.class)))
+    when(this.requestHeadersUriMock.uri(eq(this.props.getStsApiURL() + "/"), any(Function.class)))
       .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
       .thenReturn(this.requestHeadersMock);
@@ -255,7 +255,7 @@ public class SoamControllerTest {
   public void getStsRolesBySsoGuid_givenSsoGuidNotPresent_shouldReturnOk() throws Exception {
     final var invocations = mockingDetails(this.webClient).getInvocations().size();
     when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
-    when(this.requestHeadersUriMock.uri(eq(this.props.getStsApiURL()), any(Function.class)))
+    when(this.requestHeadersUriMock.uri(eq(this.props.getStsApiURL() + "/"), any(Function.class)))
       .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
       .thenReturn(this.requestHeadersMock);

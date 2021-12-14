@@ -383,7 +383,7 @@ public class RestUtilsTest {
   @Test
   public void testGetStsLoginPrincipal_givenAPICall404_shouldReturnOptionalEmpty() {
     when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
-    when(this.requestHeadersUriMock.uri(eq(this.props.getStsApiURL()), any(Function.class)))
+    when(this.requestHeadersUriMock.uri(eq(this.props.getStsApiURL() + "/"), any(Function.class)))
       .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.header(any(), any()))
       .thenReturn(this.requestHeadersMock);
@@ -396,7 +396,7 @@ public class RestUtilsTest {
   @Test
   public void testGetStsLoginPrincipal_givenAPICallError_shouldThrowException() {
     when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
-    when(this.requestHeadersUriMock.uri(eq(this.props.getStsApiURL()), any(Function.class)))
+    when(this.requestHeadersUriMock.uri(eq(this.props.getStsApiURL() + "/"), any(Function.class)))
       .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.header(any(), any()))
       .thenReturn(this.requestHeadersMock);

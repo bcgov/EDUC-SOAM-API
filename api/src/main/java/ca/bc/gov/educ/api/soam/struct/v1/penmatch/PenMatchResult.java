@@ -1,7 +1,6 @@
 package ca.bc.gov.educ.api.soam.struct.v1.penmatch;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -13,7 +12,6 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 public class PenMatchResult {
 
   /**

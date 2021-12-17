@@ -622,8 +622,6 @@ public class SoamServiceTest {
   private ServicesCardEntity createServiceCardEntity() {
     final ServicesCardEntity serviceCard = new ServicesCardEntity();
     serviceCard.setBirthDate("1984-11-02");
-    serviceCard.setCity("Victoria");
-    serviceCard.setCountry("CAN");
     serviceCard.setDid("DIGITALID");
     serviceCard.setEmail("abc@gmail.com");
     serviceCard.setGender("M");
@@ -631,8 +629,6 @@ public class SoamServiceTest {
     serviceCard.setGivenName("Given");
     serviceCard.setGivenNames(null);
     serviceCard.setPostalCode("V8W 2E1");
-    serviceCard.setProvince("BC");
-    serviceCard.setStreetAddress("Courtney Street");
     serviceCard.setSurname("Surname");
     serviceCard.setUserDisplayName("displayName");
     return serviceCard;

@@ -17,11 +17,7 @@ public class SoamServicesCard {
   String birthDate;
   String gender;
   String email;
-  String streetAddress;
-  String city;
-  String province;  
-  String country;
-  String identityAssuranceLevel; 
+  String identityAssuranceLevel;
   String postalCode;   
   String createUser;
   String createDate;

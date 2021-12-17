@@ -656,8 +656,6 @@ public class SoamServiceTest {
       serviceCard.setServicesCardInfoID(serviceCardEntity.getServicesCardInfoID());
       serviceCard.setDigitalIdentityID(digitalIdentifierID);
       serviceCard.setBirthDate(serviceCardEntity.getBirthDate());
-      serviceCard.setCity(serviceCardEntity.getCity());
-      serviceCard.setCountry(serviceCardEntity.getCountry());
       serviceCard.setDid(serviceCardEntity.getDid());
       serviceCard.setEmail(serviceCardEntity.getEmail());
       serviceCard.setGender(serviceCardEntity.getGender());
@@ -665,8 +663,6 @@ public class SoamServiceTest {
       serviceCard.setGivenNames(serviceCardEntity.getGivenNames());
       serviceCard.setPostalCode(serviceCardEntity.getPostalCode());
       serviceCard.setIdentityAssuranceLevel(serviceCardEntity.getIdentityAssuranceLevel());
-      serviceCard.setProvince(serviceCardEntity.getProvince());
-      serviceCard.setStreetAddress(serviceCardEntity.getStreetAddress());
       serviceCard.setSurname(serviceCardEntity.getSurname());
       serviceCard.setUserDisplayName(serviceCardEntity.getUserDisplayName());
       serviceCard.setUpdateDate(serviceCardEntity.getUpdateDate());

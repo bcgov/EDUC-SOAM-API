@@ -98,20 +98,25 @@ public class SoamService {
       updateBCSCInfo(servicesCard, scEntity);
       this.updateBCSC(scEntity, correlationID);
     } else {
+      servicesCard.setBirthDate(getBCSCDobString(servicesCard.getBirthDate()));
       this.restUtils.createServicesCard(servicesCard, correlationID);
     }
 
   }
 
-  private void updateBCSCInfo(ServicesCardEntity servicesCard, ServicesCardEntity scEntity) {
+  private String getBCSCDobString(String dateOfBirth) {
     LocalDate dob;
     try {
-      dob = LocalDate.parse(servicesCard.getBirthDate(), DateTimeFormatter.ofPattern("yyyyMMdd"));
-      scEntity.setBirthDate(dob.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+      dob = LocalDate.parse(dateOfBirth, DateTimeFormatter.ofPattern("yyyyMMdd"));
+      return dob.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
     }catch (Exception e) {
-      log.error("Invalid BCSC birth date: {}", servicesCard.getBirthDate());
-      throw new SoamRuntimeException("Invalid BCSC birth date: " + servicesCard.getBirthDate());
+      log.error("Invalid BCSC birth date: {}", dateOfBirth);
+      throw new SoamRuntimeException("Invalid BCSC birth date: " + dateOfBirth);
     }
+  }
+
+  private void updateBCSCInfo(ServicesCardEntity servicesCard, ServicesCardEntity scEntity) {
+    scEntity.setBirthDate(getBCSCDobString(servicesCard.getBirthDate()));
     scEntity.setEmail(servicesCard.getEmail());
     scEntity.setGender(servicesCard.getGender());
     scEntity.setGivenName(servicesCard.getGivenName());

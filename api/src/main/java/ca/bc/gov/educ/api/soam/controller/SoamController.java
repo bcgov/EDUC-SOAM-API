@@ -74,9 +74,6 @@ public class SoamController implements SoamEndpoint {
   @Override
   public ResponseEntity<List<String>> getStsUserRolesByGuid(final String ssoGuid, final String correlationID) {
     val roles = this.service.getStsRolesBySSoGuid(ssoGuid, correlationID);
-    if (roles.isEmpty()) {
-      return ResponseEntity.notFound().build();
-    }
     return ResponseEntity.ok(roles);
   }
 }

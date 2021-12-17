@@ -39,4 +39,8 @@ public interface SoamEndpoint {
   @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK"), @ApiResponse(responseCode = "404", description = "NOT FOUND.")})
   ResponseEntity<List<String>> getStsUserRolesByGuid(@PathVariable String ssoGuid, @RequestHeader String correlationID);
 
+  @PostMapping(value = "/link", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+  @PreAuthorize("hasAuthority('SCOPE_SOAM_LINK')")
+  ResponseEntity<SoamLoginEntity> performBCSCLink(@RequestBody MultiValueMap<String, String> formData, @RequestHeader String correlationID);
+
 }

@@ -12,6 +12,8 @@
     <sonar.language>java</sonar.language>
     <sonar.exclusions>src/main/resources/**,
       src/main/java/ca/bc/gov/educ/api/soam/exception/**,
+      src/main/java/ca/bc/gov/educ/api/soam/struct/**,
+      src/main/java/ca/bc/gov/educ/api/soam/util/**,
       src/main/java/ca/bc/gov/educ/api/soam/model/**,
       src/main/java/ca/bc/gov/educ/api/soam/endpoint/**,
       src/main/java/ca/bc/gov/educ/api/soam/rest/RestWebClient.java,

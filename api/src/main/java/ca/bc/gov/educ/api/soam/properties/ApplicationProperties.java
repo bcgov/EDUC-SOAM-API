@@ -31,5 +31,6 @@ public class ApplicationProperties {
   private Boolean isHttpRampUp;
   @Value("${sts.api.url}")
   private String stsApiURL;
-
+  @Value("${url.api.pen.match}")
+  private String penMatchApiURL;
 }

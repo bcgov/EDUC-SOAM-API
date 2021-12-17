@@ -2,6 +2,7 @@ package ca.bc.gov.educ.api.soam.controller;
 
 import ca.bc.gov.educ.api.soam.model.entity.*;
 import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
+import ca.bc.gov.educ.api.soam.struct.v1.penmatch.PenMatchResult;
 import lombok.val;
 import org.junit.Before;
 import org.junit.Test;
@@ -120,6 +121,69 @@ public class SoamControllerTest {
       .accept(MediaType.APPLICATION_FORM_URLENCODED)).andDo(print()).andExpect(status().isNoContent());
 
     verify(this.webClient, atMost(invocations + 1)).put();
+  }
+
+  @Test
+  public void performLink_givenValidPayloadWithServicesCard_shouldReturnSoamLoginEntity() throws Exception {
+    final var invocations = mockingDetails(this.webClient).getInvocations().size();
+
+    final MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+    map.add("did", this.guid.toUpperCase());
+    map.add("birthDate", "1984-11-02");
+    map.add("city", "Victoria");
+    map.add("country", "CAN");
+    map.add("email", "abc@gmail.com");
+    map.add("gender", "M");
+    map.add("identityAssuranceLevel", "1");
+    map.add("givenName", "Given");
+
+    final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
+    final PenMatchResult penMatchResult = this.createPenMatchResult();
+    when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
+    when(this.requestHeadersUriMock.uri(eq(this.props.getServicesCardApiURL()), any(Function.class)))
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.headers(any()))
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class)))
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.retrieve())
+      .thenReturn(this.responseMock);
+    when(this.responseMock.bodyToMono(ServicesCardEntity.class))
+      .thenReturn(Mono.just(servicesCardEntity));
+    when(this.responseMock.bodyToMono(DigitalIDEntity.class))
+      .thenReturn(Mono.just(this.getDigitalIdentity()));
+    when(this.requestBodyUriMock.uri(this.props.getPenMatchApiURL())).thenReturn(this.requestBodyUriMock);
+
+    when(this.webClient.post()).thenReturn(this.requestBodyUriMock);
+    when(this.webClient.put()).thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.uri(eq(this.props.getServicesCardApiURL()), any(Function.class)))
+      .thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
+      .thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.headers(any()))
+      .thenReturn(this.returnMockBodySpec());
+    when(this.requestHeadersMock.retrieve())
+      .thenReturn(this.responseMock);
+    when(this.responseMock.bodyToMono(ServicesCardEntity.class))
+      .thenReturn(Mono.just(servicesCardEntity));
+    when(this.responseMock.bodyToMono(DigitalIDEntity.class))
+      .thenReturn(Mono.just(this.getDigitalIdentity()));
+    when(this.requestBodyUriMock.uri(this.props.getPenMatchApiURL())).thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.header(any(), any())).thenReturn(this.returnMockBodySpec());
+    when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class))).thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.retrieve()).thenReturn(this.responseMock);
+    when(this.responseMock.bodyToMono(PenMatchResult.class)).thenReturn(Mono.just(penMatchResult));
+
+    this.mockMvc.perform(multipart("/link")
+      .with(jwt().jwt((jwt) -> jwt.claim("scope", "SOAM_LINK")))
+      .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+      .header("correlationID", this.guid)
+      .params(map)
+      .accept(MediaType.APPLICATION_JSON)).andDo(print()).andExpect(status().isOk());
+    verify(this.webClient, atMost(invocations + 2)).put();
+
   }
 
   @Test
@@ -351,14 +415,18 @@ public class SoamControllerTest {
       .expiryDate(LocalDateTime.MAX.toString())
       .identityTypeCode("BASIC")
       .build());
+    identityTypes.add(IdentityTypeCodeEntity
+      .builder()
+      .effectiveDate(LocalDateTime.now().toString())
+      .expiryDate(LocalDateTime.MAX.toString())
+      .identityTypeCode("BCSC")
+      .build());
     return identityTypes.toArray(identityTypeCodeEntities);
   }
 
   private ServicesCardEntity createServiceCardEntity() {
     final ServicesCardEntity serviceCard = new ServicesCardEntity();
     serviceCard.setBirthDate("1984-11-02");
-    serviceCard.setCity("Victoria");
-    serviceCard.setCountry("CAN");
     serviceCard.setDid("DIGITALID");
     serviceCard.setEmail("abc@gmail.com");
     serviceCard.setGender("M");
@@ -366,8 +434,6 @@ public class SoamControllerTest {
     serviceCard.setGivenName("Given");
     serviceCard.setGivenNames(null);
     serviceCard.setPostalCode("V8W 2E1");
-    serviceCard.setProvince("BC");
-    serviceCard.setStreetAddress("Courtney Street");
     serviceCard.setSurname("Surname");
     serviceCard.setUserDisplayName("displayName");
     return serviceCard;
@@ -389,11 +455,21 @@ public class SoamControllerTest {
   }
 
   IdentityTypeCodeEntity[] getIdentityTypeCodeArray() {
-    final IdentityTypeCodeEntity[] identityTypeCodeEntities = new IdentityTypeCodeEntity[1];
+    final IdentityTypeCodeEntity[] identityTypeCodeEntities = new IdentityTypeCodeEntity[2];
     identityTypeCodeEntities[0] = IdentityTypeCodeEntity.builder()
       .identityTypeCode("BASIC")
       .displayOrder(1)
       .build();
+    identityTypeCodeEntities[1] = IdentityTypeCodeEntity.builder()
+      .identityTypeCode("BCSC")
+      .displayOrder(2)
+      .build();
     return identityTypeCodeEntities;
+  }
+
+  private PenMatchResult createPenMatchResult() {
+    PenMatchResult penMatchResult = new PenMatchResult();
+    penMatchResult.setPenStatus("AA");
+    return penMatchResult;
   }
 }

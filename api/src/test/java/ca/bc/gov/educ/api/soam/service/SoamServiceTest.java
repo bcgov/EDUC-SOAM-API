@@ -8,6 +8,8 @@ import ca.bc.gov.educ.api.soam.model.SoamStudent;
 import ca.bc.gov.educ.api.soam.model.entity.*;
 import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
 import ca.bc.gov.educ.api.soam.rest.RestUtils;
+import ca.bc.gov.educ.api.soam.struct.v1.penmatch.PenMatchRecord;
+import ca.bc.gov.educ.api.soam.struct.v1.penmatch.PenMatchResult;
 import ca.bc.gov.educ.api.soam.util.SoamUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -232,6 +234,25 @@ public class SoamServiceTest {
 
   }
 
+  @Test
+  public void testPerformLink_GivenDigitalIdExistAndServiceCardUpdateCallFailed_ShouldThrowSoamRuntimeException() {
+    final DigitalIDEntity entity = this.createDigitalIdentity();
+    final DigitalIDEntity responseEntity = this.createResponseEntity(entity);
+    final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
+    when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
+    when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.of(responseEntity));
+    doNothing().when(this.restUtils).updateDigitalID(any(), any());
+    when(this.restUtils.getServicesCard(anyString(), anyString())).thenReturn(Optional.of(servicesCardEntity));
+    doThrow(new SoamRuntimeException("503 SERVICE " +
+      "UNAVAILABLE")).when(this.restUtils).updateServicesCard(any(), any());
+    assertThrows(SoamRuntimeException.class, () -> this.service.performLink(servicesCardEntity, correlationID));
+    verify(this.restUtils, never()).createDigitalID("BCSC", servicesCardEntity.getDid(), correlationID);
+    verify(this.restUtils, times(1)).getDigitalID("BCSC", servicesCardEntity.getDid(), correlationID);
+    verify(this.restUtils, times(1)).updateDigitalID(any(), any());
+    verify(this.restUtils, never()).createServicesCard(any(), any());
+    verify(this.restUtils, times(1)).getServicesCard("DIGITALID", correlationID);
+    verify(this.restUtils, times(1)).updateServicesCard(any(), any());
+  }
 
   @Test
   public void testPerformLogin_GivenDigitalIdExistAndServiceCardUpdateCallFailed_ShouldThrowSoamRuntimeException() {
@@ -270,6 +291,52 @@ public class SoamServiceTest {
     verify(this.restUtils, never()).updateServicesCard(any(), any());
   }
 
+  @Test
+  public void testPerformLink_GivenDigitalIdAndServiceCardDoesNotExist_ShouldCreateBothRecords() {
+    final UUID studentId = UUID.randomUUID();
+    final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
+    final StudentEntity studentEntity = this.createStudentEntity(studentId);
+    final StudentEntity studentResponseEntity = this.createStudentResponseEntity(studentEntity);
+    when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
+    when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.empty());
+    when(this.restUtils.createDigitalID(anyString(), anyString(), anyString())).thenReturn(this.createDigitalIdentity());
+    when(this.restUtils.getServicesCard(anyString(), anyString())).thenReturn(Optional.empty());
+    when(this.restUtils.postToMatchAPI(any())).thenReturn(Optional.of(this.createPenMatchResult()));
+    when(this.restUtils.getStudentByStudentID(anyString(), anyString())).thenReturn(studentResponseEntity);
+    doNothing().when(this.restUtils).createServicesCard(any(), any());
+    this.service.performLink(servicesCardEntity, correlationID);
+    verify(this.restUtils, times(1)).createDigitalID("BCSC", servicesCardEntity.getDid(), correlationID);
+    verify(this.restUtils, times(1)).getDigitalID("BCSC", servicesCardEntity.getDid(), correlationID);
+    verify(this.restUtils, times(1)).createServicesCard(any(), any());
+    verify(this.restUtils, times(1)).postToMatchAPI(any());
+    verify(this.restUtils, times(1)).updateDigitalID(any(),any());
+    verify(this.restUtils, times(1)).getServicesCard("DIGITALID", correlationID);
+    verify(this.restUtils, never()).updateServicesCard(any(), any());
+  }
+
+  @Test
+  public void testPerformLink_GivenDigitalIdAndServiceCardWithGivenNamesDoesNotExist_ShouldCreateBothRecords() {
+    final UUID studentId = UUID.randomUUID();
+    final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
+    servicesCardEntity.setGivenNames("Given ERIC");
+    final StudentEntity studentEntity = this.createStudentEntity(studentId);
+    final StudentEntity studentResponseEntity = this.createStudentResponseEntity(studentEntity);
+    when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
+    when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.empty());
+    when(this.restUtils.createDigitalID(anyString(), anyString(), anyString())).thenReturn(this.createDigitalIdentity());
+    when(this.restUtils.getServicesCard(anyString(), anyString())).thenReturn(Optional.empty());
+    when(this.restUtils.postToMatchAPI(any())).thenReturn(Optional.of(this.createPenMatchResult()));
+    when(this.restUtils.getStudentByStudentID(anyString(), anyString())).thenReturn(studentResponseEntity);
+    doNothing().when(this.restUtils).createServicesCard(any(), any());
+    this.service.performLink(servicesCardEntity, correlationID);
+    verify(this.restUtils, times(1)).createDigitalID("BCSC", servicesCardEntity.getDid(), correlationID);
+    verify(this.restUtils, times(1)).getDigitalID("BCSC", servicesCardEntity.getDid(), correlationID);
+    verify(this.restUtils, times(1)).createServicesCard(any(), any());
+    verify(this.restUtils, times(1)).postToMatchAPI(any());
+    verify(this.restUtils, times(1)).updateDigitalID(any(),any());
+    verify(this.restUtils, times(1)).getServicesCard("DIGITALID", correlationID);
+    verify(this.restUtils, never()).updateServicesCard(any(), any());
+  }
 
   @Test
   public void testGetSoamLoginEntity_GivenDigitalIdGetCallNotFound_ShouldThrowSoamRuntimeException() {
@@ -278,7 +345,6 @@ public class SoamServiceTest {
     assertThrows(SoamRuntimeException.class, () -> this.service.getSoamLoginEntity("BCeId", "12345", correlationID));
     verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345", correlationID);
   }
-
 
   @Test
   public void testGetSoamLoginEntity_GivenDigitalIdGetCallReturnsBlankResponse_ShouldThrowSoamRuntimeException() {
@@ -640,5 +706,17 @@ public class SoamServiceTest {
 
       entity.setStudent(soamStudent);
     }
+  }
+
+  private PenMatchResult createPenMatchResult() {
+    PenMatchResult penMatchResult = new PenMatchResult();
+    List<PenMatchRecord> matchingRecords = new ArrayList<>();
+    PenMatchRecord penMatchRecord = new PenMatchRecord();
+    penMatchRecord.setMatchingPEN("123456789");
+    penMatchRecord.setStudentID(UUID.randomUUID().toString());
+    penMatchResult.setPenStatus("B1");
+    matchingRecords.add(penMatchRecord);
+    penMatchResult.setMatchingRecords(matchingRecords);
+    return penMatchResult;
   }
 }

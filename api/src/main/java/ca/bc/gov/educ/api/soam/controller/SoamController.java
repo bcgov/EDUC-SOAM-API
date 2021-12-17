@@ -31,7 +31,12 @@ public class SoamController implements SoamEndpoint {
   }
 
   @Override
-  public ResponseEntity<Void> performLogin(final MultiValueMap<String, String> formData, final String correlationID) {
+  public ResponseEntity<SoamLoginEntity> performBCSCLink(final MultiValueMap<String, String> formData, final String correlationID) {
+    ServicesCardEntity serviceCard = setupServicesCard(formData);
+    return ResponseEntity.ok(this.service.performLink(serviceCard, correlationID));
+  }
+
+  private ServicesCardEntity setupServicesCard(final MultiValueMap<String, String> formData){
     ServicesCardEntity serviceCard = null;
     if (formData.getFirst("did") != null) {
       serviceCard = new ServicesCardEntity();
@@ -50,6 +55,12 @@ public class SoamController implements SoamEndpoint {
       serviceCard.setSurname(formData.getFirst("surname"));
       serviceCard.setUserDisplayName(formData.getFirst("userDisplayName"));
     }
+    return serviceCard;
+  }
+
+  @Override
+  public ResponseEntity<Void> performLogin(final MultiValueMap<String, String> formData, final String correlationID) {
+    ServicesCardEntity serviceCard = setupServicesCard(formData);
     this.service.performLogin(formData.getFirst("identifierType"), formData.getFirst("identifierValue"), serviceCard, correlationID);
     return ResponseEntity.noContent().build();
   }

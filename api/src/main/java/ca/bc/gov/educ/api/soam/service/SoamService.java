@@ -6,6 +6,9 @@ import ca.bc.gov.educ.api.soam.exception.SoamRuntimeException;
 import ca.bc.gov.educ.api.soam.model.entity.*;
 import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
 import ca.bc.gov.educ.api.soam.rest.RestUtils;
+import ca.bc.gov.educ.api.soam.struct.v1.penmatch.PenMatchResult;
+import ca.bc.gov.educ.api.soam.struct.v1.penmatch.PenMatchStudent;
+import ca.bc.gov.educ.api.soam.util.JsonUtil;
 import ca.bc.gov.educ.api.soam.util.SoamUtil;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import lombok.extern.slf4j.Slf4j;
@@ -15,18 +18,18 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class SoamService {
 
+  private static final String BCSC = "BCSC";
+
   private final CodeTableUtils codeTableUtils;
 
-
   private final SoamUtil soamUtil;
-
 
   private final RestUtils restUtils;
 
@@ -40,35 +43,102 @@ public class SoamService {
   @RateLimiter(name = "performLogin")
   public void performLogin(final String identifierType, final String identifierValue, final ServicesCardEntity servicesCard, final String correlationID) {
     this.validateExtendedSearchParameters(identifierType, identifierValue);
-    this.manageLogin(identifierType, identifierValue, servicesCard, correlationID);
+    this.manageUserSetup(identifierType, identifierValue, servicesCard, correlationID);
+  }
+
+  @RateLimiter(name = "performLink")
+  public SoamLoginEntity performLink(final ServicesCardEntity servicesCard, final String correlationID) {
+    if(log.isDebugEnabled()) {
+      log.debug("performLink: servicesCard: {}", JsonUtil.getJsonPrettyStringFromObject(servicesCard));
+    }
+    this.validateExtendedSearchParameters(BCSC, servicesCard.getDid());
+    return this.manageLinkage(servicesCard, correlationID);
   }
 
   private void updateDigitalID(final ServicesCardEntity servicesCard, final DigitalIDEntity digitalIDEntity, final String correlationID) {
     this.restUtils.updateDigitalID(digitalIDEntity, correlationID);
     if (servicesCard != null) {
-      this.createOrUpdateBCSC(servicesCard, digitalIDEntity.getDigitalID(), correlationID);
+      this.createOrUpdateBCSC(servicesCard, digitalIDEntity, correlationID);
     }
   }
 
-  private void manageLogin(final String identifierType, final String identifierValue, final ServicesCardEntity servicesCard, final String correlationID) {
+  private SoamLoginEntity manageLinkage(final ServicesCardEntity servicesCard, final String correlationID) {
+    DigitalIDEntity digitalIDEntity = manageUserSetup(BCSC, servicesCard.getDid(), servicesCard, correlationID);
+    if (digitalIDEntity == null) {
+      throw new SoamRuntimeException("Unexpected error; digitalID is null after manageUserSetup");
+    }
+    if(digitalIDEntity.getStudentID() == null) {
+      attemptBCSCAutoMatch(servicesCard, digitalIDEntity, correlationID);
+    }
+    return populateAndReturnLoginEntity(digitalIDEntity, servicesCard, correlationID);
+  }
+
+  private DigitalIDEntity manageUserSetup(final String identifierType, final String identifierValue, final ServicesCardEntity servicesCard, final String correlationID) {
     val didResponseFromAPI = this.restUtils.getDigitalID(identifierType, identifierValue.toUpperCase(), correlationID);
     if (didResponseFromAPI.isPresent()) {
       this.updateDigitalID(servicesCard, didResponseFromAPI.get(), correlationID); //update Digital Id if we have one.
+      return didResponseFromAPI.get();
     } else {
       val responseEntity = this.restUtils.createDigitalID(identifierType, identifierValue.toUpperCase(), correlationID);
       if (servicesCard != null && responseEntity != null) {
-        this.createOrUpdateBCSC(servicesCard, responseEntity.getDigitalID(), correlationID);
+        this.createOrUpdateBCSC(servicesCard, responseEntity, correlationID);
       }
+      return responseEntity;
     }
   }
 
-  public void createOrUpdateBCSC(final ServicesCardEntity servicesCard, final UUID digitalIdentityID, final String correlationID) {
-    servicesCard.setDigitalIdentityID(digitalIdentityID);
+  public void createOrUpdateBCSC(final ServicesCardEntity servicesCard, final DigitalIDEntity digitalIDEntity, final String correlationID) {
+    log.debug("createOrUpdateBCSC: servicesCard DID: {}", servicesCard.getDid());
+    servicesCard.setDigitalIdentityID(digitalIDEntity.getDigitalID());
     val servicesCardFromAPIResponse = this.restUtils.getServicesCard(servicesCard.getDid(), correlationID);
     if (servicesCardFromAPIResponse.isPresent()) {
       this.updateBCSC(servicesCardFromAPIResponse.get(), correlationID);
     } else {
       this.restUtils.createServicesCard(servicesCard, correlationID);
+    }
+
+  }
+
+  private void attemptBCSCAutoMatch(final ServicesCardEntity servicesCard, final DigitalIDEntity digitalIDEntity, final String correlationID) {
+    log.debug("Attempting to auto match BCSC for DID: {}", servicesCard.getDid());
+    PenMatchStudent penMatchStudent = new PenMatchStudent();
+    penMatchStudent.setSurname(servicesCard.getSurname());
+    penMatchStudent.setGivenName(servicesCard.getGivenName());
+    if (servicesCard.getGivenNames() != null && servicesCard.getGivenName() != null) {
+      penMatchStudent.setMiddleName(servicesCard.getGivenNames().replaceAll(servicesCard.getGivenName(), "").trim());
+    } else if (servicesCard.getGivenNames() != null) {
+      penMatchStudent.setMiddleName(servicesCard.getGivenNames());
+    }
+    penMatchStudent.setDob(servicesCard.getBirthDate());
+    penMatchStudent.setSex(servicesCard.getGender());
+    penMatchStudent.setPostal(servicesCard.getPostalCode());
+
+    if(log.isDebugEnabled()){
+      log.debug("Attempting to auto match BCSC with pen match student: {}", JsonUtil.getJsonPrettyStringFromObject(penMatchStudent));
+    }
+
+    Optional<PenMatchResult> optional = this.restUtils.postToMatchAPI(penMatchStudent);
+    if(optional.isPresent()) {
+      log.debug("Auto match result status: {} for DID: {}", optional.get().getPenStatus(), servicesCard.getDid());
+      evaluateAndLinkBCSCResult(optional.get(), digitalIDEntity, correlationID);
+    }else{
+      throw new SoamRuntimeException("Error occurred while calling Match API");
+    }
+  }
+
+  private void evaluateAndLinkBCSCResult(final PenMatchResult penMatchResult, final DigitalIDEntity digitalIDEntity, final String correlationID) {
+    if(penMatchResult == null || penMatchResult.getPenStatus() == null) {
+      throw new SoamRuntimeException("Error occurred while calling Match API");
+    }
+    switch (penMatchResult.getPenStatus()) {
+      case "B1":
+      case "C1":
+      case "D1":
+        digitalIDEntity.setStudentID(penMatchResult.getMatchingRecords().get(0).getStudentID());
+        log.debug("Updating digital identity after auto match for digital identity: {} student ID: {}", digitalIDEntity.getDigitalID(), digitalIDEntity.getStudentID());
+        this.restUtils.updateDigitalID(digitalIDEntity, correlationID);
+        return;
+      default:
     }
   }
 

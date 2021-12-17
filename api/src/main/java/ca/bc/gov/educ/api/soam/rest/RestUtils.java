@@ -7,6 +7,8 @@ import ca.bc.gov.educ.api.soam.model.entity.ServicesCardEntity;
 import ca.bc.gov.educ.api.soam.model.entity.StsLoginPrincipalEntity;
 import ca.bc.gov.educ.api.soam.model.entity.StudentEntity;
 import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
+import ca.bc.gov.educ.api.soam.struct.v1.penmatch.PenMatchResult;
+import ca.bc.gov.educ.api.soam.struct.v1.penmatch.PenMatchStudent;
 import ca.bc.gov.educ.api.soam.util.SoamUtil;
 import io.github.resilience4j.bulkhead.annotation.Bulkhead;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -29,7 +31,7 @@ import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 @Slf4j
 public class RestUtils {
 
-  public static final String NULL_BODY_FROM = "null body from ";
+    public static final String NULL_BODY_FROM = "null body from ";
   private static final String CORRELATION_ID = "correlationID";
   private static final String DIGITAL_ID_API = "digitalIdApi";
   private static final String SERVICES_CARD_API = "servicesCardApi";
@@ -258,6 +260,30 @@ public class RestUtils {
           "digitalID post call."));
       }
       return response;
+    } catch (final WebClientResponseException e) {
+      throw new SoamRuntimeException(this.getErrorMessageString(e.getStatusCode(), e.getResponseBodyAsString()));
+    }
+  }
+
+  public Optional<PenMatchResult> postToMatchAPI(PenMatchStudent request) {
+    try {
+      val response = this.webClient.post()
+        .uri(this.props.getPenMatchApiURL())
+        .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .body(Mono.just(request), PenMatchStudent.class)
+        .retrieve()
+        .bodyToMono(PenMatchResult.class)
+        .doOnSuccess(entity -> {
+          if (entity != null) {
+            this.logSuccess(entity.toString());
+          }
+        })
+        .block();
+      if (response == null) {
+        throw new SoamRuntimeException(this.getErrorMessageString(HttpStatus.INTERNAL_SERVER_ERROR, NULL_BODY_FROM +
+          "pen match get call."));
+      }
+      return Optional.of(response);
     } catch (final WebClientResponseException e) {
       throw new SoamRuntimeException(this.getErrorMessageString(e.getStatusCode(), e.getResponseBodyAsString()));
     }

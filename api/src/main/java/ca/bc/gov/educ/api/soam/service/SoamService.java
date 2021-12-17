@@ -16,6 +16,8 @@ import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -102,7 +104,14 @@ public class SoamService {
   }
 
   private void updateBCSCInfo(ServicesCardEntity servicesCard, ServicesCardEntity scEntity) {
-    scEntity.setBirthDate(servicesCard.getBirthDate());
+    LocalDate dob;
+    try {
+      dob = LocalDate.parse(servicesCard.getBirthDate(), DateTimeFormatter.ofPattern("yyyyMMdd"));
+      scEntity.setBirthDate(dob.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+    }catch (Exception e) {
+      log.error("Invalid BCSC birth date: {}", servicesCard.getBirthDate());
+      throw new SoamRuntimeException("Invalid BCSC birth date: " + servicesCard.getBirthDate());
+    }
     scEntity.setEmail(servicesCard.getEmail());
     scEntity.setGender(servicesCard.getGender());
     scEntity.setGivenName(servicesCard.getGivenName());

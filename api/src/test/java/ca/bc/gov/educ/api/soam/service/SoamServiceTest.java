@@ -315,6 +315,30 @@ public class SoamServiceTest {
   }
 
   @Test
+  public void testPerformLink_GivenDigitalIdAndServiceCardWithGivenNamesDoesNotExist_ShouldCreateBothRecords() {
+    final UUID studentId = UUID.randomUUID();
+    final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
+    servicesCardEntity.setGivenNames("Given ERIC");
+    final StudentEntity studentEntity = this.createStudentEntity(studentId);
+    final StudentEntity studentResponseEntity = this.createStudentResponseEntity(studentEntity);
+    when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
+    when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.empty());
+    when(this.restUtils.createDigitalID(anyString(), anyString(), anyString())).thenReturn(this.createDigitalIdentity());
+    when(this.restUtils.getServicesCard(anyString(), anyString())).thenReturn(Optional.empty());
+    when(this.restUtils.postToMatchAPI(any())).thenReturn(Optional.of(this.createPenMatchResult()));
+    when(this.restUtils.getStudentByStudentID(anyString(), anyString())).thenReturn(studentResponseEntity);
+    doNothing().when(this.restUtils).createServicesCard(any(), any());
+    this.service.performLink(servicesCardEntity, correlationID);
+    verify(this.restUtils, times(1)).createDigitalID("BCSC", servicesCardEntity.getDid(), correlationID);
+    verify(this.restUtils, times(1)).getDigitalID("BCSC", servicesCardEntity.getDid(), correlationID);
+    verify(this.restUtils, times(1)).createServicesCard(any(), any());
+    verify(this.restUtils, times(1)).postToMatchAPI(any());
+    verify(this.restUtils, times(1)).updateDigitalID(any(),any());
+    verify(this.restUtils, times(1)).getServicesCard("DIGITALID", correlationID);
+    verify(this.restUtils, never()).updateServicesCard(any(), any());
+  }
+
+  @Test
   public void testGetSoamLoginEntity_GivenDigitalIdGetCallNotFound_ShouldThrowSoamRuntimeException() {
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
     when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.empty());

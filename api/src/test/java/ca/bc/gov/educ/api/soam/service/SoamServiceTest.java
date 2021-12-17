@@ -322,7 +322,6 @@ public class SoamServiceTest {
     verify(this.restUtils, times(1)).getDigitalID("BCeId", "12345", correlationID);
   }
 
-
   @Test
   public void testGetSoamLoginEntity_GivenDigitalIdGetCallReturnsBlankResponse_ShouldThrowSoamRuntimeException() {
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());

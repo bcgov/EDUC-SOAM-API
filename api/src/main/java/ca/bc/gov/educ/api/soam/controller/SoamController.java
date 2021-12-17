@@ -41,8 +41,6 @@ public class SoamController implements SoamEndpoint {
     if (formData.getFirst("did") != null) {
       serviceCard = new ServicesCardEntity();
       serviceCard.setBirthDate(formData.getFirst("birthDate"));
-      serviceCard.setCity(formData.getFirst("city"));
-      serviceCard.setCountry(formData.getFirst("country"));
       serviceCard.setDid(formData.getFirst("did"));
       serviceCard.setEmail(formData.getFirst("email"));
       serviceCard.setGender(formData.getFirst("gender"));
@@ -50,8 +48,6 @@ public class SoamController implements SoamEndpoint {
       serviceCard.setGivenName(formData.getFirst("givenName"));
       serviceCard.setGivenNames(formData.getFirst("givenNames"));
       serviceCard.setPostalCode(formData.getFirst("postalCode"));
-      serviceCard.setProvince(formData.getFirst("province"));
-      serviceCard.setStreetAddress(formData.getFirst("streetAddress"));
       serviceCard.setSurname(formData.getFirst("surname"));
       serviceCard.setUserDisplayName(formData.getFirst("userDisplayName"));
     }

@@ -92,11 +92,26 @@ public class SoamService {
     servicesCard.setDigitalIdentityID(digitalIDEntity.getDigitalID());
     val servicesCardFromAPIResponse = this.restUtils.getServicesCard(servicesCard.getDid(), correlationID);
     if (servicesCardFromAPIResponse.isPresent()) {
-      this.updateBCSC(servicesCardFromAPIResponse.get(), correlationID);
+      ServicesCardEntity scEntity = servicesCardFromAPIResponse.get();
+      updateBCSCInfo(servicesCard, scEntity);
+      this.updateBCSC(scEntity, correlationID);
     } else {
       this.restUtils.createServicesCard(servicesCard, correlationID);
     }
 
+  }
+
+  private void updateBCSCInfo(ServicesCardEntity servicesCard, ServicesCardEntity scEntity) {
+    scEntity.setBirthDate(servicesCard.getBirthDate());
+    scEntity.setEmail(servicesCard.getEmail());
+    scEntity.setGender(servicesCard.getGender());
+    scEntity.setGivenName(servicesCard.getGivenName());
+    scEntity.setGivenNames(servicesCard.getGivenNames());
+    scEntity.setPostalCode(servicesCard.getPostalCode());
+    scEntity.setIdentityAssuranceLevel(servicesCard.getIdentityAssuranceLevel());
+    scEntity.setSurname(servicesCard.getSurname());
+    scEntity.setUserDisplayName(servicesCard.getUserDisplayName());
+    scEntity.setDid(servicesCard.getDid());
   }
 
   private void attemptBCSCAutoMatch(final ServicesCardEntity servicesCard, final DigitalIDEntity digitalIDEntity, final String correlationID) {

@@ -138,7 +138,7 @@ public class SoamService {
     } else if (servicesCard.getGivenNames() != null) {
       penMatchStudent.setMiddleName(servicesCard.getGivenNames());
     }
-    penMatchStudent.setDob(servicesCard.getBirthDate());
+    penMatchStudent.setDob(servicesCard.getBirthDate().replace("-", ""));
     penMatchStudent.setSex(servicesCard.getGender());
     penMatchStudent.setPostal(servicesCard.getPostalCode());
 

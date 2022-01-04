@@ -621,7 +621,7 @@ public class SoamServiceTest {
 
   private ServicesCardEntity createServiceCardEntity() {
     final ServicesCardEntity serviceCard = new ServicesCardEntity();
-    serviceCard.setBirthDate("1984-11-02");
+    serviceCard.setBirthDate("19841102");
     serviceCard.setDid("DIGITALID");
     serviceCard.setEmail("abc@gmail.com");
     serviceCard.setGender("M");

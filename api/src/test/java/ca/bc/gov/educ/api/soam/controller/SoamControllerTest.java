@@ -129,7 +129,7 @@ public class SoamControllerTest {
 
     final MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
     map.add("did", this.guid.toUpperCase());
-    map.add("birthDate", "1984-11-02");
+    map.add("birthDate", "19841102");
     map.add("city", "Victoria");
     map.add("country", "CAN");
     map.add("email", "abc@gmail.com");
@@ -194,7 +194,7 @@ public class SoamControllerTest {
     map.add("identifierType", "BASIC");
     map.add("identifierValue", this.guid.toUpperCase());
     map.add("did", this.guid.toUpperCase());
-    map.add("birthDate", "1984-11-02");
+    map.add("birthDate", "19841102");
     map.add("city", "Victoria");
     map.add("country", "CAN");
     map.add("email", "abc@gmail.com");
@@ -332,12 +332,12 @@ public class SoamControllerTest {
     when(this.responseMock.bodyToMono(StsLoginPrincipalEntity.class))
       .thenReturn(Mono.empty());
 
-    this.mockMvc.perform(get("/123/sts-user-roles")
+    this.mockMvc.perform(get("/12355555/sts-user-roles")
         .with(jwt().jwt((jwt) -> jwt.claim("scope", "STS_ROLES")))
         .contentType(MediaType.APPLICATION_JSON)
         .header("correlationID", this.guid)
         .accept(MediaType.APPLICATION_JSON))
-      .andDo(print()).andExpect(status().isNotFound());
+      .andDo(print()).andExpect(status().isOk());
     verify(this.webClient, atMost(invocations + 1)).get();
   }
 

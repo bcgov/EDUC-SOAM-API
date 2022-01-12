@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +27,10 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class SoamService {
+
+  private DateTimeFormatter shortDateFormat = DateTimeFormatter.ofPattern("yyyyMMdd");
+
+  private DateTimeFormatter longDateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
   private static final String BCSC = "BCSC";
 
@@ -104,11 +109,22 @@ public class SoamService {
 
   }
 
+  public LocalDate getValidShortDate(String dateStr) {
+    try {
+      return LocalDate.parse(dateStr, this.shortDateFormat);
+    } catch (DateTimeParseException e) {
+      return null;
+    }
+  }
+
   private String getBCSCDobString(String dateOfBirth) {
     LocalDate dob;
     try {
-      dob = LocalDate.parse(dateOfBirth, DateTimeFormatter.ofPattern("yyyyMMdd"));
-      return dob.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+      dob = getValidShortDate(dateOfBirth);
+      if(dob != null) {
+        return dob.format(this.longDateFormat);
+      }
+      return dateOfBirth;
     }catch (Exception e) {
       log.error("Invalid BCSC birth date: {}", dateOfBirth);
       throw new SoamRuntimeException("Invalid BCSC birth date: " + dateOfBirth);

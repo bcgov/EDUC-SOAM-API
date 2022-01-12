@@ -110,7 +110,7 @@ public class SoamServiceTest {
   public void testPerformLogin_GivenDigitalIdExistAndServiceCardCreationFailed_ShouldThrowSoamRuntimeException() {
     final DigitalIDEntity entity = this.createDigitalIdentity();
     final DigitalIDEntity responseEntity = this.createResponseEntity(entity);
-    final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
+    final ServicesCardEntity servicesCardEntity = this.createServiceCardEntityLongDate();
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
     when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.of(responseEntity));
     when(this.restUtils.getServicesCard(anyString(), anyString())).thenReturn(Optional.empty());
@@ -155,7 +155,7 @@ public class SoamServiceTest {
   public void testPerformLogin_GivenDigitalIdExistAndServiceCardDoesNot_ShouldUpdateDigitalIdAndCreateServicesCard() {
     final DigitalIDEntity entity = this.createDigitalIdentity();
     final DigitalIDEntity responseEntity = this.createResponseEntity(entity);
-    final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
+    final ServicesCardEntity servicesCardEntity = this.createServiceCardEntityLongDate();
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
     when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.of(responseEntity));
     doNothing().when(this.restUtils).updateDigitalID(any(), any());
@@ -174,7 +174,7 @@ public class SoamServiceTest {
   public void testPerformLogin_GivenDigitalIdExistAndServiceCardExist_ShouldUpdateDigitalIdAndServicesCard() {
     final DigitalIDEntity entity = this.createDigitalIdentity();
     final DigitalIDEntity responseEntity = this.createResponseEntity(entity);
-    final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
+    final ServicesCardEntity servicesCardEntity = this.createServiceCardEntityLongDate();
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
     when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.of(responseEntity));
     doNothing().when(this.restUtils).updateDigitalID(any(), any());
@@ -195,7 +195,7 @@ public class SoamServiceTest {
   public void testPerformLogin_GivenDigitalIdExistAndServiceCardGetCallFailed_ShouldThrowSoamRuntimeException() {
     final DigitalIDEntity entity = this.createDigitalIdentity();
     final DigitalIDEntity responseEntity = this.createResponseEntity(entity);
-    final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
+    final ServicesCardEntity servicesCardEntity = this.createServiceCardEntityLongDate();
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
     when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.of(responseEntity));
     doNothing().when(this.restUtils).updateDigitalID(any(), any());
@@ -217,7 +217,7 @@ public class SoamServiceTest {
   public void testPerformLogin_GivenDigitalIdExistAndServiceCardPostCallFailed_ShouldThrowSoamRuntimeException() {
     final DigitalIDEntity entity = this.createDigitalIdentity();
     final DigitalIDEntity responseEntity = this.createResponseEntity(entity);
-    final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
+    final ServicesCardEntity servicesCardEntity = this.createServiceCardEntityLongDate();
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
     when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.of(responseEntity));
     doNothing().when(this.restUtils).updateDigitalID(any(), any());
@@ -258,7 +258,7 @@ public class SoamServiceTest {
   public void testPerformLogin_GivenDigitalIdExistAndServiceCardUpdateCallFailed_ShouldThrowSoamRuntimeException() {
     final DigitalIDEntity entity = this.createDigitalIdentity();
     final DigitalIDEntity responseEntity = this.createResponseEntity(entity);
-    final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
+    final ServicesCardEntity servicesCardEntity = this.createServiceCardEntityLongDate();
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
     when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.of(responseEntity));
     doNothing().when(this.restUtils).updateDigitalID(any(), any());
@@ -276,7 +276,7 @@ public class SoamServiceTest {
 
   @Test
   public void testPerformLogin_GivenDigitalIdAndServiceCardDoesNotExist_ShouldCreateBothRecords() {
-    final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
+    final ServicesCardEntity servicesCardEntity = this.createServiceCardEntityLongDate();
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
     when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.empty());
     when(this.restUtils.createDigitalID(anyString(), anyString(), anyString())).thenReturn(this.createDigitalIdentity());
@@ -499,7 +499,7 @@ public class SoamServiceTest {
     final DigitalIDEntity responseEntity = this.createResponseEntity(entity);
     final StudentEntity studentEntity = this.createStudentEntity(studentId);
     final StudentEntity studentResponseEntity = this.createStudentResponseEntity(studentEntity);
-    final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
+    final ServicesCardEntity servicesCardEntity = this.createServiceCardEntityLongDate();
     final ServicesCardEntity servicesCardResponseEntity = this.createServicesCardResponseEntity(servicesCardEntity);
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
     responseEntity.setStudentID(studentId.toString());
@@ -529,7 +529,7 @@ public class SoamServiceTest {
     final DigitalIDEntity responseEntity = this.createResponseEntity(entity);
     final StudentEntity studentEntity = this.createStudentEntity(studentId);
     final StudentEntity studentResponseEntity = this.createStudentResponseEntity(studentEntity);
-    final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
+    final ServicesCardEntity servicesCardEntity = this.createServiceCardEntityLongDate();
     final ServicesCardEntity servicesCardResponseEntity = this.createServicesCardResponseEntity(servicesCardEntity);
     when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
     responseEntity.setStudentID(studentId.toString());
@@ -622,6 +622,21 @@ public class SoamServiceTest {
   private ServicesCardEntity createServiceCardEntity() {
     final ServicesCardEntity serviceCard = new ServicesCardEntity();
     serviceCard.setBirthDate("19841102");
+    serviceCard.setDid("DIGITALID");
+    serviceCard.setEmail("abc@gmail.com");
+    serviceCard.setGender("M");
+    serviceCard.setIdentityAssuranceLevel("1");
+    serviceCard.setGivenName("Given");
+    serviceCard.setGivenNames(null);
+    serviceCard.setPostalCode("V8W 2E1");
+    serviceCard.setSurname("Surname");
+    serviceCard.setUserDisplayName("displayName");
+    return serviceCard;
+  }
+
+  private ServicesCardEntity createServiceCardEntityLongDate() {
+    final ServicesCardEntity serviceCard = new ServicesCardEntity();
+    serviceCard.setBirthDate("1984-11-02");
     serviceCard.setDid("DIGITALID");
     serviceCard.setEmail("abc@gmail.com");
     serviceCard.setGender("M");

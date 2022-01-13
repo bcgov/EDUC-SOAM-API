@@ -4,7 +4,9 @@ import ca.bc.gov.educ.api.soam.endpoint.SoamEndpoint;
 import ca.bc.gov.educ.api.soam.model.entity.ServicesCardEntity;
 import ca.bc.gov.educ.api.soam.model.entity.SoamLoginEntity;
 import ca.bc.gov.educ.api.soam.service.SoamService;
+import ca.bc.gov.educ.api.soam.util.SoamUtil;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -41,15 +43,21 @@ public class SoamController implements SoamEndpoint {
     if (formData.getFirst("did") != null) {
       serviceCard = new ServicesCardEntity();
       serviceCard.setBirthDate(formData.getFirst("birthDate"));
-      serviceCard.setDid(formData.getFirst("did"));
-      serviceCard.setEmail(formData.getFirst("email"));
-      serviceCard.setGender(formData.getFirst("gender"));
-      serviceCard.setIdentityAssuranceLevel(formData.getFirst("identityAssuranceLevel"));
-      serviceCard.setGivenName(formData.getFirst("givenName"));
-      serviceCard.setGivenNames(formData.getFirst("givenNames"));
-      serviceCard.setPostalCode(formData.getFirst("postalCode"));
-      serviceCard.setSurname(formData.getFirst("surname"));
-      serviceCard.setUserDisplayName(formData.getFirst("userDisplayName"));
+      serviceCard.setDid(SoamUtil.toUpperCaseNullSafe(formData.getFirst("did")));
+      serviceCard.setEmail(SoamUtil.toUpperCaseNullSafe(formData.getFirst("email")));
+      String genderVal = formData.getFirst("gender");
+      if(!StringUtils.isEmpty(genderVal)){
+        serviceCard.setGender(genderVal.substring(0,1).toUpperCase());
+      }
+      serviceCard.setIdentityAssuranceLevel(SoamUtil.toUpperCaseNullSafe(formData.getFirst("identityAssuranceLevel")));
+      serviceCard.setGivenName(SoamUtil.toUpperCaseNullSafe(formData.getFirst("givenName")));
+      serviceCard.setGivenNames(SoamUtil.toUpperCaseNullSafe(formData.getFirst("givenNames")));
+      String postalVal = formData.getFirst("postalCode");
+      if(!StringUtils.isEmpty(postalVal)) {
+        serviceCard.setPostalCode(postalVal.replace(" ","").toUpperCase());
+      }
+      serviceCard.setSurname(SoamUtil.toUpperCaseNullSafe(formData.getFirst("surname")));
+      serviceCard.setUserDisplayName(SoamUtil.toUpperCaseNullSafe(formData.getFirst("userDisplayName")));
     }
     return serviceCard;
   }

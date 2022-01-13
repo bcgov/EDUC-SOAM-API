@@ -6,6 +6,7 @@ import ca.bc.gov.educ.api.soam.model.entity.DigitalIDEntity;
 import ca.bc.gov.educ.api.soam.model.entity.ServicesCardEntity;
 import ca.bc.gov.educ.api.soam.model.entity.SoamLoginEntity;
 import ca.bc.gov.educ.api.soam.model.entity.StudentEntity;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -96,5 +97,12 @@ public class SoamUtil {
 
       entity.setStudent(soamStudent);
     }
+  }
+
+  public static String toUpperCaseNullSafe(String val){
+    if(StringUtils.isEmpty(val)){
+      return null;
+    }
+    return val.toUpperCase();
   }
 }

@@ -13,7 +13,9 @@ import ca.bc.gov.educ.api.soam.util.SoamUtil;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -54,7 +56,7 @@ public class SoamService {
   }
 
   @RateLimiter(name = "performLink")
-  public SoamLoginEntity performLink(final ServicesCardEntity servicesCard, final String correlationID) {
+  public Pair<SoamLoginEntity, HttpStatus> performLink(final ServicesCardEntity servicesCard, final String correlationID) {
     if(log.isDebugEnabled()) {
       log.debug("performLink: servicesCard: {}", JsonUtil.getJsonPrettyStringFromObject(servicesCard));
     }
@@ -69,15 +71,18 @@ public class SoamService {
     }
   }
 
-  private SoamLoginEntity manageLinkage(final ServicesCardEntity servicesCard, final String correlationID) {
+  private Pair<SoamLoginEntity, HttpStatus> manageLinkage(final ServicesCardEntity servicesCard, final String correlationID) {
     DigitalIDEntity digitalIDEntity = manageUserSetup(BCSC, servicesCard.getDid(), servicesCard, correlationID);
+    HttpStatus status;
     if (digitalIDEntity == null) {
       throw new SoamRuntimeException("Unexpected error; digitalID is null after manageUserSetup");
     }
     if(digitalIDEntity.getStudentID() == null) {
-      attemptBCSCAutoMatch(servicesCard, digitalIDEntity, correlationID);
+       status = attemptBCSCAutoMatch(servicesCard, digitalIDEntity, correlationID);
+    }else{
+       status = HttpStatus.OK;
     }
-    return populateAndReturnLoginEntity(digitalIDEntity, servicesCard, correlationID);
+    return Pair.of(populateAndReturnLoginEntity(digitalIDEntity, servicesCard, correlationID), status);
   }
 
   private DigitalIDEntity manageUserSetup(final String identifierType, final String identifierValue, final ServicesCardEntity servicesCard, final String correlationID) {
@@ -144,7 +149,7 @@ public class SoamService {
     scEntity.setDid(servicesCard.getDid());
   }
 
-  private void attemptBCSCAutoMatch(final ServicesCardEntity servicesCard, final DigitalIDEntity digitalIDEntity, final String correlationID) {
+  private HttpStatus attemptBCSCAutoMatch(final ServicesCardEntity servicesCard, final DigitalIDEntity digitalIDEntity, final String correlationID) {
     log.debug("Attempting to auto match BCSC for DID: {}", servicesCard.getDid());
     PenMatchStudent penMatchStudent = new PenMatchStudent();
     penMatchStudent.setSurname(servicesCard.getSurname());
@@ -165,13 +170,13 @@ public class SoamService {
     Optional<PenMatchResult> optional = this.restUtils.postToMatchAPI(penMatchStudent);
     if(optional.isPresent()) {
       log.debug("Auto match result status: {} for DID: {}", optional.get().getPenStatus(), servicesCard.getDid());
-      evaluateAndLinkBCSCResult(optional.get(), digitalIDEntity, correlationID);
+      return evaluateAndLinkBCSCResult(optional.get(), digitalIDEntity, correlationID);
     }else{
       throw new SoamRuntimeException("Error occurred while calling Match API");
     }
   }
 
-  private void evaluateAndLinkBCSCResult(final PenMatchResult penMatchResult, final DigitalIDEntity digitalIDEntity, final String correlationID) {
+  private HttpStatus evaluateAndLinkBCSCResult(final PenMatchResult penMatchResult, final DigitalIDEntity digitalIDEntity, final String correlationID) {
     if(penMatchResult == null || penMatchResult.getPenStatus() == null) {
       throw new SoamRuntimeException("Error occurred while calling Match API");
     }
@@ -182,9 +187,14 @@ public class SoamService {
         digitalIDEntity.setStudentID(penMatchResult.getMatchingRecords().get(0).getStudentID());
         log.debug("Updating digital identity after auto match for digital identity: {} student ID: {}", digitalIDEntity.getDigitalID(), digitalIDEntity.getStudentID());
         this.restUtils.updateDigitalID(digitalIDEntity, correlationID);
-        return;
+        break;
+      case "BM":
+      case "CM":
+      case "DM":
+        return HttpStatus.MULTIPLE_CHOICES;
       default:
     }
+    return HttpStatus.OK;
   }
 
   private void updateBCSC(final ServicesCardEntity servicesCardEntity, final String correlationID) {

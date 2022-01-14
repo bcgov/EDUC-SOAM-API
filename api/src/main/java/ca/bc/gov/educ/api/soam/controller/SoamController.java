@@ -7,7 +7,9 @@ import ca.bc.gov.educ.api.soam.service.SoamService;
 import ca.bc.gov.educ.api.soam.util.SoamUtil;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -35,7 +37,8 @@ public class SoamController implements SoamEndpoint {
   @Override
   public ResponseEntity<SoamLoginEntity> performBCSCLink(final MultiValueMap<String, String> formData, final String correlationID) {
     ServicesCardEntity serviceCard = setupServicesCard(formData);
-    return ResponseEntity.ok(this.service.performLink(serviceCard, correlationID));
+    Pair<SoamLoginEntity, HttpStatus> pair = this.service.performLink(serviceCard, correlationID);
+    return ResponseEntity.status(pair.getRight()).body(pair.getLeft());
   }
 
   private ServicesCardEntity setupServicesCard(final MultiValueMap<String, String> formData){

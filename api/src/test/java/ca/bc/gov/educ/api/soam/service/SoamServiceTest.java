@@ -292,6 +292,25 @@ public class SoamServiceTest {
   }
 
   @Test
+  public void testPerformLogin_BCSCGivenDigitalIdAndServiceCardDoesNotExist_ShouldCreateBothRecords() {
+    final ServicesCardEntity servicesCardEntity = this.createServiceCardEntityLongDate();
+    when(this.codeTableUtils.getAllIdentifierTypeCodes()).thenReturn(this.createDummyIdentityTypeMap());
+    when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.empty());
+    when(this.restUtils.createDigitalID(anyString(), anyString(), anyString())).thenReturn(this.createDigitalIdentity());
+    when(this.restUtils.getServicesCard(anyString(), anyString())).thenReturn(Optional.empty());
+    when(this.restUtils.postToMatchAPI(any())).thenReturn(Optional.of(this.createPenMatchResult()));
+    when(this.restUtils.getDigitalIDByStudentID(anyString(), anyString())).thenReturn(new ArrayList<>(Arrays.asList(this.createDigitalIdentityWithStudentID())));
+    doNothing().when(this.restUtils).createServicesCard(any(), any());
+    this.service.performLogin("BCSC", "12345", servicesCardEntity, correlationID);
+    verify(this.restUtils, times(1)).createDigitalID("BCSC", "12345", correlationID);
+    verify(this.restUtils, times(1)).getDigitalID("BCSC", "12345", correlationID);
+    verify(this.restUtils, times(2)).updateDigitalID(any(), any());
+    verify(this.restUtils, times(1)).createServicesCard(any(), any());
+    verify(this.restUtils, times(1)).getServicesCard("DIGITALID", correlationID);
+    verify(this.restUtils, never()).updateServicesCard(any(), any());
+  }
+
+  @Test
   public void testPerformLink_GivenDigitalIdAndServiceCardDoesNotExist_ShouldCreateBothRecords() {
     final UUID studentId = UUID.randomUUID();
     final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
@@ -612,6 +631,18 @@ public class SoamServiceTest {
     final DigitalIDEntity entity = new DigitalIDEntity();
     entity.setIdentityTypeCode("BCeId");
     entity.setIdentityValue("12345");
+    entity.setLastAccessChannelCode("OSPR");
+    entity.setLastAccessDate(LocalDateTime.now().toString());
+    entity.setCreateUser("TESTMARCO");
+    entity.setUpdateUser("TESTMARCO");
+    return entity;
+  }
+
+  protected DigitalIDEntity createDigitalIdentityWithStudentID() {
+    final DigitalIDEntity entity = new DigitalIDEntity();
+    entity.setIdentityTypeCode("BCeId");
+    entity.setIdentityValue("12345");
+    entity.setStudentID("43434");
     entity.setLastAccessChannelCode("OSPR");
     entity.setLastAccessDate(LocalDateTime.now().toString());
     entity.setCreateUser("TESTMARCO");

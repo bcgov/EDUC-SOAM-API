@@ -52,7 +52,10 @@ public class SoamService {
   @RateLimiter(name = "performLogin")
   public void performLogin(final String identifierType, final String identifierValue, final ServicesCardEntity servicesCard, final String correlationID) {
     this.validateExtendedSearchParameters(identifierType, identifierValue);
-    this.manageUserSetup(identifierType, identifierValue, servicesCard, correlationID);
+    DigitalIDEntity digitalIDEntity = this.manageUserSetup(identifierType, identifierValue, servicesCard, correlationID);
+    if(digitalIDEntity != null &&digitalIDEntity.getStudentID() == null && identifierType.equals(BCSC)) {
+      attemptBCSCAutoMatch(servicesCard, digitalIDEntity, correlationID);
+    }
   }
 
   @RateLimiter(name = "performLink")
@@ -184,6 +187,7 @@ public class SoamService {
       case "B1":
       case "C1":
       case "D1":
+        removePreviousDigitalIdentityLinks(penMatchResult.getMatchingRecords().get(0).getStudentID(), correlationID);
         digitalIDEntity.setStudentID(penMatchResult.getMatchingRecords().get(0).getStudentID());
         log.debug("Updating digital identity after auto match for digital identity: {} student ID: {}", digitalIDEntity.getDigitalID(), digitalIDEntity.getStudentID());
         this.restUtils.updateDigitalID(digitalIDEntity, correlationID);
@@ -195,6 +199,14 @@ public class SoamService {
       default:
     }
     return HttpStatus.OK;
+  }
+
+  private void removePreviousDigitalIdentityLinks(final String studentID, final String correlationID){
+    val didResponseFromAPI = this.restUtils.getDigitalIDByStudentID(studentID, correlationID);
+    for(val didEntity : didResponseFromAPI) {
+      didEntity.setStudentID(null);
+      this.restUtils.updateDigitalID(didEntity, correlationID);
+    }
   }
 
   private void updateBCSC(final ServicesCardEntity servicesCardEntity, final String correlationID) {

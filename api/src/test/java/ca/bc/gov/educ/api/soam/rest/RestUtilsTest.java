@@ -145,6 +145,21 @@ public class RestUtilsTest {
   }
 
   @Test
+  public void testGetDigitalIDList_givenAPICallSuccessButBlankBody_shouldThrowException() {
+    final DigitalIDEntity entity = this.createDigitalIdentity();
+    when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
+    when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.header(any(), any()))
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.retrieve())
+      .thenReturn(this.responseMock);
+    when(this.responseMock.bodyToMono(List.class))
+      .thenReturn(Mono.justOrEmpty(Optional.empty()));
+    assertThrows(SoamRuntimeException.class, () -> this.restUtils.getDigitalIDByStudentID("12345", correlationID));
+  }
+
+  @Test
   public void testGetPenMatchResult_givenAPICallSuccess_shouldReturnPenMatchResult() {
     final PenMatchStudent student = this.createPenMatchStudent();
     final PenMatchResult penMatchResult = this.createPenMatchResponse();

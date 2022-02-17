@@ -112,12 +112,7 @@ public class RestUtils {
       }
       return response;
     } catch (final WebClientResponseException e) {
-      if (e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
-        this.logNotFound(e.getStatusCode().toString(), studentID);
-        return new ArrayList<>();
-      } else {
-        throw new SoamRuntimeException(this.getErrorMessageString(e.getStatusCode(), e.getResponseBodyAsString()));
-      }
+      throw new SoamRuntimeException(this.getErrorMessageString(e.getStatusCode(), e.getResponseBodyAsString()));
     }
   }
 

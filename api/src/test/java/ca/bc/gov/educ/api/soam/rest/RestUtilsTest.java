@@ -160,6 +160,21 @@ public class RestUtilsTest {
   }
 
   @Test
+  public void testGetDigitalIDList_givenAPICallSuccessButBlankBody_shouldThrowExceptionError() {
+    final DigitalIDEntity entity = this.createDigitalIdentity();
+    when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
+    when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.header(any(), any()))
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.retrieve())
+      .thenThrow(new WebClientResponseException(503, "SERVICE UNAVAILABLE", null, null, null));
+    when(this.responseMock.bodyToMono(List.class))
+      .thenReturn(Mono.justOrEmpty(Optional.empty()));
+    assertThrows(SoamRuntimeException.class, () -> this.restUtils.getDigitalIDByStudentID("12345", correlationID));
+  }
+
+  @Test
   public void testGetPenMatchResult_givenAPICallSuccess_shouldReturnPenMatchResult() {
     final PenMatchStudent student = this.createPenMatchStudent();
     final PenMatchResult penMatchResult = this.createPenMatchResponse();

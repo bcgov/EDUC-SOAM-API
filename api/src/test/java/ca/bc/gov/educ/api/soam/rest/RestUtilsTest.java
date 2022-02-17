@@ -26,9 +26,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -114,6 +112,24 @@ public class RestUtilsTest {
   }
 
   @Test
+  public void testGetDigitalIDList_givenAPICallSuccess_shouldReturnDigitalIDDID() {
+    final DigitalIDEntity entity = this.createDigitalIdentity();
+    final DigitalIDEntity responseEntity = this.createResponseEntity(entity);
+    responseEntity.setStudentID("12345");
+    when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
+    when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.header(any(), any()))
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.retrieve())
+      .thenReturn(this.responseMock);
+    when(this.responseMock.bodyToMono(List.class))
+      .thenReturn(Mono.just(new ArrayList<>(Arrays.asList(responseEntity))));
+    val response = this.restUtils.getDigitalIDByStudentID(responseEntity.getStudentID().toString(), correlationID);
+    assertThat(response).size().isEqualTo(1);
+  }
+
+  @Test
   public void testGetDigitalID_givenAPICallSuccessButBlankBody_shouldThrowException() {
     final DigitalIDEntity entity = this.createDigitalIdentity();
     when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
@@ -126,6 +142,36 @@ public class RestUtilsTest {
     when(this.responseMock.bodyToMono(DigitalIDEntity.class))
       .thenReturn(Mono.justOrEmpty(Optional.empty()));
     assertThrows(SoamRuntimeException.class, () -> this.restUtils.getDigitalID("BCeId", "12345", correlationID));
+  }
+
+  @Test
+  public void testGetDigitalIDList_givenAPICallSuccessButBlankBody_shouldThrowException() {
+    final DigitalIDEntity entity = this.createDigitalIdentity();
+    when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
+    when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.header(any(), any()))
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.retrieve())
+      .thenReturn(this.responseMock);
+    when(this.responseMock.bodyToMono(List.class))
+      .thenReturn(Mono.justOrEmpty(Optional.empty()));
+    assertThrows(SoamRuntimeException.class, () -> this.restUtils.getDigitalIDByStudentID("12345", correlationID));
+  }
+
+  @Test
+  public void testGetDigitalIDList_givenAPICallSuccessButBlankBody_shouldThrowExceptionError() {
+    final DigitalIDEntity entity = this.createDigitalIdentity();
+    when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
+    when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.header(any(), any()))
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.retrieve())
+      .thenThrow(new WebClientResponseException(503, "SERVICE UNAVAILABLE", null, null, null));
+    when(this.responseMock.bodyToMono(List.class))
+      .thenReturn(Mono.justOrEmpty(Optional.empty()));
+    assertThrows(SoamRuntimeException.class, () -> this.restUtils.getDigitalIDByStudentID("12345", correlationID));
   }
 
   @Test

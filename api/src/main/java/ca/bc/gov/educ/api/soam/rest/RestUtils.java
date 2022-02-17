@@ -23,6 +23,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
@@ -31,7 +33,8 @@ import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 @Slf4j
 public class RestUtils {
 
-    public static final String NULL_BODY_FROM = "null body from ";
+  public static final String DIGITAL_ID_GET_CALL = "digitalID get call.";
+  public static final String NULL_BODY_FROM = "null body from ";
   private static final String CORRELATION_ID = "correlationID";
   private static final String DIGITAL_ID_API = "digitalIdApi";
   private static final String SERVICES_CARD_API = "servicesCardApi";
@@ -71,7 +74,7 @@ public class RestUtils {
         .block();
       if (response == null) {
         throw new SoamRuntimeException(this.getErrorMessageString(HttpStatus.INTERNAL_SERVER_ERROR, NULL_BODY_FROM +
-          "digitalID get call."));
+          DIGITAL_ID_GET_CALL));
       }
       return Optional.of(response);
     } catch (final WebClientResponseException e) {
@@ -81,6 +84,35 @@ public class RestUtils {
       } else {
         throw new SoamRuntimeException(this.getErrorMessageString(e.getStatusCode(), e.getResponseBodyAsString()));
       }
+    }
+  }
+
+  @Bulkhead(name = DIGITAL_ID_API)
+  @CircuitBreaker(name = DIGITAL_ID_API)
+  @Retry(name = DIGITAL_ID_API)
+  public List<DigitalIDEntity> getDigitalIDByStudentID(@NonNull final String studentID, final String correlationID) {
+    try {
+      val response = this.webClient.get()
+        .uri(this.props.getDigitalIdentifierApiURL(),
+          uri -> uri.queryParam("studentID", studentID)
+            .build())
+        .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .header(CORRELATION_ID, correlationID)
+        .retrieve()
+        .bodyToMono(List.class)
+        .doOnSuccess(entity -> {
+          if (entity != null) {
+            this.logSuccess(entity.toString(), studentID, correlationID);
+          }
+        })
+        .block();
+      if (response == null) {
+        throw new SoamRuntimeException(this.getErrorMessageString(HttpStatus.INTERNAL_SERVER_ERROR, NULL_BODY_FROM +
+          DIGITAL_ID_GET_CALL));
+      }
+      return response;
+    } catch (final WebClientResponseException e) {
+      throw new SoamRuntimeException(this.getErrorMessageString(e.getStatusCode(), e.getResponseBodyAsString()));
     }
   }
 
@@ -131,7 +163,7 @@ public class RestUtils {
         .block();
       if (response == null) {
         throw new SoamRuntimeException(this.getErrorMessageString(HttpStatus.INTERNAL_SERVER_ERROR, NULL_BODY_FROM +
-          "digitalID get call."));
+          DIGITAL_ID_GET_CALL));
       }
       return Optional.of(response);
     } catch (final WebClientResponseException e) {

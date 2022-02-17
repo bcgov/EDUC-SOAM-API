@@ -53,7 +53,7 @@ public class SoamService {
   public void performLogin(final String identifierType, final String identifierValue, final ServicesCardEntity servicesCard, final String correlationID) {
     this.validateExtendedSearchParameters(identifierType, identifierValue);
     DigitalIDEntity digitalIDEntity = this.manageUserSetup(identifierType, identifierValue, servicesCard, correlationID);
-    if(digitalIDEntity != null &&digitalIDEntity.getStudentID() == null && identifierType.equals(BCSC)) {
+    if(digitalIDEntity != null && digitalIDEntity.getStudentID() == null && identifierType.equals(BCSC)) {
       attemptBCSCAutoMatch(servicesCard, digitalIDEntity, correlationID);
     }
   }

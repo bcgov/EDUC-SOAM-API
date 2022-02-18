@@ -189,6 +189,7 @@ public class SoamService {
       case "D1":
         removePreviousDigitalIdentityLinks(penMatchResult.getMatchingRecords().get(0).getStudentID(), correlationID);
         digitalIDEntity.setStudentID(penMatchResult.getMatchingRecords().get(0).getStudentID());
+        digitalIDEntity.setAutoMatched("Y");
         log.debug("Updating digital identity after auto match for digital identity: {} student ID: {}", digitalIDEntity.getDigitalID(), digitalIDEntity.getStudentID());
         this.restUtils.updateDigitalID(digitalIDEntity, correlationID);
         break;

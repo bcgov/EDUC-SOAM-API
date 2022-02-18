@@ -264,6 +264,7 @@ public class Resilience4jIT extends AbstractIntegrationTest {
 	private DigitalIDEntity getDigitalIdentity() {
 		final DigitalIDEntity entity = DigitalIDEntity.builder()
 			.identityTypeCode("BASIC")
+      .autoMatched("N")
 			.identityValue(this.guid)
 			.lastAccessChannelCode("OSPR")
 			.lastAccessDate(LocalDateTime.now().toString())

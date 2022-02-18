@@ -398,6 +398,7 @@ public class SoamControllerTest {
     final DigitalIDEntity entity = DigitalIDEntity.builder()
       .digitalID(UUID.randomUUID())
       .identityTypeCode("BASIC")
+      .autoMatched("N")
       .identityValue(this.guid)
       .lastAccessChannelCode("OSPR")
       .lastAccessDate(LocalDateTime.now().toString())

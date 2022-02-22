@@ -16,7 +16,7 @@ public class DigitalIDEntity {
   private String studentID;
   private String identityTypeCode;
   private String identityValue;
-  private String autoMatched;
+  private String autoMatchedDate;
   private String lastAccessDate;
   private String lastAccessChannelCode;
   private String createUser;

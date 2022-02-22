@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
@@ -189,7 +190,7 @@ public class SoamService {
       case "D1":
         removePreviousDigitalIdentityLinks(penMatchResult.getMatchingRecords().get(0).getStudentID(), correlationID);
         digitalIDEntity.setStudentID(penMatchResult.getMatchingRecords().get(0).getStudentID());
-        digitalIDEntity.setAutoMatched("Y");
+        digitalIDEntity.setAutoMatchedDate(LocalDateTime.now().toString());
         log.debug("Updating digital identity after auto match for digital identity: {} student ID: {}", digitalIDEntity.getDigitalID(), digitalIDEntity.getStudentID());
         this.restUtils.updateDigitalID(digitalIDEntity, correlationID);
         break;

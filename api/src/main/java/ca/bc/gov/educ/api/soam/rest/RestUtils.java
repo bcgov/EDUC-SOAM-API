@@ -93,7 +93,7 @@ public class RestUtils {
   public List<DigitalIDEntity> getDigitalIDByStudentID(@NonNull final String studentID, final String correlationID) {
     try {
       val response = this.webClient.get()
-        .uri(this.props.getDigitalIdentifierApiURL(),
+        .uri(this.props.getDigitalIdentifierApiURL() + "/list",
           uri -> uri.queryParam("studentID", studentID)
             .build())
         .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)

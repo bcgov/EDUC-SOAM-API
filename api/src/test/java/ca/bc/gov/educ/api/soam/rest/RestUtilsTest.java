@@ -117,7 +117,7 @@ public class RestUtilsTest {
     final DigitalIDEntity responseEntity = this.createResponseEntity(entity);
     responseEntity.setStudentID("12345");
     when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
-    when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
+    when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL() + "/list"), any(Function.class)))
       .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.header(any(), any()))
       .thenReturn(this.requestHeadersMock);
@@ -148,7 +148,7 @@ public class RestUtilsTest {
   public void testGetDigitalIDList_givenAPICallSuccessButBlankBody_shouldThrowException() {
     final DigitalIDEntity entity = this.createDigitalIdentity();
     when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
-    when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
+    when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL() + "/list"), any(Function.class)))
       .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.header(any(), any()))
       .thenReturn(this.requestHeadersMock);
@@ -163,7 +163,7 @@ public class RestUtilsTest {
   public void testGetDigitalIDList_givenAPICallSuccessButBlankBody_shouldThrowExceptionError() {
     final DigitalIDEntity entity = this.createDigitalIdentity();
     when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
-    when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
+    when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL() + "/list"), any(Function.class)))
       .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.header(any(), any()))
       .thenReturn(this.requestHeadersMock);

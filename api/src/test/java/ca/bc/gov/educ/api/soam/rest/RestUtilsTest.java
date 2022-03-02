@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -123,7 +124,8 @@ public class RestUtilsTest {
       .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.retrieve())
       .thenReturn(this.responseMock);
-    when(this.responseMock.bodyToMono(List.class))
+    when(this.responseMock.bodyToMono(new ParameterizedTypeReference<List<DigitalIDEntity>>() {
+    }))
       .thenReturn(Mono.just(new ArrayList<>(Arrays.asList(responseEntity))));
     val response = this.restUtils.getDigitalIDByStudentID(responseEntity.getStudentID().toString(), correlationID);
     assertThat(response).size().isEqualTo(1);
@@ -154,7 +156,8 @@ public class RestUtilsTest {
       .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.retrieve())
       .thenReturn(this.responseMock);
-    when(this.responseMock.bodyToMono(List.class))
+    when(this.responseMock.bodyToMono(new ParameterizedTypeReference<List<DigitalIDEntity>>() {
+    }))
       .thenReturn(Mono.justOrEmpty(Optional.empty()));
     assertThrows(SoamRuntimeException.class, () -> this.restUtils.getDigitalIDByStudentID("12345", correlationID));
   }

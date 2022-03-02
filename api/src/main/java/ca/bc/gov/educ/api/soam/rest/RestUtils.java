@@ -15,6 +15,7 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.lang.NonNull;
@@ -99,7 +100,7 @@ public class RestUtils {
         .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         .header(CORRELATION_ID, correlationID)
         .retrieve()
-        .bodyToMono(List.class)
+        .bodyToMono(new ParameterizedTypeReference<List<DigitalIDEntity>>() {})
         .doOnSuccess(entity -> {
           if (entity != null) {
             this.logSuccess(entity.toString(), studentID, correlationID);

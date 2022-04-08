@@ -11,15 +11,6 @@ SSO_ENV=oidc.gov.bc.ca
 SOAM_KC=soam-$envValue.apps.silver.devops.gov.bc.ca
 TARGET_ENV=$envValue
 
-#THIS CONDITION IS ONLY ADDED FOR LOWER ENV DEPLOYMENT
-if [ "$envValue" == "tools" ]; then
-  TARGET_ENV="dev"
-fi
-
-if [ "$envValue" == "dev" ]; then
-  TARGET_ENV="test"
-fi
-
 SOAM_KC_LOAD_USER_ADMIN=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get secret sso-admin-${envValue} | sed -n 's/.*"username": "\(.*\)"/\1/p' | base64 --decode)
 SOAM_KC_LOAD_USER_PASS=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get secret sso-admin-${envValue} | sed -n 's/.*"password": "\(.*\)",/\1/p' | base64 --decode)
 DEVEXCHANGE_KC_LOAD_USER_PASS=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get secret devexchange-keycloak-secrets-${envValue} | sed -n 's/.*"password": "\(.*\)",/\1/p' | base64 --decode)

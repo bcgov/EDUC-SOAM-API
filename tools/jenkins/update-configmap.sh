@@ -58,7 +58,7 @@ PARSER_CONFIG="
 "
 
 if [ "$envValue" != "prod" ]; then
-  SSO_ENV=$TARGET_ENV.oidc.gov.bc.ca
+  SSO_ENV=$TARGET_ENV.loginproxy.gov.bc.ca
   SOAM_KC=soam-$envValue.apps.silver.devops.gov.bc.ca
   SERVICES_CARD_DNS=idtest.gov.bc.ca
 fi
@@ -285,7 +285,7 @@ echo
 curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_bceid_harry/mappers" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"name\" : \"bceid_username\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_bceid_harry\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"display_name\",\"user.attribute\" : \"display_name\"}}"
+  -d "{\"name\" : \"display_name\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_bceid_harry\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"display_name\",\"user.attribute\" : \"display_name\"}}"
 
 echo
 curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_bceid_harry/mappers" \

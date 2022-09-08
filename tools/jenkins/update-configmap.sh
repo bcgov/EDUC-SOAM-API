@@ -7,15 +7,13 @@ APP_NAME_UPPER=${APP_NAME^^}
 
 TZVALUE="America/Vancouver"
 SOAM_KC_REALM_ID="master"
-SSO_ENV=oidc.gov.bc.ca
+SSO_ENV=loginproxy.gov.bc.ca
 SOAM_KC=soam-$envValue.apps.silver.devops.gov.bc.ca
 TARGET_ENV=$envValue
 
 SOAM_KC_LOAD_USER_ADMIN=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get secret sso-admin-${envValue} | sed -n 's/.*"username": "\(.*\)"/\1/p' | base64 --decode)
 SOAM_KC_LOAD_USER_PASS=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get secret sso-admin-${envValue} | sed -n 's/.*"password": "\(.*\)",/\1/p' | base64 --decode)
-DEVEXCHANGE_KC_LOAD_USER_PASS=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get secret devexchange-keycloak-secrets-${envValue} | sed -n 's/.*"password": "\(.*\)",/\1/p' | base64 --decode)
-DEVEXCHANGE_KC_LOAD_USER_ADMIN=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get secret devexchange-keycloak-secrets-${envValue} | sed -n 's/.*"username": "\(.*\)"/\1/p' | base64 --decode)
-DEVEXCHANGE_KC_REALM_ID=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get secret devexchange-keycloak-secrets-${envValue} | sed -n 's/.*"realm": "\(.*\)",/\1/p' | base64 --decode)
+DEVEXCHANGE_KC_REALM_ID="standard"
 SPLUNK_TOKEN=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get configmaps ${APP_NAME}-${envValue}-setup-config | sed -n "s/.*\"SPLUNK_TOKEN_${APP_NAME_UPPER}\": \"\(.*\)\"/\1/p")
 SERVICES_CARD_DNS=id.gov.bc.ca
 SFS_URL=https://sfs7.gov.bc.ca/affwebservices/public/saml2sso
@@ -603,7 +601,7 @@ echo Building IDP instance for SAML IDIR...
 curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"alias\" : \"IDIR\",\"displayName\" : \"IDIR\",\"providerId\" : \"saml\",\"enabled\" : true,\"updateProfileFirstLoginMode\": \"on\",\"trustEmail\": false,\"storeToken\": false,\"addReadTokenRoleOnCreate\": false,\"authenticateByDefault\": false,\"linkOnly\": false,\"firstBrokerLoginFlowAlias\": \"SOAMFirstLoginSAML\",\"postBrokerLoginFlowAlias\": \"SOAMPostLoginSAML\",\"config\": {  \"validateSignature\": \"true\",  \"hideOnLoginPage\": \"true\",  \"samlXmlKeyNameTranformer\": \"KEY_ID\",  \"postBindingLogout\": \"false\",  \"nameIDPolicyFormat\": \"urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified\",  \"postBindingResponse\": \"true\",\"entityId\": \"https://$SOAM_KC/auth/realms/master/idir\",  \"signatureAlgorithm\": \"RSA_SHA256\",  \"useJwksUrl\": \"true\",  \"wantAssertionsSigned\": \"false\",  \"postBindingAuthnRequest\": \"true\",  \"forceAuthn\": \"true\",  \"wantAuthnRequestsSigned\": \"false\",  \"singleSignOnServiceUrl\": \"$SFS_URL\",\"signingCertificate\":\"$SAML_CERT\",\"addExtensionsElementWithKeyInfo\": \"false\",  \"principalType\": \"SUBJECT\"}}"
+  -d "{\"alias\" : \"IDIR\",\"displayName\" : \"IDIR\",\"providerId\" : \"saml\",\"enabled\" : true,\"updateProfileFirstLoginMode\": \"on\",\"trustEmail\": false,\"storeToken\": false,\"addReadTokenRoleOnCreate\": false,\"authenticateByDefault\": false,\"linkOnly\": false,\"firstBrokerLoginFlowAlias\": \"First Broker Login\",\"postBrokerLoginFlowAlias\": \"\",\"config\": {  \"validateSignature\": \"true\",  \"hideOnLoginPage\": \"true\",  \"samlXmlKeyNameTranformer\": \"KEY_ID\",  \"postBindingLogout\": \"false\",  \"nameIDPolicyFormat\": \"urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified\",  \"postBindingResponse\": \"true\",\"entityId\": \"https://$SOAM_KC/auth/realms/master/idir\",  \"signatureAlgorithm\": \"RSA_SHA256\",  \"useJwksUrl\": \"true\",  \"wantAssertionsSigned\": \"false\",  \"postBindingAuthnRequest\": \"true\",  \"forceAuthn\": \"true\",  \"wantAuthnRequestsSigned\": \"false\",  \"singleSignOnServiceUrl\": \"$SFS_URL\",\"signingCertificate\":\"$SAML_CERT\",\"addExtensionsElementWithKeyInfo\": \"false\",  \"principalType\": \"SUBJECT\"}}"
 
 echo
 echo Creating mappers for SAML IDIR IDP...

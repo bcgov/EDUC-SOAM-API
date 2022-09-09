@@ -266,45 +266,45 @@ echo Building IDP instance for BCeID...
 curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"alias\" : \"keycloak_bcdevexchange_bceid_harry\",\"displayName\" : \"BCDevExchange Keycloak for BCeID Harry\",\"providerId\" : \"keycloak-oidc\",\"enabled\" : true,\"updateProfileFirstLoginMode\" : \"on\",\"trustEmail\" : false,\"storeToken\" : false,\"addReadTokenRoleOnCreate\" : false,\"authenticateByDefault\" : false,\"linkOnly\" : false,\"firstBrokerLoginFlowAlias\" : \"SOAMFirstLogin\",\"postBrokerLoginFlowAlias\" : \"SOAMPostLogin\",\"config\" : { \"hideOnLoginPage\" : \"true\",\"userInfoUrl\" : \"https://$SSO_ENV/auth/realms/$DEVEXCHANGE_KC_REALM_ID/protocol/openid-connect/userinfo\",\"validateSignature\" : \"true\",\"clientId\" : \"$DEVEXCHANGE_KC_CLIENT_ID\",\"tokenUrl\" : \"https://$SSO_ENV/auth/realms/$DEVEXCHANGE_KC_REALM_ID/protocol/openid-connect/token\",\"uiLocales\" : \"\",\"backchannelSupported\" : \"\",\"issuer\" : \"https://$SSO_ENV/auth/realms/$DEVEXCHANGE_KC_REALM_ID\",\"useJwksUrl\" : \"true\",\"jwksUrl\" : \"https://$SSO_ENV/auth/realms/$DEVEXCHANGE_KC_REALM_ID/protocol/openid-connect/certs\",\"loginHint\": \"\",\"authorizationUrl\" : \"https://$SSO_ENV/auth/realms/$DEVEXCHANGE_KC_REALM_ID/protocol/openid-connect/auth?kc_idp_hint=bceid\",\"disableUserInfo\" : \"\",\"logoutUrl\" : \"https://$SSO_ENV/auth/realms/$DEVEXCHANGE_KC_REALM_ID/protocol/openid-connect/logout\",\"clientSecret\" : \"$DEVEXCHANGE_KC_CLIENT_SECRET\",\"prompt\": \"\",\"defaultScope\" : \"openid profile email\"}}"
+  -d "{\"alias\" : \"keycloak_bcdevexchange_bceid\",\"displayName\" : \"BCDevExchange Keycloak for BCeID Harry\",\"providerId\" : \"keycloak-oidc\",\"enabled\" : true,\"updateProfileFirstLoginMode\" : \"on\",\"trustEmail\" : false,\"storeToken\" : false,\"addReadTokenRoleOnCreate\" : false,\"authenticateByDefault\" : false,\"linkOnly\" : false,\"firstBrokerLoginFlowAlias\" : \"SOAMFirstLogin\",\"postBrokerLoginFlowAlias\" : \"SOAMPostLogin\",\"config\" : { \"hideOnLoginPage\" : \"true\",\"userInfoUrl\" : \"https://$SSO_ENV/auth/realms/$DEVEXCHANGE_KC_REALM_ID/protocol/openid-connect/userinfo\",\"validateSignature\" : \"true\",\"clientId\" : \"$DEVEXCHANGE_KC_CLIENT_ID\",\"tokenUrl\" : \"https://$SSO_ENV/auth/realms/$DEVEXCHANGE_KC_REALM_ID/protocol/openid-connect/token\",\"uiLocales\" : \"\",\"backchannelSupported\" : \"\",\"issuer\" : \"https://$SSO_ENV/auth/realms/$DEVEXCHANGE_KC_REALM_ID\",\"useJwksUrl\" : \"true\",\"jwksUrl\" : \"https://$SSO_ENV/auth/realms/$DEVEXCHANGE_KC_REALM_ID/protocol/openid-connect/certs\",\"loginHint\": \"\",\"authorizationUrl\" : \"https://$SSO_ENV/auth/realms/$DEVEXCHANGE_KC_REALM_ID/protocol/openid-connect/auth?kc_idp_hint=bceid\",\"disableUserInfo\" : \"\",\"logoutUrl\" : \"https://$SSO_ENV/auth/realms/$DEVEXCHANGE_KC_REALM_ID/protocol/openid-connect/logout\",\"clientSecret\" : \"$DEVEXCHANGE_KC_CLIENT_SECRET\",\"prompt\": \"\",\"defaultScope\" : \"openid profile email\"}}"
 
 echo
 echo Creating mappers for IDP...
-curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_bceid_harry/mappers" \
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_bceid/mappers" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"name\" : \"account_type\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_bceid_harry\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"identity_provider\",\"user.attribute\" : \"account_type\"}}"
+  -d "{\"name\" : \"account_type\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_bceid\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"identity_provider\",\"user.attribute\" : \"account_type\"}}"
 
 echo
-curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_bceid_harry/mappers" \
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_bceid/mappers" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"name\" : \"bceid_guid\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_bceid_harry\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"bceid_user_guid\",\"user.attribute\" : \"bceid_guid\"}}"
+  -d "{\"name\" : \"bceid_guid\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_bceid\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"bceid_user_guid\",\"user.attribute\" : \"bceid_guid\"}}"
 
 echo
-curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_bceid_harry/mappers" \
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_bceid/mappers" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"name\" : \"display_name\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_bceid_harry\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"display_name\",\"user.attribute\" : \"display_name\"}}"
+  -d "{\"name\" : \"display_name\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_bceid\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"display_name\",\"user.attribute\" : \"display_name\"}}"
 
 echo
-curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_bceid_harry/mappers" \
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_bceid/mappers" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"name\" : \"user_guid\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_bceid_harry\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"bceid_user_guid\",\"user.attribute\" : \"user_guid\"}}"
+  -d "{\"name\" : \"user_guid\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_bceid\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"bceid_user_guid\",\"user.attribute\" : \"user_guid\"}}"
 
 echo
-curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_bceid_harry/mappers" \
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_bceid/mappers" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"name\" : \"bceid_userid\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_bceid_harry\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"bceid_username\",\"user.attribute\" : \"bceid_userid\"}}"
+  -d "{\"name\" : \"bceid_userid\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_bceid\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"bceid_username\",\"user.attribute\" : \"bceid_userid\"}}"
 
 
 echo
-curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_bceid_harry/mappers" \
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_bceid/mappers" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"name\":\"email\",\"identityProviderAlias\":\"keycloak_bcdevexchange_bceid_harry\",\"identityProviderMapper\":\"hardcoded-attribute-idp-mapper\",\"config\":{\"attribute.value\":\"\",\"attribute\":\"email\"}}"
+  -d "{\"name\":\"email\",\"identityProviderAlias\":\"keycloak_bcdevexchange_bceid\",\"identityProviderMapper\":\"hardcoded-attribute-idp-mapper\",\"config\":{\"attribute.value\":\"\",\"attribute\":\"email\"}}"
 
 echo
 echo Building IDP instance for BCSC...
@@ -421,53 +421,53 @@ echo Building IDP instance for IDIR...
 curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"alias\" : \"keycloak_bcdevexchange_idir_harry\",\"displayName\" : \"BCDevExchange Keycloak for IDIR Harry\",\"providerId\" : \"keycloak-oidc\",\"enabled\" : true,\"updateProfileFirstLoginMode\" : \"on\",\"trustEmail\" : false,\"storeToken\" : false,\"addReadTokenRoleOnCreate\" : false,\"authenticateByDefault\" : false,\"linkOnly\" : false,\"config\" : { \"hideOnLoginPage\" : \"true\",\"userInfoUrl\" : \"https://$SSO_ENV/auth/realms/$DEVEXCHANGE_KC_REALM_ID/protocol/openid-connect/userinfo\",\"validateSignature\" : \"true\",\"clientId\" : \"$DEVEXCHANGE_KC_CLIENT_ID\",\"tokenUrl\" : \"https://$SSO_ENV/auth/realms/$DEVEXCHANGE_KC_REALM_ID/protocol/openid-connect/token\",\"uiLocales\" : \"\",\"backchannelSupported\" : \"\",\"issuer\" : \"https://$SSO_ENV/auth/realms/$DEVEXCHANGE_KC_REALM_ID\",\"useJwksUrl\" : \"true\",\"jwksUrl\" : \"https://$SSO_ENV/auth/realms/$DEVEXCHANGE_KC_REALM_ID/protocol/openid-connect/certs\",\"loginHint\": \"\",\"authorizationUrl\" : \"https://$SSO_ENV/auth/realms/$DEVEXCHANGE_KC_REALM_ID/protocol/openid-connect/auth?kc_idp_hint=idir\",\"disableUserInfo\" : \"\",\"logoutUrl\" : \"https://$SSO_ENV/auth/realms/$DEVEXCHANGE_KC_REALM_ID/protocol/openid-connect/logout\",\"clientSecret\" : \"$DEVEXCHANGE_KC_CLIENT_SECRET\",\"prompt\": \"\",\"defaultScope\" : \"openid profile email\"}}"
+  -d "{\"alias\" : \"keycloak_bcdevexchange_idir\",\"displayName\" : \"BCDevExchange Keycloak for IDIR Harry\",\"providerId\" : \"keycloak-oidc\",\"enabled\" : true,\"updateProfileFirstLoginMode\" : \"on\",\"trustEmail\" : false,\"storeToken\" : false,\"addReadTokenRoleOnCreate\" : false,\"authenticateByDefault\" : false,\"linkOnly\" : false,\"config\" : { \"hideOnLoginPage\" : \"true\",\"userInfoUrl\" : \"https://$SSO_ENV/auth/realms/$DEVEXCHANGE_KC_REALM_ID/protocol/openid-connect/userinfo\",\"validateSignature\" : \"true\",\"clientId\" : \"$DEVEXCHANGE_KC_CLIENT_ID\",\"tokenUrl\" : \"https://$SSO_ENV/auth/realms/$DEVEXCHANGE_KC_REALM_ID/protocol/openid-connect/token\",\"uiLocales\" : \"\",\"backchannelSupported\" : \"\",\"issuer\" : \"https://$SSO_ENV/auth/realms/$DEVEXCHANGE_KC_REALM_ID\",\"useJwksUrl\" : \"true\",\"jwksUrl\" : \"https://$SSO_ENV/auth/realms/$DEVEXCHANGE_KC_REALM_ID/protocol/openid-connect/certs\",\"loginHint\": \"\",\"authorizationUrl\" : \"https://$SSO_ENV/auth/realms/$DEVEXCHANGE_KC_REALM_ID/protocol/openid-connect/auth?kc_idp_hint=idir\",\"disableUserInfo\" : \"\",\"logoutUrl\" : \"https://$SSO_ENV/auth/realms/$DEVEXCHANGE_KC_REALM_ID/protocol/openid-connect/logout\",\"clientSecret\" : \"$DEVEXCHANGE_KC_CLIENT_SECRET\",\"prompt\": \"\",\"defaultScope\" : \"openid profile email\"}}"
 
 echo
-curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_idir_harry/mappers" \
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_idir/mappers" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"name\" : \"firstName\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_idir_harry\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"given_name\",\"user.attribute\" : \"firstName\"}}"
+  -d "{\"name\" : \"firstName\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_idir\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"given_name\",\"user.attribute\" : \"firstName\"}}"
 
-curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_idir_harry/mappers" \
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_idir/mappers" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"name\" : \"lastName\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_idir_harry\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"family_name\",\"user.attribute\" : \"lastName\"}}"
+  -d "{\"name\" : \"lastName\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_idir\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"family_name\",\"user.attribute\" : \"lastName\"}}"
 
 echo
-curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_idir_harry/mappers" \
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_idir/mappers" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"name\" : \"account_type\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_idir_harry\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"identity_provider\",\"user.attribute\" : \"account_type\"}}"
+  -d "{\"name\" : \"account_type\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_idir\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"identity_provider\",\"user.attribute\" : \"account_type\"}}"
 
-curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_idir_harry/mappers" \
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_idir/mappers" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"name\" : \"email\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_idir_harry\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"email\",\"user.attribute\" : \"email\"}}"
+  -d "{\"name\" : \"email\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_idir\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"email\",\"user.attribute\" : \"email\"}}"
 
 echo Creating mappers for IDIR IDP...
-curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_idir_harry/mappers" \
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_idir/mappers" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"name\" : \"idir_username\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_idir_harry\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"family_name\",\"idir_username\" : \"idir_username\"}}"
+  -d "{\"name\" : \"idir_username\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_idir\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"family_name\",\"idir_username\" : \"idir_username\"}}"
 
-curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_idir_harry/mappers" \
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_idir/mappers" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"name\" : \"display_name\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_idir_harry\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"family_name\",\"display_name\" : \"display_name\"}}"
+  -d "{\"name\" : \"display_name\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_idir\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"family_name\",\"display_name\" : \"display_name\"}}"
 
-
-echo
-curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_idir_harry/mappers" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TKN" \
-  -d "{\"name\" : \"idir_guid\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_idir_harry\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"idir_user_guid\",\"user.attribute\" : \"idir_guid\"}}"
 
 echo
-curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_idir_harry/mappers" \
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_idir/mappers" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"name\" : \"username\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_idir_harry\",\"identityProviderMapper\" : \"oidc-username-idp-mapper\",\"config\" : {\"template\" : \"\${CLAIM.idir_user_guid}\"}}"
+  -d "{\"name\" : \"idir_guid\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_idir\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"idir_user_guid\",\"user.attribute\" : \"idir_guid\"}}"
+
+echo
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/keycloak_bcdevexchange_idir/mappers" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TKN" \
+  -d "{\"name\" : \"username\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_idir\",\"identityProviderMapper\" : \"oidc-username-idp-mapper\",\"config\" : {\"template\" : \"\${CLAIM.idir_user_guid}\"}}"
 
 # Retrieving client IDs and Secrets
 echo

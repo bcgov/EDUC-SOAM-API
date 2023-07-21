@@ -16,6 +16,8 @@ SOAM_KC_LOAD_USER_PASS=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get se
 DEVEXCHANGE_KC_CLIENT_ID=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get secret standard-realm-creds-${envValue} | sed -n 's/.*"username": "\(.*\)"/\1/p' | base64 --decode)
 DEVEXCHANGE_KC_CLIENT_SECRET=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get secret standard-realm-creds-${envValue} | sed -n 's/.*"password": "\(.*\)",/\1/p' | base64 --decode)
 DEVEXCHANGE_KC_REALM_ID="standard"
+ENTRA_CLIENT_ID=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get secret entra-creds-${envValue} | sed -n 's/.*"clientid": "\(.*\)",/\1/p' | base64 --decode)
+ENTRA_CLIENT_SECRET=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get secret entra-creds-${envValue} | sed -n 's/.*"secret": "\(.*\)"/\1/p' | base64 --decode)
 SPLUNK_TOKEN=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get configmaps ${APP_NAME}-${envValue}-setup-config | sed -n "s/.*\"SPLUNK_TOKEN_${APP_NAME_UPPER}\": \"\(.*\)\"/\1/p")
 SERVICES_CARD_DNS=id.gov.bc.ca
 
@@ -466,6 +468,40 @@ curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-pro
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
   -d "{\"name\" : \"username\",\"identityProviderAlias\" : \"keycloak_bcdevexchange_idir\",\"identityProviderMapper\" : \"oidc-username-idp-mapper\",\"config\" : {\"template\" : \"\${CLAIM.idir_user_guid}\"}}"
+
+echo
+echo Building IDP instance for Entra...
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TKN" \
+  -d "{\"alias\" : \"entra\",\"displayName\" : \"Entra IDP\",\"providerId\" : \"keycloak-oidc\",\"enabled\" : true,\"updateProfileFirstLoginMode\" : \"on\",\"trustEmail\" : false,\"storeToken\" : false,\"addReadTokenRoleOnCreate\" : false,\"authenticateByDefault\" : false,\"linkOnly\" : false,\"config\" : { \"hideOnLoginPage\" : \"true\",\"userInfoUrl\" : \"https://graph.microsoft.com/oidc/userinfo\",\"validateSignature\" : \"true\",\"clientId\" : \"$ENTRA_CLIENT_ID\",\"tokenUrl\" : \"https://login.microsoftonline.com/organizations/oauth2/v2.0/token\",\"uiLocales\" : \"\",\"backchannelSupported\" : \"\",\"useJwksUrl\" : \"true\",\"jwksUrl\" : \"https://login.microsoftonline.com/organizations/discovery/v2.0/keys\",\"loginHint\": \"\",\"authorizationUrl\" : \"https://login.microsoftonline.com/organizations/oauth2/v2.0/authorize\",\"disableUserInfo\" : \"\",\"logoutUrl\" : \"https://login.microsoftonline.com/organizations/oauth2/v2.0/logout\",\"clientSecret\" : \"$ENTRA_CLIENT_SECRET\",\"prompt\": \"\",\"defaultScope\" : \"openid\"}}"
+
+echo
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/entra/mappers" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TKN" \
+  -d "{\"name\" : \"firstName\",\"identityProviderAlias\" : \"entra\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"given_name\",\"user.attribute\" : \"firstName\"}}"
+
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/entra/mappers" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TKN" \
+  -d "{\"name\" : \"lastName\",\"identityProviderAlias\" : \"entra\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"family_name\",\"user.attribute\" : \"lastName\"}}"
+
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/entra/mappers" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TKN" \
+  -d "{\"name\" : \"email\",\"identityProviderAlias\" : \"entra\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"email\",\"user.attribute\" : \"email\"}}"
+
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/entra/mappers" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TKN" \
+  -d "{\"name\" : \"tenant_id\",\"identityProviderAlias\" : \"entra\",\"identityProviderMapper\" : \"oidc-user-attribute-idp-mapper\",\"config\" : {\"claim\" : \"tid\",\"user.attribute\" : \"tenant_id\"}}"
+
+echo
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/entra/mappers" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TKN" \
+  -d "{\"name\" : \"username\",\"identityProviderAlias\" : \"entra\",\"identityProviderMapper\" : \"oidc-username-idp-mapper\",\"config\" : {\"template\" : \"\${CLAIM.sub}\"}}"
 
 # Retrieving client IDs and Secrets
 echo

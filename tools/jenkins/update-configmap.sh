@@ -578,7 +578,7 @@ echo
 curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/entra/mappers" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"name\" : \"username\",\"identityProviderAlias\" : \"entra\",\"identityProviderMapper\" : \"oidc-username-idp-mapper\",\"config\" : {\"template\" : \"\${CLAIM.sub}\"}}"
+  -d "{\"name\" : \"username\",\"identityProviderAlias\" : \"entra\",\"identityProviderMapper\" : \"oidc-username-idp-mapper\",\"config\" : {\"template\" : \"\${CLAIM.oid}\"}}"
 
 # Retrieving client IDs and Secrets
 echo

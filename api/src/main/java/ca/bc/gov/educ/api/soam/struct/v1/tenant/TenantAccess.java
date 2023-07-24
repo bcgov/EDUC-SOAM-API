@@ -1,6 +1,6 @@
 package ca.bc.gov.educ.api.soam.struct.v1.tenant;
 
-public class TenantAccessEntity {
+public class TenantAccess {
 
 	private String clientID;
 	private String tenantID;

@@ -202,17 +202,6 @@ curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authenticati
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
   -d "{\"alias\" : \"SOAMPostLogin\",\"providerId\" : \"basic-flow\",\"topLevel\" : true,\"builtIn\" : false}"
-echo
-curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/flows" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TKN" \
-  -d "{\"alias\" : \"TenantFirstLogin\",\"providerId\" : \"basic-flow\",\"topLevel\" : true,\"builtIn\" : false}"
-
-echo
-curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/flows" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TKN" \
-  -d "{\"alias\" : \"TenantPostLogin\",\"providerId\" : \"basic-flow\",\"topLevel\" : true,\"builtIn\" : false}"
 
 echo
 echo Retrieving client ID for SOAM first login executor
@@ -229,20 +218,6 @@ soamPostLoginExecutorID=$(curl -sX GET "https://$SOAM_KC/auth/admin/realms/$SOAM
   | jq -r '.[].id')
 
 echo
-echo Retrieving client ID for Tenant first login executor
-tenantFirstLoginExecutorID=$(curl -sX GET "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/flows/TenantFirstLogin/executions" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TKN" \
-  | jq -r '.[].id')
-
-echo
-echo Retrieving client ID for Tenant post login executor
-tenantPostLoginExecutorID=$(curl -sX GET "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/flows/TenantPostLogin/executions" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TKN" \
-  | jq -r '.[].id')
-
-echo
 echo Removing SOAM post login executor
 curl -sX DELETE "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/executions/$soamPostLoginExecutorID" \
   -H "Authorization: Bearer $TKN" \
@@ -250,16 +225,6 @@ curl -sX DELETE "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentica
 echo
 echo Removing SOAM first login executor
 curl -sX DELETE "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/executions/$soamFirstLoginExecutorID" \
-  -H "Authorization: Bearer $TKN" \
-
-echo
-echo Removing Tenant post login executor
-curl -sX DELETE "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/executions/$tenantPostLoginExecutorID" \
-  -H "Authorization: Bearer $TKN" \
-
-echo
-echo Removing Tenant first login executor
-curl -sX DELETE "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/executions/$tenantFirstLoginExecutorID" \
   -H "Authorization: Bearer $TKN" \
 
 echo
@@ -276,19 +241,6 @@ curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authenticati
   -d "{\"provider\" : \"bcgov-soam-authenticator\"}"
 
 echo
-echo Creating Tenant executors
-curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/flows/TenantPostLogin/executions/execution" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TKN" \
-  -d "{\"provider\" : \"bcgov-tenant-post-authenticator\"}"
-
-echo
-curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/flows/TenantFirstLogin/executions/execution" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TKN" \
-  -d "{\"provider\" : \"bcgov-tenant-authenticator\"}"
-
-echo
 echo Retrieving client ID for SOAM first login executor
 soamFirstLoginExecutorID=$(curl -sX GET "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/flows/SOAMFirstLogin/executions" \
   -H "Content-Type: application/json" \
@@ -298,20 +250,6 @@ soamFirstLoginExecutorID=$(curl -sX GET "https://$SOAM_KC/auth/admin/realms/$SOA
 echo
 echo Retrieving client ID for SOAM post login executor
 soamPostLoginExecutorID=$(curl -sX GET "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/flows/SOAMPostLogin/executions" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TKN" \
-  | jq -r '.[].id')
-
-echo
-echo Retrieving client ID for Tenant first login executor
-tenantFirstLoginExecutorID=$(curl -sX GET "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/flows/TenantFirstLogin/executions" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TKN" \
-  | jq -r '.[].id')
-
-echo
-echo Retrieving client ID for Tenant post login executor
-tenantPostLoginExecutorID=$(curl -sX GET "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/flows/TenantPostLogin/executions" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
   | jq -r '.[].id')
@@ -329,21 +267,6 @@ curl -sX PUT "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authenticatio
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
   -d "{\"id\": \"$soamPostLoginExecutorID\", \"configurable\": false,\"displayName\": \"SOAM Authenticator\",\"index\": 0,\"level\": 0,\"providerId\": \"bcgov-soam-authenticator\",\"requirement\": \"REQUIRED\",\"requirementChoices\": [\"ALTERNATIVE\", \"REQUIRED\", \"DISABLED\"]}"
-
-echo
-echo Updating Tenant first login executor to required
-curl -sX PUT "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/flows/TenantFirstLogin/executions" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TKN" \
-  -d "{\"id\": \"$tenantFirstLoginExecutorID\", \"configurable\": false,\"displayName\": \"Tenant Authenticator\",\"index\": 0,\"level\": 0,\"providerId\": \"bcgov-tenant-authenticator\",\"requirement\": \"REQUIRED\",\"requirementChoices\": [\"ALTERNATIVE\", \"REQUIRED\", \"DISABLED\"]}"
-
-echo
-echo Updating Tenant post login executor to required
-curl -sX PUT "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/authentication/flows/TenantPostLogin/executions" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TKN" \
-  -d "{\"id\": \"$tenantPostLoginExecutorID\", \"configurable\": false,\"displayName\": \"Tenant Post Authenticator\",\"index\": 0,\"level\": 0,\"providerId\": \"bcgov-tenant-post-authenticator\",\"requirement\": \"REQUIRED\",\"requirementChoices\": [\"ALTERNATIVE\", \"REQUIRED\", \"DISABLED\"]}"
-
 
 #Identity Providers------------------------------------------------
 
@@ -558,7 +481,7 @@ echo Building IDP instance for Entra...
 curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"alias\" : \"entra\",\"displayName\" : \"Entra IDP\",\"providerId\" : \"keycloak-oidc\",\"firstBrokerLoginFlowAlias\" : \"TenantFirstLogin\",\"postBrokerLoginFlowAlias\" : \"TenantPostLogin\",\"enabled\" : true,\"updateProfileFirstLoginMode\" : \"on\",\"trustEmail\" : false,\"storeToken\" : false,\"addReadTokenRoleOnCreate\" : false,\"authenticateByDefault\" : false,\"linkOnly\" : false,\"config\" : { \"hideOnLoginPage\" : \"true\",\"userInfoUrl\" : \"https://graph.microsoft.com/oidc/userinfo\",\"validateSignature\" : \"true\",\"clientId\" : \"$ENTRA_CLIENT_ID\",\"tokenUrl\" : \"https://login.microsoftonline.com/organizations/oauth2/v2.0/token\",\"uiLocales\" : \"\",\"backchannelSupported\" : \"\",\"useJwksUrl\" : \"true\",\"jwksUrl\" : \"https://login.microsoftonline.com/organizations/discovery/v2.0/keys\",\"loginHint\": \"\",\"authorizationUrl\" : \"https://login.microsoftonline.com/organizations/oauth2/v2.0/authorize\",\"disableUserInfo\" : \"\",\"logoutUrl\" : \"https://login.microsoftonline.com/organizations/oauth2/v2.0/logout\",\"clientSecret\" : \"$ENTRA_CLIENT_SECRET\",\"prompt\": \"\",\"defaultScope\" : \"openid profile email\"}}"
+  -d "{\"alias\" : \"entra\",\"displayName\" : \"Entra IDP\",\"providerId\" : \"keycloak-oidc\",\"enabled\" : true,\"updateProfileFirstLoginMode\" : \"on\",\"trustEmail\" : false,\"storeToken\" : false,\"addReadTokenRoleOnCreate\" : false,\"authenticateByDefault\" : false,\"linkOnly\" : false,\"config\" : { \"hideOnLoginPage\" : \"true\",\"userInfoUrl\" : \"https://graph.microsoft.com/oidc/userinfo\",\"validateSignature\" : \"true\",\"clientId\" : \"$ENTRA_CLIENT_ID\",\"tokenUrl\" : \"https://login.microsoftonline.com/organizations/oauth2/v2.0/token\",\"uiLocales\" : \"\",\"backchannelSupported\" : \"\",\"useJwksUrl\" : \"true\",\"jwksUrl\" : \"https://login.microsoftonline.com/organizations/discovery/v2.0/keys\",\"loginHint\": \"\",\"authorizationUrl\" : \"https://login.microsoftonline.com/organizations/oauth2/v2.0/authorize\",\"disableUserInfo\" : \"\",\"logoutUrl\" : \"https://login.microsoftonline.com/organizations/oauth2/v2.0/logout\",\"clientSecret\" : \"$ENTRA_CLIENT_SECRET\",\"prompt\": \"\",\"defaultScope\" : \"openid profile email\"}}"
 
 echo
 curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/entra/mappers" \
@@ -591,6 +514,13 @@ curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-pro
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
   -d "{\"name\" : \"username\",\"identityProviderAlias\" : \"entra\",\"identityProviderMapper\" : \"oidc-username-idp-mapper\",\"config\" : {\"template\" : \"\${CLAIM.oid}\"}}"
+
+echo
+curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances/entra/mappers" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TKN" \
+  -d "{\"name\" : \"account_type\",\"identityProviderAlias\" : \"entra\",\"identityProviderMapper\" : \"hardcoded-attribute-idp-mapper\",\"config\" : {\"attribute.value\" : \"entra\",\"attribute\" : \"account_type\"}}"
+
 
 # Retrieving client IDs and Secrets
 echo

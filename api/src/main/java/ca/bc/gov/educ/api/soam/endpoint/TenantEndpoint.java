@@ -1,6 +1,7 @@
 package ca.bc.gov.educ.api.soam.endpoint;
 
 import ca.bc.gov.educ.api.soam.model.entity.SoamLoginEntity;
+import ca.bc.gov.educ.api.soam.struct.v1.tenant.TenantAccess;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -22,6 +23,6 @@ public interface TenantEndpoint {
 
   @GetMapping()
   @PreAuthorize("hasAuthority('SCOPE_SOAM_TENANT')")
-  ResponseEntity<Void> determineTenantAccess(@RequestParam(name = "clientID") String clientID, @RequestParam(name = "tenantID") String tenantID, @RequestHeader String correlationID);
+  ResponseEntity<TenantAccess> determineTenantAccess(@RequestParam(name = "clientID") String clientID, @RequestParam(name = "tenantID") String tenantID, @RequestHeader String correlationID);
 
 }

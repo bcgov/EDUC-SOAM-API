@@ -6,6 +6,7 @@ import ca.bc.gov.educ.api.soam.model.entity.ServicesCardEntity;
 import ca.bc.gov.educ.api.soam.model.entity.SoamLoginEntity;
 import ca.bc.gov.educ.api.soam.service.SoamService;
 import ca.bc.gov.educ.api.soam.service.TenantService;
+import ca.bc.gov.educ.api.soam.struct.v1.tenant.TenantAccess;
 import ca.bc.gov.educ.api.soam.util.SoamUtil;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
@@ -38,9 +39,9 @@ public class TenantController implements TenantEndpoint {
 
 
   @Override
-  public ResponseEntity<Void> determineTenantAccess(String clientID, String tenantID, String correlationID) {
-    this.service.determineTenantAccess(clientID, tenantID, correlationID);
-    return ResponseEntity.noContent().build();
+  public ResponseEntity<TenantAccess> determineTenantAccess(String clientID, String tenantID, String correlationID) {
+    var tenantAccess = this.service.determineTenantAccess(clientID, tenantID, correlationID);
+    return ResponseEntity.ok(tenantAccess);
   }
 
 }

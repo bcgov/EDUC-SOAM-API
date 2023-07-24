@@ -9,6 +9,7 @@ import ca.bc.gov.educ.api.soam.model.entity.StudentEntity;
 import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
 import ca.bc.gov.educ.api.soam.struct.v1.penmatch.PenMatchResult;
 import ca.bc.gov.educ.api.soam.struct.v1.penmatch.PenMatchStudent;
+import ca.bc.gov.educ.api.soam.struct.v1.tenant.TenantAccessEntity;
 import ca.bc.gov.educ.api.soam.util.SoamUtil;
 import io.github.resilience4j.bulkhead.annotation.Bulkhead;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -112,6 +113,36 @@ public class RestUtils {
           DIGITAL_ID_GET_CALL));
       }
       return response;
+    } catch (final WebClientResponseException e) {
+      throw new SoamRuntimeException(this.getErrorMessageString(e.getStatusCode(), e.getResponseBodyAsString()));
+    }
+  }
+
+  @Bulkhead(name = DIGITAL_ID_API)
+  @CircuitBreaker(name = DIGITAL_ID_API)
+  @Retry(name = DIGITAL_ID_API)
+  public Optional<TenantAccessEntity> getTenantAccess(@NonNull final String clientID, @NonNull final String tenantID, final String correlationID) {
+    try {
+      val response = this.webClient.get()
+        .uri(this.props.getDigitalIdentifierApiURL() + "/tenant",
+          uri -> uri.queryParam("clientID", clientID)
+                  .queryParam("tenantID", tenantID)
+            .build())
+        .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .header(CORRELATION_ID, correlationID)
+        .retrieve()
+        .bodyToMono(new ParameterizedTypeReference<TenantAccessEntity>() {})
+        .doOnSuccess(entity -> {
+          if (entity != null) {
+            this.logSuccess(entity.toString(), clientID, tenantID, correlationID);
+          }
+        })
+        .block();
+      if (response == null) {
+        throw new SoamRuntimeException(this.getErrorMessageString(HttpStatus.INTERNAL_SERVER_ERROR, NULL_BODY_FROM +
+          DIGITAL_ID_GET_CALL));
+      }
+      return Optional.of(response);
     } catch (final WebClientResponseException e) {
       throw new SoamRuntimeException(this.getErrorMessageString(e.getStatusCode(), e.getResponseBodyAsString()));
     }

@@ -123,7 +123,7 @@ public class RestUtils {
   public Optional<TenantAccess> getTenantAccess(@NonNull final String clientID, @NonNull final String tenantID, final String correlationID) {
     try {
       val response = this.webClient.get()
-        .uri(this.props.getDigitalIdentifierApiURL() + "/tenant",
+        .uri(this.props.getDigitalIdentifierApiURL() + "/tenantAccess",
           uri -> uri.queryParam("clientID", clientID)
                   .queryParam("tenantID", tenantID)
             .build())

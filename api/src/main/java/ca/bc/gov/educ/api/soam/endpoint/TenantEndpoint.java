@@ -16,11 +16,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RequestMapping("/tenant/")
+@RequestMapping("/tenant")
 @OpenAPIDefinition(info = @Info(title = "API for SOAM.", description = "The SOAM API is used to support login functionality for the SOAM Keycloak Instance.", version = "1"), security = {@SecurityRequirement(name = "OAUTH2", scopes = {"SOAM_LOGIN"})})
 public interface TenantEndpoint {
 
-  @GetMapping("/")
+  @GetMapping()
   @PreAuthorize("hasAuthority('SCOPE_SOAM_TENANT')")
   ResponseEntity<Void> determineTenantAccess(@RequestParam(name = "clientID") String clientID, @RequestParam(name = "tenantID") String tenantID, @RequestHeader String correlationID);
 

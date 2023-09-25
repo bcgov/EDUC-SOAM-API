@@ -3,8 +3,7 @@ package ca.bc.gov.educ.api.soam.resilience4j;
 import ca.bc.gov.educ.api.soam.model.entity.AccessChannelCodeEntity;
 import ca.bc.gov.educ.api.soam.model.entity.DigitalIDEntity;
 import ca.bc.gov.educ.api.soam.model.entity.IdentityTypeCodeEntity;
-import io.github.resilience4j.circuitbreaker.CircuitBreaker;
-import io.vavr.collection.Stream;
+import java.util.stream.IntStream;
 import org.jose4j.lang.JoseException;
 import org.junit.Before;
 import org.junit.Test;
@@ -79,7 +78,7 @@ public class Resilience4jIT extends AbstractIntegrationTest {
 		var valueMap = this.mockDigitalIdApiWithFailedResponse();
 
 		var token = jwsBuilder.build().getCompactSerialization();
-		Stream.rangeClosed(1,7).forEach((count) -> {
+		IntStream.rangeClosed(1,7).forEach((count) -> {
 			webTestClient.post().uri("/login").header("Authorization", "Bearer " + token)
 				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
 				.body(BodyInserters.fromFormData(valueMap))
@@ -114,7 +113,7 @@ public class Resilience4jIT extends AbstractIntegrationTest {
 		var token = jwsBuilder.build().getCompactSerialization();
 
 		// When
-		Stream.rangeClosed(1,2).forEach((count) -> {
+		IntStream.rangeClosed(1,2).forEach((count) -> {
 			webTestClient.post().uri("/login").header("Authorization", "Bearer " + token)
 				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
 				.body(BodyInserters.fromFormData(valueMap))
@@ -128,7 +127,7 @@ public class Resilience4jIT extends AbstractIntegrationTest {
 
 	@Test
 	public void performLogin_givenMultipleRequests_shouldLimitConcurrentExecution() throws JoseException {
-		Stream.rangeClosed(1,2).forEach((count) -> {
+		IntStream.rangeClosed(1,2).forEach((count) -> {
 			this.bulkheadRegistry.bulkhead("digitalIdApi").acquirePermission();
 		});
 		var valueMap = this.mockDigitalIdApiWithSuccessfulResponse();
@@ -154,7 +153,7 @@ public class Resilience4jIT extends AbstractIntegrationTest {
 		});
 
 		assertThat(statuses).contains(BAD_GATEWAY.value());
-		Stream.rangeClosed(1,2).forEach((count) -> {
+		IntStream.rangeClosed(1,2).forEach((count) -> {
 			this.bulkheadRegistry.bulkhead("digitalIdApi").releasePermission();
 		});
 	}

@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
@@ -408,7 +409,7 @@ public class RestUtils {
   }
 
 
-  private String getErrorMessageString(final HttpStatus status, final String body) {
+  private String getErrorMessageString(final HttpStatusCode status, final String body) {
     return "Unexpected HTTP return code: " + status + " error message: " + body;
   }
 }

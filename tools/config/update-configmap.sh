@@ -1,9 +1,8 @@
 envValue=$1
 APP_NAME=$2
 OPENSHIFT_NAMESPACE=$3
-DEVEXCHANGE_KC_REALM_ID=$4
-PEN_NAMESPACE=$5
-APP_NAME_UPPER=${APP_NAME^^}
+PEN_NAMESPACE=$4
+SPLUNK_TOKEN=$5
 
 TZVALUE="America/Vancouver"
 SOAM_KC_REALM_ID="master"
@@ -18,7 +17,6 @@ DEVEXCHANGE_KC_CLIENT_SECRET=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json 
 DEVEXCHANGE_KC_REALM_ID="standard"
 ENTRA_CLIENT_ID=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get secret entra-creds-${envValue} | sed -n 's/.*"clientid": "\(.*\)",/\1/p' | base64 --decode)
 ENTRA_CLIENT_SECRET=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get secret entra-creds-${envValue} | sed -n 's/.*"secret": "\(.*\)"/\1/p' | base64 --decode)
-SPLUNK_TOKEN=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get configmaps ${APP_NAME}-${envValue}-setup-config | sed -n "s/.*\"SPLUNK_TOKEN_${APP_NAME_UPPER}\": \"\(.*\)\"/\1/p")
 SERVICES_CARD_DNS=id.gov.bc.ca
 
 SPLUNK_URL="gww.splunk.educ.gov.bc.ca"

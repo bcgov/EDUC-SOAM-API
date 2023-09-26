@@ -163,7 +163,7 @@ jobs:
           # Get status, returns 0 if rollout is successful
           oc rollout status dc/${{ env.SPRING_BOOT_IMAGE_NAME }}
 
-#           temporary fix to rollout educ-keycloak-soam-api since the sso-config is created here. We can remove this after educ-keycloak-soam is upgraded
+          # temporary fix to rollout educ-keycloak-soam-api since the sso-config is created here. We can remove this after educ-keycloak-soam is upgraded
           # Cancel any rollouts in progress
           oc rollout cancel dc/sso-${{env.TARGET_ENV}} 2> /dev/null \
           || true && echo "No rollout for sso-${{env.TARGET_ENV}} in progress"

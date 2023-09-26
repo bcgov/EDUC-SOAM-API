@@ -30,6 +30,7 @@ env:
   NAMESPACE: ${{ secrets.COMMON_NAMESPACE_NO_ENV }}
   PEN_NAMESPACE: ${{ secrets.PEN_NAMESPACE_NO_ENV }}
   TAG: "latest"
+  TARGET_ENV: "test"
   MIN_REPLICAS_TEST: "2"
   MAX_REPLICAS_TEST: "2"
   MIN_CPU: "10m"
@@ -114,7 +115,7 @@ jobs:
           oc process -f tools/openshift/api.dc.yaml -p APP_NAME=${{ env.APP_NAME }} -p REPO_NAME=${{ env.REPO_NAME }} -p BRANCH=${{ env.BRANCH }} -p NAMESPACE=${{ env.OPENSHIFT_NAMESPACE_TEST }} -p TAG=${{ env.TAG }} -p MIN_REPLICAS=${{ env.MIN_REPLICAS_TEST }} -p MAX_REPLICAS=${{ env.MAX_REPLICAS_TEST }} -p MIN_CPU=${{ env.MIN_CPU }} -p MAX_CPU=${{ env.MAX_CPU }} -p MIN_MEM=${{ env.MIN_MEM }} -p MAX_MEM=${{ env.MAX_MEM }} \
           | oc apply -f -
 
-          curl -s https://raw.githubusercontent.com/bcgov/${{ env.REPO_NAME }}/master/tools/config/update-configmap.sh | bash /dev/stdin test ${{ env.APP_NAME }} ${{ env.NAMESPACE }} ${{ env.PEN_NAMESPACE }} ${{ env.SPLUNK_TOKEN }}
+          curl -s https://raw.githubusercontent.com/bcgov/${{ env.REPO_NAME }}/master/tools/config/update-configmap.sh | bash /dev/stdin ${{ env.TARGET_ENV }} ${{ env.APP_NAME }} ${{ env.NAMESPACE }} ${{ env.PEN_NAMESPACE }} ${{ env.SPLUNK_TOKEN }}
 
           # Start rollout (if necessary) and follow it
           oc rollout latest dc/${{ env.SPRING_BOOT_IMAGE_NAME }} 2> /dev/null \
@@ -122,7 +123,18 @@ jobs:
           oc logs -f dc/${{ env.SPRING_BOOT_IMAGE_NAME }}
           # Get status, returns 0 if rollout is successful
           oc rollout status dc/${{ env.SPRING_BOOT_IMAGE_NAME }}
-
+          
+#           temporary fix to rollout educ-keycloak-soam-api since the sso-config is created here. We can remove this after educ-keycloak-soam is upgraded
+          # Cancel any rollouts in progress
+          oc rollout cancel dc/sso-${{env.TARGET_ENV}} 2> /dev/null \
+          || true && echo "No rollout for sso-${{env.TARGET_ENV}} in progress"
+          
+          # Start rollout (if necessary) and follow it
+          oc rollout latest dc/sso-${{env.TARGET_ENV}} 2> /dev/null \
+          || true && echo "Rollout in progress"
+          oc logs -f dc/sso-${{env.TARGET_ENV}}
+          # Get status, returns 0 if rollout is successful
+          oc rollout status dc/sso-${{env.TARGET_ENV}}
       - name: ZAP Scan
         uses: zaproxy/action-api-scan@v0.2.0
         with:

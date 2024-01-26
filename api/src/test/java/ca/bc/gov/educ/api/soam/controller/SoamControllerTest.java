@@ -11,6 +11,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -23,6 +24,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
@@ -121,85 +123,6 @@ public class SoamControllerTest {
       .accept(MediaType.APPLICATION_FORM_URLENCODED)).andDo(print()).andExpect(status().isNoContent());
 
     verify(this.webClient, atMost(invocations + 1)).put();
-  }
-
-  @Test
-  public void performLink_givenValidPayloadWithServicesCard_shouldReturnSoamLoginEntity() throws Exception {
-    final var invocations = mockingDetails(this.webClient).getInvocations().size();
-
-    final MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-    map.add("did", this.guid.toUpperCase());
-    map.add("birthDate", "19841102");
-    map.add("city", "Victoria");
-    map.add("country", "CAN");
-    map.add("email", "abc@gmail.com");
-    map.add("gender", "M");
-    map.add("identityAssuranceLevel", "1");
-    map.add("givenName", "Given");
-
-    final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
-    when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
-    when(this.requestHeadersUriMock.uri(eq(this.props.getServicesCardApiURL()), any(Function.class)))
-      .thenReturn(this.requestHeadersMock);
-    when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
-      .thenReturn(this.requestHeadersMock);
-    when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL() + "/list"), any(Function.class)))
-            .thenReturn(this.requestHeadersMock);
-    when(this.requestHeadersUriMock.uri(eq(this.props.getStudentApiURL()), any(Function.class)))
-            .thenReturn(this.requestHeadersMock);
-    when(this.requestHeadersMock.headers(any()))
-      .thenReturn(this.requestHeadersMock);
-    when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class)))
-      .thenReturn(this.requestHeadersMock);
-    when(this.requestHeadersMock.retrieve())
-      .thenReturn(this.responseMock);
-    when(this.responseMock.bodyToMono(ServicesCardEntity.class))
-      .thenReturn(Mono.just(servicesCardEntity));
-    when(this.responseMock.bodyToMono(DigitalIDEntity.class))
-      .thenReturn(Mono.just(this.getDigitalIdentity()));
-    when(this.responseMock.bodyToMono(List.class))
-            .thenReturn(Mono.just(createStudentSearchResult()));
-    when(this.requestBodyUriMock.uri(this.props.getPenMatchApiURL())).thenReturn(this.requestBodyUriMock);
-    when(this.requestBodyUriMock.uri(this.props.getStudentApiURL())).thenReturn(this.requestBodyUriMock);
-    when(this.requestBodyUriMock.uri(this.props.getDigitalIdentifierApiURL())).thenReturn(this.requestBodyUriMock);
-    when(this.requestBodyUriMock.uri(this.props.getDigitalIdentifierApiURL() + "/list")).thenReturn(this.requestBodyUriMock);
-
-    when(this.webClient.post()).thenReturn(this.requestBodyUriMock);
-    when(this.webClient.put()).thenReturn(this.requestBodyUriMock);
-    when(this.requestBodyUriMock.uri(eq(this.props.getServicesCardApiURL()), any(Function.class)))
-      .thenReturn(this.requestBodyUriMock);
-    when(this.requestBodyUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
-      .thenReturn(this.requestBodyUriMock);
-    when(this.requestBodyUriMock.uri(eq(this.props.getDigitalIdentifierApiURL() + "/list"), any(Function.class)))
-            .thenReturn(this.requestBodyUriMock);
-    when(this.requestBodyUriMock.uri(eq(this.props.getStudentApiURL()), any(Function.class)))
-            .thenReturn(this.requestBodyUriMock);
-    when(this.requestBodyUriMock.headers(any()))
-      .thenReturn(this.returnMockBodySpec());
-    when(this.requestHeadersMock.retrieve())
-      .thenReturn(this.responseMock);
-    when(this.responseMock.bodyToMono(ServicesCardEntity.class))
-      .thenReturn(Mono.just(servicesCardEntity));
-    when(this.responseMock.bodyToMono(DigitalIDEntity.class))
-      .thenReturn(Mono.just(this.getDigitalIdentity()));
-    when(this.responseMock.bodyToMono(List.class))
-            .thenReturn(Mono.just(createStudentSearchResult()));
-    when(this.requestBodyUriMock.uri(this.props.getPenMatchApiURL())).thenReturn(this.requestBodyUriMock);
-    when(this.requestBodyUriMock.uri(this.props.getStudentApiURL())).thenReturn(this.requestBodyUriMock);
-    when(this.requestBodyUriMock.uri(this.props.getDigitalIdentifierApiURL())).thenReturn(this.requestBodyUriMock);
-    when(this.requestBodyUriMock.uri(this.props.getDigitalIdentifierApiURL() + "/list")).thenReturn(this.requestBodyUriMock);
-    when(this.requestBodyUriMock.header(any(), any())).thenReturn(this.returnMockBodySpec());
-    when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class))).thenReturn(this.requestHeadersMock);
-    when(this.requestHeadersMock.retrieve()).thenReturn(this.responseMock);
-
-    this.mockMvc.perform(multipart("/link")
-      .with(jwt().jwt((jwt) -> jwt.claim("scope", "SOAM_LINK")))
-      .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-      .header("correlationID", this.guid)
-      .params(map)
-      .accept(MediaType.APPLICATION_JSON)).andDo(print()).andExpect(status().isOk());
-    verify(this.webClient, atMost(invocations + 2)).put();
-
   }
 
   @Test

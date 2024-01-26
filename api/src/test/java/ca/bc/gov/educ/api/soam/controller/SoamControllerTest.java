@@ -2,7 +2,6 @@ package ca.bc.gov.educ.api.soam.controller;
 
 import ca.bc.gov.educ.api.soam.model.entity.*;
 import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
-import ca.bc.gov.educ.api.soam.struct.v1.penmatch.PenMatchResult;
 import lombok.val;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,6 +11,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -24,6 +24,8 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -138,12 +140,15 @@ public class SoamControllerTest {
     map.add("givenName", "Given");
 
     final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
-    final PenMatchResult penMatchResult = this.createPenMatchResult();
     when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
     when(this.requestHeadersUriMock.uri(eq(this.props.getServicesCardApiURL()), any(Function.class)))
       .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
       .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL() + "/list"), any(Function.class)))
+            .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersUriMock.uri(eq(this.props.getStudentApiURL()), any(Function.class)))
+            .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.headers(any()))
       .thenReturn(this.requestHeadersMock);
     when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class)))
@@ -154,7 +159,16 @@ public class SoamControllerTest {
       .thenReturn(Mono.just(servicesCardEntity));
     when(this.responseMock.bodyToMono(DigitalIDEntity.class))
       .thenReturn(Mono.just(this.getDigitalIdentity()));
+    when(this.responseMock.bodyToMono(List.class))
+            .thenReturn(Mono.just(createStudentSearchResult()));
+    when(this.responseMock.bodyToMono(StudentEntity.class))
+            .thenReturn(Mono.just(createStudentResult()));
+    when(this.responseMock.bodyToMono(any(ParameterizedTypeReference.class)))
+            .thenReturn(Mono.just(Arrays.asList(getDigitalIdentity())));
     when(this.requestBodyUriMock.uri(this.props.getPenMatchApiURL())).thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.uri(this.props.getStudentApiURL())).thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.uri(this.props.getDigitalIdentifierApiURL())).thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.uri(this.props.getDigitalIdentifierApiURL() + "/list")).thenReturn(this.requestBodyUriMock);
 
     when(this.webClient.post()).thenReturn(this.requestBodyUriMock);
     when(this.webClient.put()).thenReturn(this.requestBodyUriMock);
@@ -162,19 +176,21 @@ public class SoamControllerTest {
       .thenReturn(this.requestBodyUriMock);
     when(this.requestBodyUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
       .thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.uri(eq(this.props.getDigitalIdentifierApiURL() + "/list"), any(Function.class)))
+            .thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.uri(eq(this.props.getStudentApiURL()), any(Function.class)))
+            .thenReturn(this.requestBodyUriMock);
     when(this.requestBodyUriMock.headers(any()))
       .thenReturn(this.returnMockBodySpec());
     when(this.requestHeadersMock.retrieve())
       .thenReturn(this.responseMock);
-    when(this.responseMock.bodyToMono(ServicesCardEntity.class))
-      .thenReturn(Mono.just(servicesCardEntity));
-    when(this.responseMock.bodyToMono(DigitalIDEntity.class))
-      .thenReturn(Mono.just(this.getDigitalIdentity()));
     when(this.requestBodyUriMock.uri(this.props.getPenMatchApiURL())).thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.uri(this.props.getStudentApiURL())).thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.uri(this.props.getDigitalIdentifierApiURL())).thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.uri(this.props.getDigitalIdentifierApiURL() + "/list")).thenReturn(this.requestBodyUriMock);
     when(this.requestBodyUriMock.header(any(), any())).thenReturn(this.returnMockBodySpec());
     when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class))).thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.retrieve()).thenReturn(this.responseMock);
-    when(this.responseMock.bodyToMono(PenMatchResult.class)).thenReturn(Mono.just(penMatchResult));
 
     this.mockMvc.perform(multipart("/link")
       .with(jwt().jwt((jwt) -> jwt.claim("scope", "SOAM_LINK")))
@@ -182,7 +198,7 @@ public class SoamControllerTest {
       .header("correlationID", this.guid)
       .params(map)
       .accept(MediaType.APPLICATION_JSON)).andDo(print()).andExpect(status().isOk());
-    verify(this.webClient, atMost(invocations + 2)).put();
+    verify(this.webClient, atMost(invocations + 4)).put();
 
   }
 
@@ -495,9 +511,17 @@ public class SoamControllerTest {
     return identityTypeCodeEntities;
   }
 
-  private PenMatchResult createPenMatchResult() {
-    PenMatchResult penMatchResult = new PenMatchResult();
-    penMatchResult.setPenStatus("AA");
-    return penMatchResult;
+  private List<StudentEntity> createStudentSearchResult() {
+    List<StudentEntity> students = new ArrayList<>();
+    StudentEntity stud = new StudentEntity();
+    stud.setStudentID(UUID.randomUUID());
+    students.add(stud);
+    return students;
+  }
+
+  private StudentEntity createStudentResult() {
+    StudentEntity stud = new StudentEntity();
+    stud.setStudentID(UUID.randomUUID());
+    return stud;
   }
 }

@@ -6,8 +6,6 @@ import ca.bc.gov.educ.api.soam.exception.SoamRuntimeException;
 import ca.bc.gov.educ.api.soam.model.entity.*;
 import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
 import ca.bc.gov.educ.api.soam.rest.RestUtils;
-import ca.bc.gov.educ.api.soam.struct.v1.penmatch.PenMatchResult;
-import ca.bc.gov.educ.api.soam.struct.v1.penmatch.PenMatchStudent;
 import ca.bc.gov.educ.api.soam.util.JsonUtil;
 import ca.bc.gov.educ.api.soam.util.SoamUtil;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
@@ -18,22 +16,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class SoamService {
-
-  private DateTimeFormatter shortDateFormat = DateTimeFormatter.ofPattern("yyyyMMdd");
-
-  private DateTimeFormatter longDateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
   private static final String BCSC = "BCSC";
 
@@ -112,36 +103,13 @@ public class SoamService {
       updateBCSCInfo(servicesCard, scEntity);
       this.updateBCSC(scEntity, correlationID);
     } else {
-      servicesCard.setBirthDate(getBCSCDobString(servicesCard.getBirthDate()));
+      servicesCard.setBirthDate(soamUtil.getBCSCDobString(servicesCard.getBirthDate()));
       this.restUtils.createServicesCard(servicesCard, correlationID);
-    }
-
-  }
-
-  public LocalDate getValidShortDate(String dateStr) {
-    try {
-      return LocalDate.parse(dateStr, this.shortDateFormat);
-    } catch (DateTimeParseException e) {
-      return null;
-    }
-  }
-
-  private String getBCSCDobString(String dateOfBirth) {
-    LocalDate dob;
-    try {
-      dob = getValidShortDate(dateOfBirth);
-      if(dob != null) {
-        return dob.format(this.longDateFormat);
-      }
-      return dateOfBirth;
-    }catch (Exception e) {
-      log.error("Invalid BCSC birth date: {}", dateOfBirth);
-      throw new SoamRuntimeException("Invalid BCSC birth date: " + dateOfBirth);
     }
   }
 
   private void updateBCSCInfo(ServicesCardEntity servicesCard, ServicesCardEntity scEntity) {
-    scEntity.setBirthDate(getBCSCDobString(servicesCard.getBirthDate()));
+    scEntity.setBirthDate(soamUtil.getBCSCDobString(servicesCard.getBirthDate()));
     scEntity.setEmail(servicesCard.getEmail());
     scEntity.setGender(servicesCard.getGender());
     scEntity.setGivenName(servicesCard.getGivenName());
@@ -155,51 +123,26 @@ public class SoamService {
 
   private HttpStatus attemptBCSCAutoMatch(final ServicesCardEntity servicesCard, final DigitalIDEntity digitalIDEntity, final String correlationID) {
     log.debug("Attempting to auto match BCSC for DID: {}", servicesCard.getDid());
-    PenMatchStudent penMatchStudent = new PenMatchStudent();
-    penMatchStudent.setSurname(servicesCard.getSurname());
-    penMatchStudent.setGivenName(servicesCard.getGivenName());
-    if (servicesCard.getGivenNames() != null && servicesCard.getGivenName() != null) {
-      penMatchStudent.setMiddleName(servicesCard.getGivenNames().replaceAll(servicesCard.getGivenName(), "").trim());
-    } else if (servicesCard.getGivenNames() != null) {
-      penMatchStudent.setMiddleName(servicesCard.getGivenNames());
-    }
-    penMatchStudent.setDob(servicesCard.getBirthDate().replace("-", ""));
-    penMatchStudent.setSex(servicesCard.getGender());
-    penMatchStudent.setPostal(servicesCard.getPostalCode());
 
     if(log.isDebugEnabled()){
-      log.debug("Attempting to auto match BCSC with pen match student: {}", JsonUtil.getJsonPrettyStringFromObject(penMatchStudent));
+      log.debug("Attempting to auto match BCSC with pen match student: {}", JsonUtil.getJsonPrettyStringFromObject(servicesCard));
     }
 
-    Optional<PenMatchResult> optional = this.restUtils.postToMatchAPI(penMatchStudent);
-    if(optional.isPresent()) {
-      log.debug("Auto match result status: {} for DID: {}", optional.get().getPenStatus(), servicesCard.getDid());
-      return evaluateAndLinkBCSCResult(optional.get(), digitalIDEntity, correlationID);
-    }else{
-      throw new SoamRuntimeException("Error occurred while calling Match API");
+    List<StudentEntity> students = this.restUtils.getStudentByBCSCDemogs(servicesCard, correlationID);
+    if(students != null && students.size() == 1) {
+      log.debug("Auto match was completed for student ID: {} and DID: {}", students.get(0).getStudentID(), servicesCard.getDid());
+      return linkBCSCResult(students.get(0).getStudentID(), digitalIDEntity, correlationID);
     }
+    return HttpStatus.OK;
   }
 
-  private HttpStatus evaluateAndLinkBCSCResult(final PenMatchResult penMatchResult, final DigitalIDEntity digitalIDEntity, final String correlationID) {
-    if(penMatchResult == null || penMatchResult.getPenStatus() == null) {
-      throw new SoamRuntimeException("Error occurred while calling Match API");
-    }
-    switch (penMatchResult.getPenStatus()) {
-      case "B1":
-      case "C1":
-      case "D1":
-        removePreviousDigitalIdentityLinks(penMatchResult.getMatchingRecords().get(0).getStudentID(), correlationID);
-        digitalIDEntity.setStudentID(penMatchResult.getMatchingRecords().get(0).getStudentID());
-        digitalIDEntity.setAutoMatchedDate(LocalDateTime.now().toString());
-        log.debug("Updating digital identity after auto match for digital identity: {} student ID: {}", digitalIDEntity.getDigitalID(), digitalIDEntity.getStudentID());
-        this.restUtils.updateDigitalID(digitalIDEntity, correlationID);
-        break;
-      case "BM":
-      case "CM":
-      case "DM":
-        return HttpStatus.MULTIPLE_CHOICES;
-      default:
-    }
+  private HttpStatus linkBCSCResult(final UUID studentID, final DigitalIDEntity digitalIDEntity, final String correlationID) {
+    removePreviousDigitalIdentityLinks(studentID.toString(), correlationID);
+    digitalIDEntity.setStudentID(studentID.toString());
+    digitalIDEntity.setAutoMatchedDate(LocalDateTime.now().toString());
+    log.debug("Updating digital identity after auto match for digital identity: {} student ID: {}", digitalIDEntity.getDigitalID(), digitalIDEntity.getStudentID());
+    this.restUtils.updateDigitalID(digitalIDEntity, correlationID);
+
     return HttpStatus.OK;
   }
 

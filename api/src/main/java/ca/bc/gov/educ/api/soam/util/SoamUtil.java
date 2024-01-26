@@ -1,19 +1,29 @@
 package ca.bc.gov.educ.api.soam.util;
 
+import ca.bc.gov.educ.api.soam.exception.SoamRuntimeException;
 import ca.bc.gov.educ.api.soam.model.SoamServicesCard;
 import ca.bc.gov.educ.api.soam.model.SoamStudent;
 import ca.bc.gov.educ.api.soam.model.entity.DigitalIDEntity;
 import ca.bc.gov.educ.api.soam.model.entity.ServicesCardEntity;
 import ca.bc.gov.educ.api.soam.model.entity.SoamLoginEntity;
 import ca.bc.gov.educ.api.soam.model.entity.StudentEntity;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.UUID;
 
 @Component
+@Slf4j
 public class SoamUtil {
+
+  private DateTimeFormatter shortDateFormat = DateTimeFormatter.ofPattern("yyyyMMdd");
+
+  private DateTimeFormatter longDateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
   public DigitalIDEntity createDigitalIdentity(String identityTypeCode, String identityValue) {
     DigitalIDEntity entity = new DigitalIDEntity();
@@ -33,6 +43,27 @@ public class SoamUtil {
     return digitalIDEntity;
   }
 
+  public String getBCSCDobString(String dateOfBirth) {
+    LocalDate dob;
+    try {
+      dob = getValidShortDate(dateOfBirth);
+      if(dob != null) {
+        return dob.format(this.longDateFormat);
+      }
+      return dateOfBirth;
+    }catch (Exception e) {
+      log.error("Invalid BCSC birth date: {}", dateOfBirth);
+      throw new SoamRuntimeException("Invalid BCSC birth date: " + dateOfBirth);
+    }
+  }
+
+  private LocalDate getValidShortDate(String dateStr) {
+    try {
+      return LocalDate.parse(dateStr, this.shortDateFormat);
+    } catch (DateTimeParseException e) {
+      return null;
+    }
+  }
 
   public SoamLoginEntity createSoamLoginEntity(StudentEntity student, UUID digitalIdentifierID, ServicesCardEntity serviceCardEntity) {
     SoamLoginEntity entity = new SoamLoginEntity();

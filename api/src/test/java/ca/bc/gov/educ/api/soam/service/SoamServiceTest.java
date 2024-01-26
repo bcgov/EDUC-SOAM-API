@@ -8,8 +8,6 @@ import ca.bc.gov.educ.api.soam.model.SoamStudent;
 import ca.bc.gov.educ.api.soam.model.entity.*;
 import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
 import ca.bc.gov.educ.api.soam.rest.RestUtils;
-import ca.bc.gov.educ.api.soam.struct.v1.penmatch.PenMatchRecord;
-import ca.bc.gov.educ.api.soam.struct.v1.penmatch.PenMatchResult;
 import ca.bc.gov.educ.api.soam.util.SoamUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -298,7 +296,7 @@ public class SoamServiceTest {
     when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.empty());
     when(this.restUtils.createDigitalID(anyString(), anyString(), anyString())).thenReturn(this.createDigitalIdentity());
     when(this.restUtils.getServicesCard(anyString(), anyString())).thenReturn(Optional.empty());
-    when(this.restUtils.postToMatchAPI(any())).thenReturn(Optional.of(this.createPenMatchResult()));
+    when(this.restUtils.getStudentByBCSCDemogs(any(), any())).thenReturn(this.createStudentSearchResult());
     when(this.restUtils.getDigitalIDByStudentID(anyString(), anyString())).thenReturn(new ArrayList<>(Arrays.asList(this.createDigitalIdentityWithStudentID())));
     doNothing().when(this.restUtils).createServicesCard(any(), any());
     this.service.performLogin("BCSC", "12345", servicesCardEntity, correlationID);
@@ -320,14 +318,14 @@ public class SoamServiceTest {
     when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.empty());
     when(this.restUtils.createDigitalID(anyString(), anyString(), anyString())).thenReturn(this.createDigitalIdentity());
     when(this.restUtils.getServicesCard(anyString(), anyString())).thenReturn(Optional.empty());
-    when(this.restUtils.postToMatchAPI(any())).thenReturn(Optional.of(this.createPenMatchResult()));
+    when(this.restUtils.getStudentByBCSCDemogs(any(), any())).thenReturn(this.createStudentSearchResult());
     when(this.restUtils.getStudentByStudentID(anyString(), anyString())).thenReturn(studentResponseEntity);
     doNothing().when(this.restUtils).createServicesCard(any(), any());
     this.service.performLink(servicesCardEntity, correlationID);
     verify(this.restUtils, times(1)).createDigitalID("BCSC", servicesCardEntity.getDid(), correlationID);
     verify(this.restUtils, times(1)).getDigitalID("BCSC", servicesCardEntity.getDid(), correlationID);
     verify(this.restUtils, times(1)).createServicesCard(any(), any());
-    verify(this.restUtils, times(1)).postToMatchAPI(any());
+    verify(this.restUtils, times(1)).getStudentByBCSCDemogs(any(), any());
     verify(this.restUtils, times(1)).updateDigitalID(any(),any());
     verify(this.restUtils, times(1)).getServicesCard("DIGITALID", correlationID);
     verify(this.restUtils, never()).updateServicesCard(any(), any());
@@ -344,14 +342,14 @@ public class SoamServiceTest {
     when(this.restUtils.getDigitalID(anyString(), anyString(), anyString())).thenReturn(Optional.empty());
     when(this.restUtils.createDigitalID(anyString(), anyString(), anyString())).thenReturn(this.createDigitalIdentity());
     when(this.restUtils.getServicesCard(anyString(), anyString())).thenReturn(Optional.empty());
-    when(this.restUtils.postToMatchAPI(any())).thenReturn(Optional.of(this.createPenMatchResult()));
+    when(this.restUtils.getStudentByBCSCDemogs(any(), any())).thenReturn(this.createStudentSearchResult());
     when(this.restUtils.getStudentByStudentID(anyString(), anyString())).thenReturn(studentResponseEntity);
     doNothing().when(this.restUtils).createServicesCard(any(), any());
     this.service.performLink(servicesCardEntity, correlationID);
     verify(this.restUtils, times(1)).createDigitalID("BCSC", servicesCardEntity.getDid(), correlationID);
     verify(this.restUtils, times(1)).getDigitalID("BCSC", servicesCardEntity.getDid(), correlationID);
     verify(this.restUtils, times(1)).createServicesCard(any(), any());
-    verify(this.restUtils, times(1)).postToMatchAPI(any());
+    verify(this.restUtils, times(1)).getStudentByBCSCDemogs(any(), any());
     verify(this.restUtils, times(1)).updateDigitalID(any(),any());
     verify(this.restUtils, times(1)).getServicesCard("DIGITALID", correlationID);
     verify(this.restUtils, never()).updateServicesCard(any(), any());
@@ -746,15 +744,11 @@ public class SoamServiceTest {
     }
   }
 
-  private PenMatchResult createPenMatchResult() {
-    PenMatchResult penMatchResult = new PenMatchResult();
-    List<PenMatchRecord> matchingRecords = new ArrayList<>();
-    PenMatchRecord penMatchRecord = new PenMatchRecord();
-    penMatchRecord.setMatchingPEN("123456789");
-    penMatchRecord.setStudentID(UUID.randomUUID().toString());
-    penMatchResult.setPenStatus("B1");
-    matchingRecords.add(penMatchRecord);
-    penMatchResult.setMatchingRecords(matchingRecords);
-    return penMatchResult;
+  private List<StudentEntity> createStudentSearchResult() {
+    List<StudentEntity> students = new ArrayList<>();
+    StudentEntity stud = new StudentEntity();
+    stud.setStudentID(UUID.randomUUID());
+    students.add(stud);
+    return students;
   }
 }

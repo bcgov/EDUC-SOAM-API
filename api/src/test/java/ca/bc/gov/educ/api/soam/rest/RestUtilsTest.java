@@ -5,8 +5,6 @@ import ca.bc.gov.educ.api.soam.model.entity.DigitalIDEntity;
 import ca.bc.gov.educ.api.soam.model.entity.ServicesCardEntity;
 import ca.bc.gov.educ.api.soam.model.entity.StudentEntity;
 import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
-import ca.bc.gov.educ.api.soam.struct.v1.penmatch.PenMatchResult;
-import ca.bc.gov.educ.api.soam.struct.v1.penmatch.PenMatchStudent;
 import lombok.SneakyThrows;
 import lombok.val;
 import org.junit.After;
@@ -175,23 +173,6 @@ public class RestUtilsTest {
     when(this.responseMock.bodyToMono(List.class))
       .thenReturn(Mono.justOrEmpty(Optional.empty()));
     assertThrows(SoamRuntimeException.class, () -> this.restUtils.getDigitalIDByStudentID("12345", correlationID));
-  }
-
-  @Test
-  public void testGetPenMatchResult_givenAPICallSuccess_shouldReturnPenMatchResult() {
-    final PenMatchStudent student = this.createPenMatchStudent();
-    final PenMatchResult penMatchResult = this.createPenMatchResponse();
-    when(this.webClient.post()).thenReturn(this.requestBodyUriMock);
-    when(this.requestBodyUriMock.uri(this.props.getPenMatchApiURL())).thenReturn(this.requestBodyUriMock);
-    when(this.requestBodyUriMock.header(any(), any())).thenReturn(this.requestBodyMock);
-    when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class))).thenReturn(this.requestHeadersMock);
-    when(this.requestHeadersMock.retrieve()).thenReturn(this.responseMock);
-    when(this.responseMock.bodyToMono(PenMatchResult.class)).thenReturn(Mono.just(penMatchResult));
-
-    val response = this.restUtils.postToMatchAPI(student);
-    assertThat(response).isNotNull();
-    assertThat(response.isPresent()).isTrue();
-    assertThat(response.get().getPenStatus()).isNotNull();
   }
 
   @Test
@@ -516,21 +497,4 @@ public class RestUtilsTest {
     return entity;
   }
 
-  private PenMatchStudent createPenMatchStudent() {
-    PenMatchStudent penMatchStudent = new PenMatchStudent();
-    penMatchStudent.setPen("123456789");
-    penMatchStudent.setDob("19980101");
-    penMatchStudent.setSex("M");
-    penMatchStudent.setSurname("SMITH");
-    penMatchStudent.setGivenName("JOHN");
-    penMatchStudent.setMiddleName("WAYNE");
-    penMatchStudent.setPostal("V0H1A0");
-    return penMatchStudent;
-  }
-
-  private PenMatchResult createPenMatchResponse() {
-    PenMatchResult penMatchResult = new PenMatchResult();
-    penMatchResult.setPenStatus("AA");
-    return penMatchResult;
-  }
 }

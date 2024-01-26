@@ -126,6 +126,83 @@ public class SoamControllerTest {
   }
 
   @Test
+  public void performLink_givenValidPayloadWithServicesCard_shouldReturnSoamLoginEntity() throws Exception {
+    final var invocations = mockingDetails(this.webClient).getInvocations().size();
+
+    final MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+    map.add("did", this.guid.toUpperCase());
+    map.add("birthDate", "19841102");
+    map.add("city", "Victoria");
+    map.add("country", "CAN");
+    map.add("email", "abc@gmail.com");
+    map.add("gender", "M");
+    map.add("identityAssuranceLevel", "1");
+    map.add("givenName", "Given");
+
+    final ServicesCardEntity servicesCardEntity = this.createServiceCardEntity();
+    when(this.webClient.get()).thenReturn(this.requestHeadersUriMock);
+    when(this.requestHeadersUriMock.uri(eq(this.props.getServicesCardApiURL()), any(Function.class)))
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersUriMock.uri(eq(this.props.getDigitalIdentifierApiURL() + "/list"), any(Function.class)))
+            .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersUriMock.uri(eq(this.props.getStudentApiURL()), any(Function.class)))
+            .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.headers(any()))
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class)))
+      .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.retrieve())
+      .thenReturn(this.responseMock);
+    when(this.responseMock.bodyToMono(ServicesCardEntity.class))
+      .thenReturn(Mono.just(servicesCardEntity));
+    when(this.responseMock.bodyToMono(DigitalIDEntity.class))
+      .thenReturn(Mono.just(this.getDigitalIdentity()));
+    when(this.responseMock.bodyToMono(List.class))
+            .thenReturn(Mono.just(createStudentSearchResult()));
+    when(this.responseMock.bodyToMono(StudentEntity.class))
+            .thenReturn(Mono.just(createStudentResult()));
+    when(this.responseMock.bodyToMono(any(ParameterizedTypeReference.class)))
+            .thenReturn(Mono.just(Arrays.asList(getDigitalIdentity())));
+    when(this.requestBodyUriMock.uri(this.props.getPenMatchApiURL())).thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.uri(this.props.getStudentApiURL())).thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.uri(this.props.getDigitalIdentifierApiURL())).thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.uri(this.props.getDigitalIdentifierApiURL() + "/list")).thenReturn(this.requestBodyUriMock);
+
+    when(this.webClient.post()).thenReturn(this.requestBodyUriMock);
+    when(this.webClient.put()).thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.uri(eq(this.props.getServicesCardApiURL()), any(Function.class)))
+      .thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.uri(eq(this.props.getDigitalIdentifierApiURL()), any(Function.class)))
+      .thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.uri(eq(this.props.getDigitalIdentifierApiURL() + "/list"), any(Function.class)))
+            .thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.uri(eq(this.props.getStudentApiURL()), any(Function.class)))
+            .thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.headers(any()))
+      .thenReturn(this.returnMockBodySpec());
+    when(this.requestHeadersMock.retrieve())
+      .thenReturn(this.responseMock);
+    when(this.requestBodyUriMock.uri(this.props.getPenMatchApiURL())).thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.uri(this.props.getStudentApiURL())).thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.uri(this.props.getDigitalIdentifierApiURL())).thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.uri(this.props.getDigitalIdentifierApiURL() + "/list")).thenReturn(this.requestBodyUriMock);
+    when(this.requestBodyUriMock.header(any(), any())).thenReturn(this.returnMockBodySpec());
+    when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class))).thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersMock.retrieve()).thenReturn(this.responseMock);
+
+    this.mockMvc.perform(multipart("/link")
+      .with(jwt().jwt((jwt) -> jwt.claim("scope", "SOAM_LINK")))
+      .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+      .header("correlationID", this.guid)
+      .params(map)
+      .accept(MediaType.APPLICATION_JSON)).andDo(print()).andExpect(status().isOk());
+    verify(this.webClient, atMost(invocations + 4)).put();
+
+  }
+
+  @Test
   public void performLogin_givenValidPayloadWithServicesCard_shouldReturnNoContent() throws Exception {
     final var invocations = mockingDetails(this.webClient).getInvocations().size();
 
@@ -434,7 +511,6 @@ public class SoamControllerTest {
     return identityTypeCodeEntities;
   }
 
-
   private List<StudentEntity> createStudentSearchResult() {
     List<StudentEntity> students = new ArrayList<>();
     StudentEntity stud = new StudentEntity();
@@ -443,4 +519,9 @@ public class SoamControllerTest {
     return students;
   }
 
+  private StudentEntity createStudentResult() {
+    StudentEntity stud = new StudentEntity();
+    stud.setStudentID(UUID.randomUUID());
+    return stud;
+  }
 }

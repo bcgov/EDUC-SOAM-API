@@ -30,8 +30,10 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
+import java.net.URI;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;
@@ -433,6 +435,13 @@ public class RestUtils {
     }
   }
 
+  private URI getSchoolContactURI(String criterion){
+    return UriComponentsBuilder.fromHttpUrl(this.props.getStudentApiURL() + "/paginated")
+            .queryParam("pageNumber", "0")
+            .queryParam("pageSize", "10000")
+            .queryParam("searchCriteriaList", criterion).build().toUri();
+  }
+
   @Bulkhead(name = STUDENT_API)
   @CircuitBreaker(name = STUDENT_API)
   @Retry(name = STUDENT_API)
@@ -441,11 +450,7 @@ public class RestUtils {
       val searchCriteria = getSearchCriteria(servicesCard);
       log.info("Attempting callout to get student by demographics - URI is :: {}", "/paginated?pageNumber=1&pageSize=10&searchCriteriaList=" + searchCriteria);
       val apiResponse = this.webClient.get()
-              .uri(this.props.getStudentApiURL(), uri -> uri.path("/paginated")
-                      .queryParam("pageNumber", "1")
-                      .queryParam("pageSize", "10")
-                      .queryParam("searchCriteriaList", searchCriteria)
-                      .build())
+              .uri(getSchoolContactURI(searchCriteria))
               .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
               .header(CORRELATION_ID, correlationID)
               .retrieve()
@@ -493,13 +498,13 @@ public class RestUtils {
 
     final List<SearchCriteria> criteriaMergedDeceased = new LinkedList<>();
 
-//    final SearchCriteria criteriaMandD =  SearchCriteria.builder().key(STATUS_CODE).operation(FilterOperation.NOT_IN).value("M,D").valueType(STRING).build();
+    final SearchCriteria criteriaMandD =  SearchCriteria.builder().key(STATUS_CODE).operation(FilterOperation.NOT_IN).value("M,D").valueType(STRING).build();
 
-//    criteriaMergedDeceased.add(criteriaMandD);
+    criteriaMergedDeceased.add(criteriaMandD);
 
     final List<Search> searches = new LinkedList<>();
     searches.add(Search.builder().condition(AND).searchCriteriaList(criteriaList).build());
-//    searches.add(Search.builder().condition(AND).searchCriteriaList(criteriaMergedDeceased).build());
+    searches.add(Search.builder().condition(AND).searchCriteriaList(criteriaMergedDeceased).build());
 
     return this.objectMapper.writeValueAsString(searches);
   }

@@ -454,7 +454,7 @@ public class RestUtils {
               .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
               .header(CORRELATION_ID, correlationID)
               .retrieve()
-              .bodyToMono(List.class)
+              .bodyToMono(Object.class)
               .doOnSuccess(responseEntity -> {
                 if (responseEntity != null) {
                   this.logSuccess(responseEntity.toString());
@@ -465,7 +465,8 @@ public class RestUtils {
         throw new SoamRuntimeException(this.getErrorMessageString(HttpStatus.INTERNAL_SERVER_ERROR, NULL_BODY_FROM +
                 "student get call."));
       }
-      return apiResponse;
+      log.info("Response object is: " + apiResponse);
+      return (List) apiResponse;
     } catch (final WebClientResponseException e) {
       throw new SoamRuntimeException(this.getErrorMessageString(e.getStatusCode(), e.getResponseBodyAsString()));
     } catch (final JsonProcessingException e) {

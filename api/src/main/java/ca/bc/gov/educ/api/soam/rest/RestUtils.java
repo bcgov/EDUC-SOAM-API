@@ -75,7 +75,7 @@ public class RestUtils {
   /**
    * The constant LEGAL_FIRST_NAME.
    */
-  public static final String GENDER = "gender";
+  public static final String GENDER = "genderCode";
   /**
    * The constant DOB.
    */

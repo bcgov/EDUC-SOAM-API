@@ -483,14 +483,17 @@ public class RestUtils {
       criteriaList.add(this.getCriteriaWithCondition(LEGAL_FIRST_NAME, EQUAL, null, STRING, AND));
     }
 
+    String middleName = null;
     if(StringUtils.isNotEmpty(servicesCard.getGivenNames())) {
-      var middleName = servicesCard.getGivenNames().replaceAll(servicesCard.getGivenNames(), "").trim();
+      middleName = servicesCard.getGivenNames().replaceAll(servicesCard.getGivenName(), "").trim();
       if (StringUtils.isNotBlank(middleName)) {
         criteriaList.add(this.getCriteriaWithCondition(LEGAL_MIDDLE_NAMES, EQUAL, middleName, STRING, AND));
-      } else {
-        criteriaList.add(this.getCriteriaWithCondition(LEGAL_MIDDLE_NAMES, EQUAL, null, STRING, AND));
+      } else{
+        middleName = null;
       }
     }
+
+    criteriaList.add(this.getCriteriaWithCondition(LEGAL_MIDDLE_NAMES, EQUAL, middleName, STRING, AND));
 
     criteriaList.add(this.getCriteriaWithCondition(GENDER, EQUAL, servicesCard.getGender(), STRING, AND));
 

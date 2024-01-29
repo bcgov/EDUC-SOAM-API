@@ -122,7 +122,7 @@ public class SoamService {
   }
 
   private HttpStatus attemptBCSCAutoMatch(final ServicesCardEntity servicesCard, final DigitalIDEntity digitalIDEntity, final String correlationID) {
-    log.debug("Attempting to auto match BCSC for DID: {}", servicesCard.getDid());
+    log.info("Attempting to auto match BCSC for DID: {}", servicesCard.getDid());
 
     if(log.isDebugEnabled()){
       log.debug("Attempting to auto match BCSC with pen match student: {}", JsonUtil.getJsonPrettyStringFromObject(servicesCard));
@@ -130,7 +130,7 @@ public class SoamService {
 
     List<StudentEntity> students = this.restUtils.getStudentByBCSCDemogs(servicesCard, correlationID);
     if(students != null && students.size() == 1) {
-      log.debug("Auto match was completed for student ID: {} and DID: {}", students.get(0).getStudentID(), servicesCard.getDid());
+      log.info("Auto match was completed for student ID: {} and DID: {}", students.get(0).getStudentID(), servicesCard.getDid());
       return linkBCSCResult(students.get(0).getStudentID(), digitalIDEntity, correlationID);
     }
     return HttpStatus.OK;

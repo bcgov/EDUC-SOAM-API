@@ -60,6 +60,10 @@ public class RestUtils {
    */
   public static final String PAGE_SIZE = "pageSize";
   /**
+   * The constant PAGE_NUMBER.
+   */
+  public static final String PAGE_NUMBER = "pageNumber";
+  /**
    * The constant LEGAL_LAST_NAME.
    */
   public static final String LEGAL_LAST_NAME = "legalLastName";
@@ -434,8 +438,8 @@ public class RestUtils {
 
   private URI getSchoolContactURI(String criterion){
     return UriComponentsBuilder.fromHttpUrl(this.props.getStudentApiURL() + "/paginated")
-            .queryParam("pageNumber", "0")
-            .queryParam("pageSize", "10000")
+            .queryParam(PAGE_NUMBER, "0")
+            .queryParam(PAGE_SIZE, "10000")
             .queryParam("searchCriteriaList", criterion).build().toUri();
   }
 
@@ -462,7 +466,7 @@ public class RestUtils {
         throw new SoamRuntimeException(this.getErrorMessageString(HttpStatus.INTERNAL_SERVER_ERROR, NULL_BODY_FROM +
                 "student get call."));
       }
-      log.info("Response object is: " + apiResponse);
+      log.info("BCSC Student API match response object is: " + apiResponse);
       return apiResponse.getContent();
     } catch (final WebClientResponseException e) {
       throw new SoamRuntimeException(this.getErrorMessageString(e.getStatusCode(), e.getResponseBodyAsString()));
@@ -486,9 +490,7 @@ public class RestUtils {
     String middleName = null;
     if(StringUtils.isNotEmpty(servicesCard.getGivenNames())) {
       middleName = servicesCard.getGivenNames().replaceAll(servicesCard.getGivenName(), "").trim();
-      if (StringUtils.isNotBlank(middleName)) {
-        criteriaList.add(this.getCriteriaWithCondition(LEGAL_MIDDLE_NAMES, EQUAL, middleName, STRING, AND));
-      } else{
+      if (StringUtils.isBlank(middleName)) {
         middleName = null;
       }
     }

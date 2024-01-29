@@ -493,13 +493,13 @@ public class RestUtils {
 
     final List<SearchCriteria> criteriaMergedDeceased = new LinkedList<>();
 
-    final SearchCriteria criteriaMandD =  SearchCriteria.builder().key(STATUS_CODE).operation(FilterOperation.NOT_IN).value("M,D").valueType(STRING).build();
+//    final SearchCriteria criteriaMandD =  SearchCriteria.builder().key(STATUS_CODE).operation(FilterOperation.NOT_IN).value("M,D").valueType(STRING).build();
 
-    criteriaMergedDeceased.add(criteriaMandD);
+//    criteriaMergedDeceased.add(criteriaMandD);
 
     final List<Search> searches = new LinkedList<>();
     searches.add(Search.builder().condition(AND).searchCriteriaList(criteriaList).build());
-    searches.add(Search.builder().condition(AND).searchCriteriaList(criteriaMergedDeceased).build());
+//    searches.add(Search.builder().condition(AND).searchCriteriaList(criteriaMergedDeceased).build());
 
     return this.objectMapper.writeValueAsString(searches);
   }

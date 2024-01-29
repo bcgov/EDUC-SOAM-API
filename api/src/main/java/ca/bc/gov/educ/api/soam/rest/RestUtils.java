@@ -8,10 +8,7 @@ import ca.bc.gov.educ.api.soam.model.entity.ServicesCardEntity;
 import ca.bc.gov.educ.api.soam.model.entity.StsLoginPrincipalEntity;
 import ca.bc.gov.educ.api.soam.model.entity.StudentEntity;
 import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
-import ca.bc.gov.educ.api.soam.struct.v1.student.Condition;
-import ca.bc.gov.educ.api.soam.struct.v1.student.Search;
-import ca.bc.gov.educ.api.soam.struct.v1.student.SearchCriteria;
-import ca.bc.gov.educ.api.soam.struct.v1.student.ValueType;
+import ca.bc.gov.educ.api.soam.struct.v1.student.*;
 import ca.bc.gov.educ.api.soam.struct.v1.tenant.TenantAccess;
 import ca.bc.gov.educ.api.soam.util.SoamUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -454,7 +451,7 @@ public class RestUtils {
               .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
               .header(CORRELATION_ID, correlationID)
               .retrieve()
-              .bodyToMono(Object.class)
+              .bodyToMono(StudentSearchWrapper.class)
               .doOnSuccess(responseEntity -> {
                 if (responseEntity != null) {
                   this.logSuccess(responseEntity.toString());
@@ -466,7 +463,7 @@ public class RestUtils {
                 "student get call."));
       }
       log.info("Response object is: " + apiResponse);
-      return (List) apiResponse;
+      return apiResponse.getContent();
     } catch (final WebClientResponseException e) {
       throw new SoamRuntimeException(this.getErrorMessageString(e.getStatusCode(), e.getResponseBodyAsString()));
     } catch (final JsonProcessingException e) {

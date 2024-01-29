@@ -495,7 +495,7 @@ public class RestUtils {
     criteriaMergedDeceased.add(criteriaMandD);
 
     final List<Search> searches = new LinkedList<>();
-    searches.add(Search.builder().searchCriteriaList(criteriaList).build());
+    searches.add(Search.builder().condition(AND).searchCriteriaList(criteriaList).build());
     searches.add(Search.builder().condition(AND).searchCriteriaList(criteriaMergedDeceased).build());
 
     return this.objectMapper.writeValueAsString(searches);

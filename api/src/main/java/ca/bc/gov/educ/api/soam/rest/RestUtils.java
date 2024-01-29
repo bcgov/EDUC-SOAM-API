@@ -441,7 +441,10 @@ public class RestUtils {
       val searchCriteria = getSearchCriteria(servicesCard);
       log.info("Attempting callout to get student by demographics - URI is :: {}", "/paginated?pageNumber=1&pageSize=10&searchCriteriaList=" + searchCriteria);
       val apiResponse = this.webClient.get()
-              .uri(this.props.getStudentApiURL(), uri -> uri.path("/paginated?pageNumber=1&pageSize=10").queryParam("searchCriteriaList", searchCriteria)
+              .uri(this.props.getStudentApiURL(), uri -> uri.path("/paginated")
+                      .queryParam("pageNumber", "1")
+                      .queryParam("pageSize", "10")
+                      .queryParam("searchCriteriaList", searchCriteria)
                       .build())
               .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
               .header(CORRELATION_ID, correlationID)

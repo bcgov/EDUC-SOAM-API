@@ -439,6 +439,7 @@ public class RestUtils {
   public List<StudentEntity> getStudentByBCSCDemogs(final ServicesCardEntity servicesCard, final String correlationID) {
     try {
       val searchCriteria = getSearchCriteria(servicesCard);
+      log.info("Attempting callout to get student by demographics - URI is :: {}", "/paginated?pageNumber=1&pageSize=10&searchCriteriaList=" + searchCriteria);
       val apiResponse = this.webClient.get()
               .uri(this.props.getStudentApiURL(), uri -> uri.path("/paginated?pageNumber=1&pageSize=10&searchCriteriaList=" + searchCriteria)
                       .build())

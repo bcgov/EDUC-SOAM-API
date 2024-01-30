@@ -2,8 +2,6 @@ package ca.bc.gov.educ.api.soam.filter;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
-import java.util.Optional;
-
 /**
  * The enum Filter operation.
  */
@@ -74,21 +72,6 @@ public enum FilterOperation {
    */
   FilterOperation(String value) {
     this.value = value;
-  }
-
-  /**
-   * From value optional.
-   *
-   * @param value the value
-   * @return the optional
-   */
-  public static Optional<FilterOperation> fromValue(String value) {
-    for (FilterOperation op : FilterOperation.values()) {
-      if (String.valueOf(op.value).equalsIgnoreCase(value)) {
-        return Optional.of(op);
-      }
-    }
-    return Optional.empty();
   }
 
   @Override

@@ -2,6 +2,7 @@ package ca.bc.gov.educ.api.soam.controller;
 
 import ca.bc.gov.educ.api.soam.model.entity.*;
 import ca.bc.gov.educ.api.soam.properties.ApplicationProperties;
+import ca.bc.gov.educ.api.soam.struct.v1.student.StudentSearchWrapper;
 import lombok.val;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,6 +23,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -149,6 +151,8 @@ public class SoamControllerTest {
             .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersUriMock.uri(eq(this.props.getStudentApiURL()), any(Function.class)))
             .thenReturn(this.requestHeadersMock);
+    when(this.requestHeadersUriMock.uri(any(URI.class)))
+            .thenReturn(this.requestHeadersMock);
     when(this.requestHeadersMock.headers(any()))
       .thenReturn(this.requestHeadersMock);
     when(this.requestBodyMock.body(any(), (Class<?>) any(Object.class)))
@@ -161,6 +165,8 @@ public class SoamControllerTest {
       .thenReturn(Mono.just(this.getDigitalIdentity()));
     when(this.responseMock.bodyToMono(List.class))
             .thenReturn(Mono.just(createStudentSearchResult()));
+    when(this.responseMock.bodyToMono(StudentSearchWrapper.class))
+            .thenReturn(Mono.just(createWrappedStudentResult()));
     when(this.responseMock.bodyToMono(StudentEntity.class))
             .thenReturn(Mono.just(createStudentResult()));
     when(this.responseMock.bodyToMono(any(ParameterizedTypeReference.class)))
@@ -517,6 +523,14 @@ public class SoamControllerTest {
     stud.setStudentID(UUID.randomUUID());
     students.add(stud);
     return students;
+  }
+
+  private StudentSearchWrapper createWrappedStudentResult() {
+    StudentSearchWrapper wrap = new StudentSearchWrapper();
+    StudentEntity stud = new StudentEntity();
+    stud.setStudentID(UUID.randomUUID());
+    wrap.setContent(Arrays.asList(stud));
+    return wrap;
   }
 
   private StudentEntity createStudentResult() {

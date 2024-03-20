@@ -32,7 +32,7 @@ env:
   TAG: "latest"
   TARGET_ENV: "dev"
   MIN_REPLICAS_DEV: "1"
-  MAX_REPLICAS_DEV: "1"
+  MAX_REPLICAS_DEV: "2"
   MIN_CPU: "10m"
   MAX_CPU: "300m"
   MIN_MEM: "650Mi"

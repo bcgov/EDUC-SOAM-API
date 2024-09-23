@@ -87,7 +87,6 @@ public class SoamControllerTest {
 
   @Test
   public void performLogin_givenValidPayload_shouldReturnNoContent() throws Exception {
-
     final MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
     map.add("identifierType", "BASIC");
     map.add("identifierValue", this.guid);
@@ -128,7 +127,7 @@ public class SoamControllerTest {
   }
 
   @Test
-  public void performLink_givenValidPayloadWithServicesCard_shouldReturnSoamLoginEntity() throws Exception {
+  public void performLink_givenValidPayloadWithServicesCard_shouldReturnSoamLoginEntity() throws Exception { //THIS ONE?
     final var invocations = mockingDetails(this.webClient).getInvocations().size();
 
     final MultiValueMap<String, String> map = new LinkedMultiValueMap<>();

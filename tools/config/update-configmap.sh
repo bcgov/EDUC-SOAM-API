@@ -10,8 +10,8 @@ SSO_ENV=loginproxy.gov.bc.ca
 SOAM_KC=soam-$envValue.apps.silver.devops.gov.bc.ca
 TARGET_ENV=$envValue
 
-SOAM_KC_LOAD_USER_ADMIN=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get secret sso-admin-${envValue} | sed -n 's/.*"username": "\(.*\)"/\1/p' | base64 --decode)
-SOAM_KC_LOAD_USER_PASS=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get secret sso-admin-${envValue} | sed -n 's/.*"password": "\(.*\)",/\1/p' | base64 --decode)
+SOAM_KC_LOAD_USER_ADMIN=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get secret sso-keycloak-admin | sed -n 's/.*"username": "\(.*\)"/\1/p' | base64 --decode)
+SOAM_KC_LOAD_USER_PASS=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get secret sso-keycloak-admin | sed -n 's/.*"password": "\(.*\)",/\1/p' | base64 --decode)
 DEVEXCHANGE_KC_CLIENT_ID=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get secret standard-realm-creds-${envValue} | sed -n 's/.*"username": "\(.*\)"/\1/p' | base64 --decode)
 DEVEXCHANGE_KC_CLIENT_SECRET=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get secret standard-realm-creds-${envValue} | sed -n 's/.*"password": "\(.*\)",/\1/p' | base64 --decode)
 DEVEXCHANGE_KC_REALM_ID="standard"
@@ -545,7 +545,7 @@ echo Creating config map soam-sso-config-map
 oc create -n $OPENSHIFT_NAMESPACE-$envValue configmap soam-sso-config-map --from-literal=TZ=$TZVALUE --from-literal=TOKEN_ISSUER_URL="https://$SOAM_KC/auth/realms/$SOAM_KC_REALM_ID" --from-literal=clientID=soam-kc-service --from-literal=clientSecret=$soamKCServiceClientSecret --from-literal=soamApiURL="http://soam-api-master.$OPENSHIFT_NAMESPACE-$envValue.svc.cluster.local:8080" --from-literal=tokenURL=https://$SOAM_KC/auth/realms/$SOAM_KC_REALM_ID/protocol/openid-connect/token --dry-run -o yaml | oc apply -f -
 echo
 echo Setting environment variables for sso-$envValue application
-oc -n $OPENSHIFT_NAMESPACE-$envValue set env --from=configmap/soam-sso-config-map dc/sso-$envValue
+oc -n $OPENSHIFT_NAMESPACE-$envValue set env --from=configmap/soam-sso-config-map dc/sso-keycloak
 
 echo Creating config map "$APP_NAME"-flb-sc-config-map
 oc create -n "$OPENSHIFT_NAMESPACE"-"$envValue" configmap "$APP_NAME"-flb-sc-config-map --from-literal=fluent-bit.conf="$FLB_CONFIG" --from-literal=parsers.conf="$PARSER_CONFIG" --dry-run -o yaml | oc apply -f -

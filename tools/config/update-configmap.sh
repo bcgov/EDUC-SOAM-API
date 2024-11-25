@@ -545,7 +545,7 @@ echo Creating config map soam-sso-config-map
 oc create -n $OPENSHIFT_NAMESPACE-$envValue configmap soam-sso-config-map --from-literal=TZ=$TZVALUE --from-literal=TOKEN_ISSUER_URL="https://$SOAM_KC/auth/realms/$SOAM_KC_REALM_ID" --from-literal=clientID=soam-kc-service --from-literal=clientSecret=$soamKCServiceClientSecret --from-literal=soamApiURL="http://soam-api-master.$OPENSHIFT_NAMESPACE-$envValue.svc.cluster.local:8080" --from-literal=tokenURL=https://$SOAM_KC/auth/realms/$SOAM_KC_REALM_ID/protocol/openid-connect/token --dry-run -o yaml | oc apply -f -
 echo
 echo Setting environment variables for sso-$envValue application
-oc -n $OPENSHIFT_NAMESPACE-$envValue set env --from=configmap/soam-sso-config-map dc/sso-keycloak
+oc -n $OPENSHIFT_NAMESPACE-$envValue set env --from=configmap/soam-sso-config-map deployment/sso-keycloak
 
 echo Creating config map "$APP_NAME"-flb-sc-config-map
 oc create -n "$OPENSHIFT_NAMESPACE"-"$envValue" configmap "$APP_NAME"-flb-sc-config-map --from-literal=fluent-bit.conf="$FLB_CONFIG" --from-literal=parsers.conf="$PARSER_CONFIG" --dry-run -o yaml | oc apply -f -

@@ -22,7 +22,7 @@ public interface SoamEndpoint {
 
   @PostMapping(value = "/login", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
   @PreAuthorize("hasAuthority('SCOPE_SOAM_LOGIN')")
-  ResponseEntity<Void> performLogin(@RequestParam MultiValueMap<String, String> formData, @RequestHeader String correlationID);
+  ResponseEntity<Void> performLogin(MultiValueMap<String, String> formData, @RequestHeader String correlationID);
 
   @GetMapping("/{typeCode}/{typeValue}")
   @PreAuthorize("hasAuthority('SCOPE_SOAM_LOGIN')")
@@ -41,6 +41,6 @@ public interface SoamEndpoint {
 
   @PostMapping(value = "/link", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
   @PreAuthorize("hasAuthority('SCOPE_SOAM_LINK')")
-  ResponseEntity<SoamLoginEntity> performBCSCLink(@RequestParam MultiValueMap<String, String> formData, @RequestHeader String correlationID);
+  ResponseEntity<SoamLoginEntity> performBCSCLink(MultiValueMap<String, String> formData, @RequestHeader String correlationID);
 
 }

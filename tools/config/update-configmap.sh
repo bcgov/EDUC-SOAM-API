@@ -18,6 +18,9 @@ DEVEXCHANGE_KC_REALM_ID="standard"
 ENTRA_CLIENT_ID=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get secret entra-creds-${envValue} | sed -n 's/.*"clientid": "\(.*\)",/\1/p' | base64 --decode)
 ENTRA_CLIENT_SECRET=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get secret entra-creds-${envValue} | sed -n 's/.*"secret": "\(.*\)"/\1/p' | base64 --decode)
 SERVICES_CARD_DNS=id.gov.bc.ca
+BCSC_CLIENT_ID=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get secret bcsc-creds-${envValue} | sed -n 's/.*"clientid": "\(.*\)",/\1/p' | base64 --decode)
+BCSC_CLIENT_SECRET=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get secret bcsc-creds-${envValue} | sed -n 's/.*"secret": "\(.*\)"/\1/p' | base64 --decode)
+
 
 SPLUNK_URL="gww.splunk.educ.gov.bc.ca"
 FLB_CONFIG="[SERVICE]
@@ -317,7 +320,7 @@ echo Building IDP instance for BCSC...
 curl -sX POST "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/identity-provider/instances" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"alias\" : \"keycloak_bcdevexchange_bcsc\",\"displayName\" : \"BCDevExchange Keycloak for BC Services Card\",\"providerId\" : \"oidc\",\"enabled\" : true,\"updateProfileFirstLoginMode\" : \"on\",\"trustEmail\" : false,\"storeToken\" : false,\"addReadTokenRoleOnCreate\" : false,\"authenticateByDefault\" : false,\"linkOnly\" : false,\"firstBrokerLoginFlowAlias\" : \"SOAMFirstLogin\",\"postBrokerLoginFlowAlias\" : \"SOAMPostLogin\",\"config\" : { \"hideOnLoginPage\" : \"true\",\"userInfoUrl\" : \"https://$SERVICES_CARD_DNS/oauth2/userinfo\",\"validateSignature\" : \"true\",\"clientId\" : \"$bcscClientID\",\"tokenUrl\" : \"https://$SERVICES_CARD_DNS/oauth2/token\",\"uiLocales\" : \"\",\"backchannelSupported\" : \"\",\"issuer\" : \"https://$SERVICES_CARD_DNS/oauth2/\",\"useJwksUrl\" : \"true\",\"jwksUrl\" : \"https://$SERVICES_CARD_DNS/oauth2/jwk\",\"loginHint\": \"\",\"authorizationUrl\" : \"https://$SERVICES_CARD_DNS/login/oidc/authorize\",\"disableUserInfo\" : \"\",\"logoutUrl\" : \"\",\"clientSecret\" : \"$bcscClientSecret\",\"prompt\": \"\",\"defaultScope\" : \"openid profile email address\"}}"
+  -d "{\"alias\" : \"keycloak_bcdevexchange_bcsc\",\"displayName\" : \"BCDevExchange Keycloak for BC Services Card\",\"providerId\" : \"oidc\",\"enabled\" : true,\"updateProfileFirstLoginMode\" : \"on\",\"trustEmail\" : false,\"storeToken\" : false,\"addReadTokenRoleOnCreate\" : false,\"authenticateByDefault\" : false,\"linkOnly\" : false,\"firstBrokerLoginFlowAlias\" : \"SOAMFirstLogin\",\"postBrokerLoginFlowAlias\" : \"SOAMPostLogin\",\"config\" : { \"hideOnLoginPage\" : \"true\",\"userInfoUrl\" : \"https://$SERVICES_CARD_DNS/oauth2/userinfo\",\"validateSignature\" : \"true\",\"clientId\" : \"$BCSC_CLIENT_ID\",\"tokenUrl\" : \"https://$SERVICES_CARD_DNS/oauth2/token\",\"uiLocales\" : \"\",\"backchannelSupported\" : \"\",\"issuer\" : \"https://$SERVICES_CARD_DNS/oauth2/\",\"useJwksUrl\" : \"true\",\"jwksUrl\" : \"https://$SERVICES_CARD_DNS/oauth2/jwk\",\"loginHint\": \"\",\"authorizationUrl\" : \"https://$SERVICES_CARD_DNS/login/oidc/authorize\",\"disableUserInfo\" : \"\",\"logoutUrl\" : \"\",\"clientSecret\" : \"$BCSC_CLIENT_SECRET\",\"prompt\": \"\",\"defaultScope\" : \"openid profile email address\"}}"
 
 echo
 echo Creating mappers for BC Services Card DevExchange IDP...

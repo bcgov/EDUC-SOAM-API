@@ -130,17 +130,12 @@ jobs:
           # Get status, returns 0 if rollout is successful
           oc rollout status dc/${{ env.SPRING_BOOT_IMAGE_NAME }}
           
-          # temporary fix to rollout educ-keycloak-soam-api since the sso-config is created here. We can remove this after educ-keycloak-soam is upgraded
-          # Cancel any rollouts in progress
-          oc rollout cancel dc/sso-${{env.TARGET_ENV}} 2> /dev/null \
-          || true && echo "No rollout for sso-${{env.TARGET_ENV}} in progress"
-          
-          # Start rollout (if necessary) and follow it
-          oc rollout latest dc/sso-${{env.TARGET_ENV}} 2> /dev/null \
-          || true && echo "Rollout in progress"
-          oc logs -f dc/sso-${{env.TARGET_ENV}}
+          # roll out deployment/sso-keycloak since we changed the soam-sso-config-map
+          oc rollout restart deployment/sso-keycloak 2> /dev/null \
+            || true && echo "Rollout in progress"
+          oc logs -f deployment/sso-keycloak
           # Get status, returns 0 if rollout is successful
-          oc rollout status dc/sso-${{env.TARGET_ENV}}
+          oc rollout status deployment/sso-keycloak
       - name: ZAP Scan
         uses: zaproxy/action-api-scan@v0.9.0
         with:

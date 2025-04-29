@@ -162,8 +162,11 @@ jobs:
           oc rollout status deployment/${{ env.SPRING_BOOT_IMAGE_NAME }}
           
           # roll out deployment/sso-keycloak since we changed the soam-sso-config-map
+          # Cancel any rollouts in progress
+          oc rollout cancel deployment/sso-keycloak 2> /dev/null \
+          || true && echo "No rollout for sso-keycloak in progress"
           oc rollout restart deployment/sso-keycloak 2> /dev/null \
-            || true && echo "Rollout in progress"
+          || true && echo "Rollout in progress"
           # Get status, returns 0 if rollout is successful
           oc rollout status deployment/sso-keycloak
 

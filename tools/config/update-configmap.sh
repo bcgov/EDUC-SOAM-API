@@ -84,7 +84,7 @@ echo Updating realm details
 curl -sX PUT "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"loginWithEmailAllowed\" : false, \"duplicateEmailsAllowed\" : true, \"accessTokenLifespan\" : 300}"
+  -d "{\"loginWithEmailAllowed\" : false, \"duplicateEmailsAllowed\" : true, \"accessTokenLifespan\" : 300, \"loginTheme\": \"bcgov\"}"
 
 echo
 echo Writing scope SOAM_LOGIN

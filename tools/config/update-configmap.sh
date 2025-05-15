@@ -84,7 +84,7 @@ echo Updating realm details
 curl -sX PUT "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TKN" \
-  -d "{\"loginWithEmailAllowed\" : false, \"duplicateEmailsAllowed\" : true, \"accessTokenLifespan\" : 300, \"loginTheme\": \"bcgov-v2\"}"
+  -d "{\"loginWithEmailAllowed\" : false, \"duplicateEmailsAllowed\" : true, \"accessTokenLifespan\" : 300, \"loginTheme\": \"bcgov\"}"
 
 echo
 echo Writing scope SOAM_LOGIN
@@ -181,10 +181,10 @@ echo Creating config map $APP_NAME-config-map
 oc create -n $OPENSHIFT_NAMESPACE-$envValue configmap soam-api-config-map --from-literal=TZ=$TZVALUE --from-literal=CLIENT_ID=soam-api-service --from-literal=CLIENT_SECRET=$soamAPIServiceClientSecret --from-literal=DIGITALID_URL="http://digitalid-api-master.$OPENSHIFT_NAMESPACE-$envValue.svc.cluster.local:8080/api/v1/digital-id" --from-literal=STUDENT_URL="http://student-api-master.$OPENSHIFT_NAMESPACE-$envValue.svc.cluster.local:8080/api/v1/student" --from-literal=PEN_MATCH_API_URL="http://pen-match-api-master.$PEN_NAMESPACE-$envValue.svc.cluster.local:8080/api/v1/pen-match" --from-literal=STS_API_URL="http://sts-api-main.$OPENSHIFT_NAMESPACE-$envValue.svc.cluster.local:8080/api/v1/sts" --from-literal=SERVICESCARD_API_URL="http://services-card-api-master.$OPENSHIFT_NAMESPACE-$envValue.svc.cluster.local:8080/api/v1/services-card" --from-literal=TOKEN_URL=https://$SOAM_KC/auth/realms/$SOAM_KC_REALM_ID/protocol/openid-connect/token --from-literal=SPRING_SECURITY_LOG_LEVEL=INFO --from-literal=SPRING_WEB_LOG_LEVEL=INFO --from-literal=APP_LOG_LEVEL=INFO --from-literal=SPRING_BOOT_AUTOCONFIG_LOG_LEVEL=INFO --from-literal=SPRING_SHOW_REQUEST_DETAILS=false --from-literal=TOKEN_ISSUER_URL="https://$SOAM_KC/auth/realms/$SOAM_KC_REALM_ID" --from-literal=CIRCUITBREAKER_SLIDING_WINDOW_SIZE=100 --from-literal=CIRCUITBREAKER_CALLS_IN_HALF_OPEN=10 --from-literal=CIRCUITBREAKER_MINIMUM_CALLS=100 --from-literal=BULKHEAD_MAX_CONCURRENT_CALLS=25 --from-literal=RATELIMITER_LIMIT_FOR_PERIOD=50 --from-literal=RATELIMITER_LIMIT_REFRESH_PERIOD=500ns --from-literal=CIRCUITBREAKER_WAIT_DURATION_IN_OPEN=60000ms --from-literal=RETRY_MAX_ATTEMPTS=3 --from-literal=RATELIMITER_TIMEOUT_DURATION=5s --dry-run -o yaml | oc apply -f -
 echo
 echo Setting environment variables for $APP_NAME-$SOAM_KC_REALM_ID application
-oc -n $OPENSHIFT_NAMESPACE-$envValue set env --from=configmap/$APP_NAME-config-map dc/$APP_NAME-$SOAM_KC_REALM_ID
+oc -n $OPENSHIFT_NAMESPACE-$envValue set env --from=configmap/$APP_NAME-config-map deployment/$APP_NAME-$SOAM_KC_REALM_ID
 
 echo Removing un-needed config entries
-oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" set env dc/"$APP_NAME"-$SOAM_KC_REALM_ID KEYCLOAK_PUBLIC_KEY-
+oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" set env deployment/"$APP_NAME"-$SOAM_KC_REALM_ID KEYCLOAK_PUBLIC_KEY-
 
 ###########################################################
 #Setup for soam-sso-config-map

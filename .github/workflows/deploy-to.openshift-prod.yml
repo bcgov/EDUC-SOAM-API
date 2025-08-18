@@ -86,7 +86,7 @@ jobs:
             }
 
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Get latest tag
         uses: actions-ecosystem/action-get-latest-tag@v1
@@ -98,7 +98,7 @@ jobs:
           oc: 4
 
         # https://github.com/redhat-actions/oc-login#readme
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Deploy
         run: |
